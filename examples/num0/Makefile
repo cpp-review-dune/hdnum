@@ -5,47 +5,8 @@ CCOPTS      = -I/opt/local/include -I$(HDNUMPATH) -O3
 LIOPTSGMP   = -L/opt/local/lib -lgmpxx -lgmp -lm
 LIOPTS      = -lm
 
-zahlen_MAIN = zahlen
-zahlen_SOURCES =
-
-string_MAIN = string
-string_SOURCES =
-
-mehrzahlen_MAIN = mehrzahlen
-mehrzahlen_SOURCES =
-
-eingabe_MAIN = eingabe
-eingabe_SOURCES =
-
-pendelwhile_MAIN = pendelwhile
-pendelwhile_SOURCES =
-
-pendel_MAIN = pendel
-pendel_SOURCES =
-
-pendelmittimer_MAIN = pendelmittimer
-pendelmittimer_SOURCES =
-
-pendelnumerisch_MAIN = pendelnumerisch
-pendelnumerisch_SOURCES =
-
-pendelmitfunktion_MAIN = pendelmitfunktion
-pendelmitfunktion_SOURCES =
-
-pendelmitfunktionstemplate_MAIN = pendelmitfunktionstemplate
-pendelmitfunktionstemplate_SOURCES =
-
-whitespace_MAIN = whitespace
-whitespace_SOURCES =
-
-funktion_MAIN = funktion
-funktion_SOURCES =
-
 precision_MAIN = precision
 precision_SOURCES =
-
-hallohdnum_MAIN = hallohdnum
-hallohdnum_SOURCES =
 
 fibonacci_MAIN = fibonacci
 fibonacci_SOURCES =
@@ -64,9 +25,9 @@ wurzel_SOURCES =
 
 all : nogmp gmp
 
-nogmp : $(zahlen_MAIN) $(string_MAIN)  $(pendelwhile_MAIN) $(pendel_MAIN) $(pendelmittimer_MAIN) $(pendelnumerisch_MAIN) $(pendelmitfunktion_MAIN) $(pendelmitfunktionstemplate_MAIN) $(whitespace_MAIN) $(funktion_MAIN) $(precision_MAIN) $(hallohdnum_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(fibonacci_MAIN)
+nogmp : $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(fibonacci_MAIN)
 
-gmp : $(mehrzahlen_MAIN) $(eingabe_MAIN) $(lr_MAIN) $(wurzel_MAIN)
+gmp : $(lr_MAIN) $(wurzel_MAIN)
 
 $(zahlen_MAIN): $(zahlen_MAIN).o $(zahlen_SOURCES) Makefile
 	$(CC) -o $(zahlen_MAIN) $(zahlen_MAIN).o $(zahlen_SOURCES) $(LIOPTS)
@@ -138,4 +99,4 @@ $(wurzel_MAIN): $(wurzel_MAIN).o $(wurzel_SOURCES) Makefile
 	$(CC) $(CCOPTS) -c $<
 
 clean:
-	rm -f *.o *.dat $(zahlen_MAIN) $(string_MAIN) $(mehrzahlen_MAIN) $(fibonacci_MAIN) $(eingabe_MAIN) $(pendelwhile_MAIN) $(pendel_MAIN) $(pendelmittimer_MAIN) $(pendelnumerisch_MAIN) $(pendelmitfunktion_MAIN) $(pendelmitfunktionstemplate_MAIN) $(whitespace_MAIN) $(funktion_MAIN) $(precision_MAIN) $(hallohdnum_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(lr_MAIN) $(wurzel_MAIN)
+	rm -f *.o *.dat $(fibonacci_MAIN) $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(lr_MAIN) $(wurzel_MAIN)

@@ -13,7 +13,7 @@
   \usepackage[automark,komastyle]{scrpage2}
   \usepackage{amsfonts}
   \usepackage{amscd}
-  \usepackage[headings]{fullpage}
+  %\usepackage[headings]{fullpage}
 %  \setlength{\parindent}{0pt}
 %  \setlength{\parskip}{1.25ex plus 0.5ex minus 0.2ex}
 }
@@ -45,7 +45,7 @@
 \usepackage{listings}
 \lstset{language=C++, basicstyle=\ttfamily,
   keywordstyle=\color{red}\bfseries, tabsize=4, stringstyle=\ttfamily,
-  commentstyle=\it, extendedchars=true, escapeinside={/*@}{@*/}}
+  commentstyle=\itshape, extendedchars=true, inputencoding=utf8, texcl=true, escapeinside={/*@}{@*/}}
 \usepackage{curves}
 %\usepackage{epic}
 \usepackage{calc}
@@ -64,26 +64,26 @@
 
 \mode<article> {
 %  \usepackage[dvips,a4paper]{hyperref}
-  \usepackage[dvips,a4paper,%
+  \usepackage[%
   pagebackref=false, % bibliography -> text
   linktocpage=true, % toc etc: make page number active (not name)
   plainpages=false, % distinguish roman and arabic pagenumbers
   bookmarksopen=true,%
   bookmarksnumbered=true,%
   pdfauthor={Peter Bastian},%
-  pdftitle={Heidelberger Numerikbibliothek für die Lehre},%
+  pdftitle={Heidelberger Numerikbibliothek fÃ¼r die Lehre},%
   pdfsubject={},%
   pdfkeywords={},%
 ]{hyperref}        % clickabe references
   \usepackage{multimedia}
   \usepackage{cite}
   \setkomafont{pagenumber}{\normalfont\scshape}
-  \setkomafont{pagehead}{\normalfont\scshape}
+  \setkomafont{pageheadfoot}{\normalfont\scshape}
 }
 %\usepackage{breakurl}
 
-%\newcites{num}{Lehrbücher Numerik}
-%\newcites{cpp}{Lehrbücher C++}
+%\newcites{num}{LehrbÃ¼cher Numerik}
+%\newcites{cpp}{LehrbÃ¼cher C++}
 
 %The theorems
 \mode<presentation>
@@ -137,12 +137,12 @@
 % Title definition
 \mode<presentation>
 {
-  \title[HDNum]{Heidelberger Numerikbibliothek für die Lehre}
+  \title[HDNum]{Heidelberger Numerikbibliothek fÃ¼r die Lehre}
   \author{Peter Bastian}
   \institute[IWR]
   {
-    Universität Heidelberg\\
-    Interdisziplinäres Zentrum für Wissenschaftliches Rechnen\\
+    UniversitÃ¤t Heidelberg\\
+    InterdisziplinÃ¤res Zentrum fÃ¼r Wissenschaftliches Rechnen\\
     Im Neuenheimer Feld 368, D-69120 Heidelberg\\
 	email: \url{Peter.Bastian@iwr.uni-heidelberg.de}
   }
@@ -151,10 +151,10 @@
 }
 \mode<article>
 {
-  \title{Heidelberger Numerikbibliothek \\ für die Lehre}
+  \title{Heidelberger Numerikbibliothek \\ fÃ¼r die Lehre}
   \author{\textsc{Peter Bastian}\\
-    Universität Heidelberg\\
-    Interdisziplinäres Zentrum für Wissenschaftliches Rechnen\\
+    UniversitÃ¤t Heidelberg\\
+    InterdisziplinÃ¤res Zentrum fÃ¼r Wissenschaftliches Rechnen\\
     Im Neuenheimer Feld 368, D-69120 Heidelberg\\
 	email: \url{Peter.Bastian@iwr.uni-heidelberg.de}
   }
@@ -221,11 +221,11 @@
 
 \begin{abstract}
 Die Heidelberger Numerikbibliothek wurde begleitend zu den Vorlesungen
-\textit{Einführung in die Numerik} und \textit{Numerik} in der Programmiersprache C++
+\textit{EinfÃ¼hrung in die Numerik} und \textit{Numerik} in der Programmiersprache C++
 entwickelt und stellt
-einfach zu benutzende Klassen für grundlegende Aufgaben in der Numerik bis hin zur Lösung
-von gewöhnlichen Differentialgleichungen zur Verfügung. In fast allen Klassen ist der
-benutzte Zahlentyp parametrisierbar so dass auch hochpräzise Rechnungen durchgeführt werden können.
+einfach zu benutzende Klassen fÃ¼r grundlegende Aufgaben in der Numerik bis hin zur LÃ¶sung
+von gewÃ¶hnlichen Differentialgleichungen zur VerfÃ¼gung. In fast allen Klassen ist der
+benutzte Zahlentyp parametrisierbar so dass auch hochprÃ¤zise Rechnungen durchgefÃ¼hrt werden kÃ¶nnen.
 \end{abstract}
 
 %\mode<presentation>{
@@ -257,7 +257,7 @@ benutzte Zahlentyp parametrisierbar so dass auch hochpräzise Rechnungen durchgef
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% die weiterführende Literatur wollen wir in der Präsentation nie
+% die weiterfÃ¼hrende Literatur wollen wir in der PrÃ¤sentation nie
 % zeigen
 \mode<presentation> {
 \begin{frame}<presentation>[allowframebreaks,allowdisplaybreaks]
@@ -289,7 +289,7 @@ benutzte Zahlentyp parametrisierbar so dass auch hochpräzise Rechnungen durchgef
   \nocite{CDE}
   \nocite{SchabackWendland}
   \nocite{QuarteroniSaccoSaleri}
-  \bibliographystyle{geralpha}
+  \bibliographystyle{plain}
   \bibliography{lit}
 }
 
