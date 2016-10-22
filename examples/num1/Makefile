@@ -1,9 +1,9 @@
 CC          = g++
 HDNUMPATH   = ../..
-#CCOPTS      = -I$(HDNUMPATH) -g -O0
-CCOPTS      = -I/opt/local/include -I$(HDNUMPATH) -O3
-LIOPTSGMP   = -L/opt/local/lib -lgmpxx -lgmp -lm
-LIOPTS      = -lm
+CCOPTS      = -I$(HDNUMPATH) -O3
+#CCOPTS      = -I/opt/local/include -I$(HDNUMPATH) -O3
+LIOPTSGMP   = -lgmpxx -lgmp -lm
+#LIOPTSGMP   = -L/opt/local/lib -lgmpxx -lgmp -lm
 
 modelproblem_MAIN = modelproblem
 modelproblem_SOURCES =
