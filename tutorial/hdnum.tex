@@ -13,10 +13,11 @@
 \usepackage{eurosym} 
 \usepackage{graphicx}
 \usepackage{color}
+\definecolor{listingbg}{gray}{0.95}
 \usepackage{listings}
 \lstset{language=C++, basicstyle=\ttfamily, 
   keywordstyle=\color{black}\bfseries, tabsize=4, stringstyle=\ttfamily,
-  commentstyle=\itshape, extendedchars=true, escapeinside={/*@}{@*/}}
+  commentstyle=\itshape, extendedchars=false,backgroundcolor=\color{listingbg},escapeinside={/*@}{@*/}}
 \usepackage{paralist}
 \usepackage{curves}
 \usepackage{calc}
@@ -29,8 +30,6 @@
 \usepackage{textcase}
 \usepackage{nicefrac}
 \usepackage[titletoc,toc,title]{appendix}
-
-\definecolor{listingbg}{gray}{0.95}
 
 \theoremstyle{definition}
 \newtheorem{exm}{Example}
@@ -69,7 +68,7 @@ zur Durchführung der praktischen Übungen zu den Vorlesungen \textit{Einführun
 Numerik} und \textit{Numerik (gewöhnlicher Differentialgleichungen)}. Die aktuelle Version ist
 unter
 \begin{center}
-\url{https://conan2.iwr.uni-heidelberg.de/git/Teaching/hdnum}
+\url{https://parcomp-git.iwr.uni-heidelberg.de/Teaching/hdnum}
 \end{center}
 verfügbar und wird mit dem Versionskontrollsystem \lstinline{git} verwaltet.
 Spezifische Versionen können auf der jeweiligen Vorlesungswebseite veröffentlicht werden.
@@ -90,7 +89,57 @@ Derzeit bietet HDNUM die folgende Funktionalität:
 
 \subsection{Installation}
 
-\subsection{So legt man los}
+HDNUM ist eine \glqq{}header only\grqq{} Bibliothek und erfordert keine Installation
+ausser dem Herunterladen der Dateien. Die aktuelle Version kann man mittels
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,language=bash,frame=single]
+$ git clone https://parcomp-git.iwr.uni-heidelberg.de/Teaching/hdnum.git
+\end{lstlisting}
+herunterladen. Hierzu ist das Programm \lstinline{git} erforderlich, welches für alle
+Betriebssysteme frei erhältlich ist. Alternativ wird üblicherweise auch ein 
+komprimiertes \lstinline{tar}-archive auf der Homepage der jeweiligen Vorlesung angeboten.
+Dies entpackt man mittels
+\begin{lstlisting}[basicstyle=\ttfamily\small,frame=single]
+$ tar zxvf hdnum-XX.tgz
+\end{lstlisting}
+In dem entpackten bzw. installiertem Verzeichnis findet man die folgenden Dateien und
+Unterverzeichnisse:
+\begin{itemize}
+\item \lstinline{hdnum.hh}: Diese Header-Datei ist in ein C++-Programm einzubinden um HDNUM
+nutzen zu können. 
+\item Das Verzeichnis \lstinline{mystuff} ist für ihre Programme vorgesehen aber Sie können
+natürlich jedes andere Verzeichnis nutzen. Wichtig ist nur, dass der Compiler die Datei 
+\lstinline{hdnum.hh} findet. Im Verzeichnis \lstinline{mystuff} ist schon ein Beispielprogramm
+um gleich loslegen zu können. Dieses Programm übersetzt man mit:
+\begin{lstlisting}[basicstyle=\ttfamily\small,frame=single]
+$ cd mystuff
+$ g++ -I.. -o example example.cc
+\end{lstlisting}
+Diese Befehle setzen voraus, dass auf ihrem System der GNU C++-Compiler installiert ist.
+Unter Windows oder für andere Compiler müssen Sie die Befehle entsprechend anpassen.
+\item Das Verzeichnis \lstinline{examples} im HDNUM-Ordner enthält viele Beispiele
+geordnet nach Programmierkurs, Numerik 0 und Numerik 1.
+\item Das Verzeichnis \lstinline{src} im HDNUM-Ordner enthält den Quellcode
+der HDNUM Bibliothek. Diese Dateien werden von \lstinline{hdnum.hh} eingebunden.
+\item Das Verzeichnis \lstinline{programmierkurs} im HDNUM-Ordner enthält
+die Folien zum Programmierkurs.
+\item Das Verzeichnis \lstinline{tutorial} im HDNUM-Ordner enthält den Quellcode
+für dieses Dokument.
+\end{itemize}
+
+\subsubsection*{GNU Multiple Precision Bibliothek}
+
+HDNUM kann Berechnungen mit hoher Genauigkeit durchführen. Hierzu ist die GNU Multiple Precision
+Bibliothek (GMP) erforderlich, 
+welche Sie für viele Systeme kostenlos erhalten können. Um GMP nutzen zu können müssen 
+Sie in der Datei \lstinline{hdnum.hh} die Zeile
+\begin{lstlisting}[basicstyle=\ttfamily\small,frame=single]
+#define HDNUM_HAS_GMP 1
+\end{lstlisting}
+\textit{auskommentieren}. Zusätzlich sind eventuell Compileroptionen notwendig damit der Compiler
+die Headerdateien und Bibliotheken von GMP findet. Dies kann dann so aussehen:
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,frame=single]
+$ g++ -I.. -I/opt/local/include -o example example.cc -L/opt/local/lib -lgmpxx -lgmp
+\end{lstlisting}
 
 \section{Lineare Algebra}
 
