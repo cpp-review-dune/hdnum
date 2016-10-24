@@ -5,6 +5,6 @@
 
 int main ()
 {
-  hdnum::Vector<float> a(10,3.14); // Feld mit 10 init. Elementen
-  a[3] = 1.0;              // Zugriff auf Element 3
+  std::cout << "Numerik 0 ist ganz leicht!" << std::endl;
+  std::cout << "1+1=" << 1+1 << std::endl;
 }

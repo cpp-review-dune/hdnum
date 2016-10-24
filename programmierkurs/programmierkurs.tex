@@ -295,16 +295,9 @@ Ausführung zu bringen sind folgende Schritte notwendig:
 \frametitle{Herunterladen von HDNUM }
 \begin{enumerate}
 \item Einloggen
-\item Erzeuge neues Verzeichnis mit \\ \lstinline{$ mkdir kurs}
-\item Wechsle in das Verzeichnis mit \\ \lstinline{$ cd kurs}
-\item Gehe zur Webseite
-{\tiny\url{http://conan.iwr.uni-heidelberg.de/teaching/numerik1_ws2013/index.html}}
-\item Klicke auf \textbf{Version 0.26} und bestätige
-\item Kopiere Datei \lstinline{hdnum-0.26.tgz} in das Verzeichnis:
- \\ \lstinline{$ cp ~/Desktop/hdnum-0.26.tgz .} %$
-\item Entpacken der Datei mit \\ \lstinline{$ tar zxvf hdnum-0.26.tgz}
-  %$
-\item Wechsle in das Verzeichnis \\ \lstinline{$ cd hdnum/examples} %$
+\item Herunterladen von HDNUM\\
+\texttt{\tiny git clone https://parcomp-git.iwr.uni-heidelberg.de/Teaching/hdnum.git}
+\item Wechsle in das Verzeichnis \\ \lstinline{$ cd hdnum/examples/progkurs} %$
 \item Anzeigen der Dateien mittels\\ \lstinline{$ ls} %$
 \end{enumerate}
 \end{frame}
@@ -348,12 +341,12 @@ numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/hallohdnum.cc}
 \begin{itemize}
 \item Gebe folgende Befehle ein:
 {\small\begin{lstlisting}{}
-$ g++ -o hallohdnum hallohdnum.cc
+$ g++ -I../../ -o hallohdnum hallohdnum.cc
 $ ./hallohdnum
 \end{lstlisting}}
 \item Dies sollte dann die folgende Ausgabe liefern:
 {\small\begin{lstlisting}{}
-Numerik 0 ist ganz leicht:
+Numerik 0 ist ganz leicht!
 1+1=2
 \end{lstlisting}}
 \end{itemize}
@@ -398,8 +391,8 @@ numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/mehrzahlen.cc}
 \begin{itemize}
 \item GNU Multiprecision Library \url{http://gmplib.org/} erlaubt
   Zahlen mit vielen Stellen (hier 512 Stellen zur Basis 2).
-\item übersetzen mit:
-\\ \lstinline{$ g++ -o mehrzahlen mehrzahlen.cc -lgmpxx -lgmp} %$
+\item übersetzen mit:\\
+{\scriptsize\lstinline{$ g++ -I../../ -o mehrzahlen mehrzahlen.cc -lgmpxx -lgmp}} %$
 \item Komplexe Zahlen sind Paare von Zahlen.
 \item \lstinline{complex<>} ist ein Template: Baue komplexe Zahlen aus
   jedem anderen Zahlentyp auf (später mehr!).
