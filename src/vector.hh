@@ -497,7 +497,7 @@ namespace hdnum {
                << std::showpoint
                << std::setw( x.width() )
                << std::setprecision( x.precision() )
-              //<< x[r]
+              << x[r]
                << std::endl;
           }
         else
@@ -510,7 +510,7 @@ namespace hdnum {
                << std::showpoint
                << std::setw( x.width() )
                << std::setprecision( x.precision() )
-              //               << x[r]
+               << x[r]
                << std::endl;
           }
       }
