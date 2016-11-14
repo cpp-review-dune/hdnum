@@ -343,8 +343,8 @@ hdnum::DenseMatrix<float> D(B); // D Kopie von B
 \end{lstlisting}}}
 \item Zuweisung, kopiert auch Größe mit
 {\footnotesize{\begin{lstlisting}{}
-hdnum::DenseMatrix<float> A(B.rowsize(),B.colsize()); // make correct size
-A = B;                    // copy elements
+hdnum::DenseMatrix<float> A(B.rowsize(),B.colsize()); // korrekte Groesse
+A = B;                    // kopieren
 \end{lstlisting}}}
 \item Ausschnitte von Matrizen (Untermatrizen)\\
 {\footnotesize{\begin{lstlisting}{}
