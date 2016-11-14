@@ -5,8 +5,8 @@
 \begin{itemize}
 \item \lstinline{Vector<T>} ist ein Klassen-Template.
 \item Es macht aus einem beliebigen (Zahl-)Datentypen \lstinline{T}
-  einen Vektor. 
-\item Auch komplexe und hochgenaue Zahlen sind möglich.  
+  einen Vektor.
+\item Auch komplexe und hochgenaue Zahlen sind mÃ¶glich.
 \item Vektoren verhalten sich so wie man es aus der Mathematik kennt:
 \begin{itemize}
 \item Bestehen aus $n$ Komponenten.
@@ -30,17 +30,17 @@ Vector<float> a;            // ein leerer Vektor
 \end{lstlisting}}}
 \item Speziellere Vektoren\\
 {\footnotesize{\begin{lstlisting}{}
-Vector<std::complex<double> > 
+Vector<std::complex<double> >
   cx(7,std::complex<double>(1.0,3.0));
-mpf_set_default_prec(1024); // Setze Genauigkeit für mpf_class
+mpf_set_default_prec(1024); // Setze Genauigkeit fÃ¼r mpf_class
 Vector<mpf_class> mx(7,mpf_class("4.44"));
 \end{lstlisting}}}
 \item Zugriff auf Element\\
 {\footnotesize{\begin{lstlisting}{}
 for (std::size_t i=0; i<x.size(); i=i+1)
-  x[i] = i;                 // Zugriff auf Elemente 
+  x[i] = i;                 // Zugriff auf Elemente
 \end{lstlisting}}}
-\item Vektorobjekt wird am Ende des umgebenden Blockes gelöscht.
+\item Vektorobjekt wird am Ende des umgebenden Blockes gelÃ¶scht.
 \end{itemize}
 \end{frame}
 
@@ -53,17 +53,17 @@ Vector<float> z(x); // Kopie ist eine Referenz auf gleiche Daten
 z[2] = 1.24;        // hat den gleichen Effekt wie x[2] = 1.24 !
 
 a = z;              // a referenziert die Daten von z
-a[2] = -0.33;       // ändert auch z[2] und x[2];
+a[2] = -0.33;       // Ã¤ndert auch z[2] und x[2];
 a = 5.4;            // Zuweisung an alle Elemente
 \end{lstlisting}}}
 \item Erstellen einer echten Kopie\\
 {\footnotesize{\begin{lstlisting}{}
 Vector<float> b(copy(a)); // b ist echte Kopie von a,x,z
-a = copy(x);              // a hält echte Kopie der Daten von x
+a = copy(x);              // a hÃ¤lt echte Kopie der Daten von x
 \end{lstlisting}}}
 \item Ausschnitte von Vektoren\\
 {\footnotesize{\begin{lstlisting}{}
-Vector<float> w(x.sub(7,3));// w referenziert x[7],...,x[9] 
+Vector<float> w(x.sub(7,3));// w referenziert x[7],...,x[9]
 z = x.sub(3,4);             // z referenziert x[3],...,x[6]
 \end{lstlisting}}}
 \end{itemize}
@@ -84,13 +84,13 @@ s = w*z;           // Skalarprodukt
 \end{lstlisting}}}
 \item Ausgabe auf die Konsole\\
 {\footnotesize{\begin{lstlisting}{}
-std::cout << w << std::endl;// schöne Ausgabe
+std::cout << w << std::endl;// schÃ¶ne Ausgabe
 w.iwidth(2);                // Stellen in Indexausgabe
 w.width(20);                // Anzahl Stellen gesamt
 w.precision(16);            // Anzahl Nachkommastellen
 std::cout << w << std::endl;// nun mit mehr Stellen
-std::cout <<cx << std::endl;// geht auch für complex
-std::cout <<mx << std::endl;// geht auch für mpf_class
+std::cout <<cx << std::endl;// geht auch fÃ¼r complex
+std::cout <<mx << std::endl;// geht auch fÃ¼r mpf_class
 \end{lstlisting}}}
 \end{itemize}
 \end{frame}
@@ -155,8 +155,8 @@ T sum (Vector<T> x) {
 \begin{itemize}
 \item \lstinline{Matrix<T>} ist ein Klassen-Template.
 \item Es macht aus einem beliebigen (Zahl-)Datentypen \lstinline{T}
-  eine Matrix. 
-\item Auch komplexe und hochgenaue Zahlen sind möglich.  
+  eine Matrix.
+\item Auch komplexe und hochgenaue Zahlen sind mÃ¶glich.
 \item Matrizen verhalten sich so wie man es aus der Mathematik kennt:
 \begin{itemize}
 \item Bestehen aus $m\times n$ Komponenten.
@@ -173,7 +173,7 @@ T sum (Vector<T> x) {
 \begin{itemize}
 \item Konstruktion mit und ohne Initialisierung\\
 {\footnotesize{\begin{lstlisting}{}
-Matrix<float> A;            // leere Matrix mit Größe 0x0
+Matrix<float> A;            // leere Matrix mit GrÃ¶ÃŸe 0x0
 Matrix<float> B(10,10);     // 10x10 Matrix uninitialisiert
 Matrix<float> C(10,10,0.0); // 10x10 Matrix initialisiert
 \end{lstlisting}}}
@@ -183,7 +183,7 @@ for (int i=0; i<B.rowsize(); ++i)
   for (int j=0; j<B.colsize(); ++j)
     B[i][j] = 0.0;          // jetzt ist B initialisiert
 \end{lstlisting}}}
-\item Matrixobjekt wird am Ende des umgebenden Blockes gelöscht.
+\item Matrixobjekt wird am Ende des umgebenden Blockes gelÃ¶scht.
 \end{itemize}
 \end{frame}
 
@@ -194,7 +194,7 @@ for (int i=0; i<B.rowsize(); ++i)
 {\footnotesize{\begin{lstlisting}{}
 Matrix<float> D(B); // D identisch mit B! Keine Kopie
 A = D;              // A ist nun identisch mit D!
-A[0][0] = 3.14;     // ändert auch B[0][0], D[0][0]
+A[0][0] = 3.14;     // Ã¤ndert auch B[0][0], D[0][0]
 \end{lstlisting}}}
 \item Erstellen einer echten Kopie\\
 {\footnotesize{\begin{lstlisting}{}
@@ -237,7 +237,7 @@ C.umm(A,B);              // C = C + A*B
 \begin{itemize}
 \item Ausgabe von Matrizen\\
 {\footnotesize{\begin{lstlisting}{}
-std::cout << A.sub(0,0,3,3) << std::endl;// schöne Ausgabe
+std::cout << A.sub(0,0,3,3) << std::endl;// schÃ¶ne Ausgabe
 A.iwidth(2);                // Stellen in Indexausgabe
 A.width(10);                // Anzahl Stellen gesamt
 A.precision(4);             // Anzahl Nachkommastellen
@@ -256,24 +256,24 @@ vandermonde(A,x);
 \begin{frame}[fragile]
 \frametitle{Beispielausgabe}
 {\footnotesize{\begin{lstlisting}{}
-               0           1           2           3 
-  0   4.0000e+00 -1.0000e+00 -2.5000e-01 -1.1111e-01 
-  1  -1.0000e+00  4.0000e+00 -1.0000e+00 -2.5000e-01 
-  2  -2.5000e-01 -1.0000e+00  4.0000e+00 -1.0000e+00 
-  3  -1.1111e-01 -2.5000e-01 -1.0000e+00  4.0000e+00 
+               0           1           2           3
+  0   4.0000e+00 -1.0000e+00 -2.5000e-01 -1.1111e-01
+  1  -1.0000e+00  4.0000e+00 -1.0000e+00 -2.5000e-01
+  2  -2.5000e-01 -1.0000e+00  4.0000e+00 -1.0000e+00
+  3  -1.1111e-01 -2.5000e-01 -1.0000e+00  4.0000e+00
 \end{lstlisting}}}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Funktion mit Matrixargument}
 Beispiel einer Funktion, die eine Matrix $A$ und einen Vektor $b$
-initialisiert. 
+initialisiert.
 
 {\footnotesize{\begin{lstlisting}{}
 template<class T>
 void initialize (Matrix<T> A, Vector<T> b)
 {
-  if (A.rowsize()!=A.colsize() || A.rowsize()==0) 
+  if (A.rowsize()!=A.colsize() || A.rowsize()==0)
     HDNUM_ERROR("need square and nonempty matrix");
   if (A.rowsize()!=b.size())
     HDNUM_ERROR("b must have same size as A");

@@ -1,4 +1,4 @@
-// vektoren.cc 
+// vektoren.cc
 #include <iostream>    // notwendig zur Ausgabe
 #include "hdnum.hh"    // hdnum header
 
@@ -29,18 +29,18 @@ int main ()
 
   // Zugriff auf Vektorelemente
   for (int i=0; i<x.size(); i=i+1)
-  x[i] = i;                 // Zugriff auf Elemente 
+  x[i] = i;                 // Zugriff auf Elemente
 
   // Kopie und Zuweisung
   hdnum::Vector<float> z(x);         // Kopie erstellen
   z[2] = 1.24;                // Wert verändern
-  
+
   a = z;                      // hat Werte von z
-  a[2] = -0.33;               
+  a[2] = -0.33;
   a = 5.4;                    // Zuweisung an alle Elemente
-  
-  hdnum::Vector<float> w(x);        
-  
+
+  hdnum::Vector<float> w(x);
+
   // Rechnen mit Vektoren
   w += z;                     // w = w+z
   w -= z;                     // w = w-z
@@ -50,6 +50,9 @@ int main ()
   x[0] = w*z;                 // skalare Multiplikation
   std::cout << x.two_norm() << std::endl; // euklidische Norm
 
+  // Ausdrücke
+  w = ((x+z)+x)*w;                // geht auch, aber nicht effizient
+
   // Ausgabe
   std::cout << w << std::endl;// schöne Ausgabe
   w.iwidth(2);                // Stellen in Indexausgabe
@@ -57,7 +60,9 @@ int main ()
   w.precision(16);            // Anzahl Nachkommastellen
   std::cout << w << std::endl;// nun mit mehr Stellen
 
-  // Hilfsfunktionen
+  // frei stehende Funktionen
+  float d = norm(w);          // Euklidsche Norm
+  d = w.two_norm();           // das selbe
   zero(w);                    // das selbe wie w=0.0
   fill(w,(float)1.0);         // das selbe wie w=1.0
   fill(w,(float)0.0,(float)0.1); // w[0]=0, w[1]=0.1, w[2]=0.2, ...

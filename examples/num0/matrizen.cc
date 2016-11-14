@@ -1,4 +1,4 @@
-// matrizen.cc 
+// matrizen.cc
 #include <iostream>    // notwendig zur Ausgabe
 #include "hdnum.hh"    // hdnum header
 
@@ -7,7 +7,7 @@
 template<class T>
 void initialize (hdnum::DenseMatrix<T> &A, hdnum::Vector<T> &b)
 {
-  if (A.rowsize()!=A.colsize() || A.rowsize()==0) 
+  if (A.rowsize()!=A.colsize() || A.rowsize()==0)
     HDNUM_ERROR("need square and nonempty matrix");
   if (A.rowsize()!=b.size())
     HDNUM_ERROR("b must have same size as A");
@@ -36,7 +36,7 @@ int main ()
   A = D;                      // A ist nun identisch mit D!
   A[0][0] = 3.14;
   B[0][0] = 3.14;
-  
+
   // Rechnen mit Matrizen und Vektoren
   A += B;                     // A = A+B
   A -= B;                     // A = A-B
@@ -51,6 +51,10 @@ int main ()
   A.umv(y,(float)-1.0,x);     // y = y + s*A*x
   C.mm(A,B);                  // C = A*B
   C.umm(A,B);                 // C = C + A*B
+  A.sc(x,1);                  // mache x zur ersten Spalte von A
+  A.sr(x,1);                  // mache x zur ersten Zeile von A
+  float d=A.norm_infty();     // Zeilensummennorm
+  d=A.norm_1();               // Spaltensummennorm
 
   // Ausgabe
   A.iwidth(2);                // Stellen in Indexausgabe

@@ -1279,7 +1279,7 @@ namespace hdnum {
     \param[in] t scalar value
   */
   template<typename REAL>
-  inline void fill (DenseMatrix<REAL> A, const REAL& t)
+  inline void fill (DenseMatrix<REAL>& A, const REAL& t)
   {
     for (typename DenseMatrix<REAL>::size_type i=0; i<A.rowsize(); ++i)
       for (typename DenseMatrix<REAL>::size_type j=0; j<A.colsize(); ++j)
@@ -1552,4 +1552,3 @@ namespace hdnum {
 }
 
 #endif	// DENSEMATRIX_HH
-
