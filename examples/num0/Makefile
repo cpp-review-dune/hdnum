@@ -18,6 +18,9 @@ vektoren_SOURCES =
 matrizen_MAIN = matrizen
 matrizen_SOURCES =
 
+lr_opcount_MAIN = lr_opcount
+lr_opcount_SOURCES =
+
 lr_MAIN = lr
 lr_SOURCES =
 
@@ -26,7 +29,7 @@ wurzel_SOURCES =
 
 all : nogmp gmp
 
-nogmp : $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(fibonacci_MAIN)
+nogmp : $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(fibonacci_MAIN) $(lr_opcount_MAIN)
 
 gmp : $(lr_MAIN) $(wurzel_MAIN)
 
@@ -71,6 +74,9 @@ $(vektoren_MAIN): $(vektoren_MAIN).o $(vektoren_SOURCES) Makefile
 
 $(matrizen_MAIN): $(matrizen_MAIN).o $(matrizen_SOURCES) Makefile
 	$(CC) -o $(matrizen_MAIN) $(matrizen_MAIN).o $(matrizen_SOURCES) $(LIOPTS)
+
+$(lr_opcount_MAIN): $(lr_opcount_MAIN).o $(lr_opcount_SOURCES) Makefile
+	$(CC) -o $(lr_opcount_MAIN) $(lr_opcount_MAIN).o $(lr_opcount_SOURCES) $(LIOPTS)
 
 $(modelproblem_MAIN): $(modelproblem_MAIN).o $(modelproblem_SOURCES) Makefile
 	$(CC) -o $(modelproblem_MAIN) $(modelproblem_MAIN).o $(modelproblem_SOURCES) $(LIOPTS)

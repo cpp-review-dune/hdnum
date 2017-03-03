@@ -6,7 +6,7 @@
 #include "densematrix.hh"
 
 /** @file
- *  @brief This file implements a generic and dynamic vector class
+ *  @brief This file implements LU decomposition
  */
 
 namespace hdnum {
@@ -15,17 +15,17 @@ namespace hdnum {
   template<class T>
   void lr (DenseMatrix<T>& A, Vector<std::size_t>& p)
   {
-    if (A.rowsize()!=A.colsize() || A.rowsize()==0) 
+    if (A.rowsize()!=A.colsize() || A.rowsize()==0)
       HDNUM_ERROR("need square and nonempty matrix");
     if (A.rowsize()!=p.size())
       HDNUM_ERROR("permutation vector incompatible with matrix");
-	
+
     // transformation to upper triangular
-    for (std::size_t k=0; k<A.rowsize()-1; ++k) 
+    for (std::size_t k=0; k<A.rowsize()-1; ++k)
       {
         // find pivot element and exchange rows
         for (std::size_t r=k; r<A.rowsize(); ++r)
-          if (A[r][k]!=0) 
+          if (A[r][k]!=0)
             {
               p[k] = r; // store permutation in step k
               if (r>k) // exchange complete row if r!=k
@@ -40,7 +40,7 @@ namespace hdnum {
         if (A[k][k]==0) HDNUM_ERROR("matrix is singular");
 
         // modification
-        for (std::size_t i=k+1; i<A.rowsize(); ++i) 
+        for (std::size_t i=k+1; i<A.rowsize(); ++i)
           {
             T qik(A[i][k]/A[k][k]);
             A[i][k] = qik;
@@ -64,21 +64,21 @@ namespace hdnum {
   template<class T>
   void lr_partialpivot (DenseMatrix<T>& A, Vector<std::size_t>& p)
   {
-    if (A.rowsize()!=A.colsize() || A.rowsize()==0) 
+    if (A.rowsize()!=A.colsize() || A.rowsize()==0)
       HDNUM_ERROR("need square and nonempty matrix");
     if (A.rowsize()!=p.size())
       HDNUM_ERROR("permutation vector incompatible with matrix");
-	
+
     // initialize permutation
     for (std::size_t k=0; k<A.rowsize(); ++k)
       p[k] = k;
 
     // transformation to upper triangular
-    for (std::size_t k=0; k<A.rowsize()-1; ++k) 
+    for (std::size_t k=0; k<A.rowsize()-1; ++k)
       {
         // find pivot element
         for (std::size_t r=k+1; r<A.rowsize(); ++r)
-          if (abs(A[r][k])>abs(A[k][k])) 
+          if (abs(A[r][k])>abs(A[k][k]))
             p[k] = r; // store permutation in step k
 
         if (p[k]>k) // exchange complete row if r!=k
@@ -92,7 +92,7 @@ namespace hdnum {
         if (A[k][k]==0) HDNUM_ERROR("matrix is singular");
 
         // modification
-        for (std::size_t i=k+1; i<A.rowsize(); ++i) 
+        for (std::size_t i=k+1; i<A.rowsize(); ++i)
           {
             T qik(A[i][k]/A[k][k]);
             A[i][k] = qik;
@@ -106,7 +106,7 @@ namespace hdnum {
   template<class T>
   void lr_fullpivot (DenseMatrix<T>& A, Vector<std::size_t>& p, Vector<std::size_t>& q)
   {
-    if (A.rowsize()!=A.colsize() || A.rowsize()==0) 
+    if (A.rowsize()!=A.colsize() || A.rowsize()==0)
       HDNUM_ERROR("need square and nonempty matrix");
     if (A.rowsize()!=p.size())
       HDNUM_ERROR("permutation vector incompatible with matrix");
@@ -116,13 +116,13 @@ namespace hdnum {
       p[k] = q[k] = k;
 
     // transformation to upper triangular
-    for (std::size_t k=0; k<A.rowsize()-1; ++k) 
+    for (std::size_t k=0; k<A.rowsize()-1; ++k)
       {
         // find pivot element
         for (std::size_t r=k; r<A.rowsize(); ++r)
           for (std::size_t s=k; s<A.colsize(); ++s)
             if (abs(A[r][s])>abs(A[k][k]))
-              { 
+              {
                 p[k] = r; // store permutation in step k
                 q[k] = s;
               }
@@ -145,7 +145,7 @@ namespace hdnum {
         if (A[k][k]==0) HDNUM_ERROR("matrix is singular");
 
         // modification
-        for (std::size_t i=k+1; i<A.rowsize(); ++i) 
+        for (std::size_t i=k+1; i<A.rowsize(); ++i)
           {
             T qik(A[i][k]/A[k][k]);
             A[i][k] = qik;
@@ -161,7 +161,7 @@ namespace hdnum {
   {
     if (b.size()!=p.size())
       HDNUM_ERROR("permutation vector incompatible with rhs");
-  
+
     for (std::size_t k=0; k<b.size()-1; ++k)
       if (p[k]!=k)
         {
@@ -177,7 +177,7 @@ namespace hdnum {
   {
     if (z.size()!=q.size())
       HDNUM_ERROR("permutation vector incompatible with z");
-  
+
     for (int k=z.size()-2; k>=0; --k)
       if (q[k]!=std::size_t(k))
         {
@@ -191,13 +191,13 @@ namespace hdnum {
   template<class T>
   void row_equilibrate (DenseMatrix<T>& A, Vector<T>& s)
   {
-    if (A.rowsize()*A.colsize()==0) 
+    if (A.rowsize()*A.colsize()==0)
       HDNUM_ERROR("need nonempty matrix");
     if (A.rowsize()!=s.size())
       HDNUM_ERROR("scaling vector incompatible with matrix");
-  
+
     // equilibrate row sums
-    for (std::size_t k=0; k<A.rowsize(); ++k) 
+    for (std::size_t k=0; k<A.rowsize(); ++k)
       {
         s[k] = T(0.0);
         for (std::size_t j=0; j<A.colsize(); ++j)
@@ -214,9 +214,9 @@ namespace hdnum {
   {
     if (s.size()!=b.size())
       HDNUM_ERROR("s and b incompatible");
-  
+
     // equilibrate row sums
-    for (std::size_t k=0; k<b.size(); ++k) 
+    for (std::size_t k=0; k<b.size(); ++k)
       b[k] /= s[k];
   }
 
@@ -224,7 +224,7 @@ namespace hdnum {
   template<class T>
   void solveL (const DenseMatrix<T>& A, Vector<T>& x, const Vector<T>& b)
   {
-    if (A.rowsize()!=A.colsize() || A.rowsize()==0) 
+    if (A.rowsize()!=A.colsize() || A.rowsize()==0)
       HDNUM_ERROR("need square and nonempty matrix");
     if (A.rowsize()!=b.size())
       HDNUM_ERROR("right hand side incompatible with matrix");
@@ -242,7 +242,7 @@ namespace hdnum {
   template<class T>
   void solveR (const DenseMatrix<T>& A, Vector<T>& x, const Vector<T>& b)
   {
-    if (A.rowsize()!=A.colsize() || A.rowsize()==0) 
+    if (A.rowsize()!=A.colsize() || A.rowsize()==0)
       HDNUM_ERROR("need square and nonempty matrix");
     if (A.rowsize()!=b.size())
       HDNUM_ERROR("right hand side incompatible with matrix");
@@ -258,4 +258,3 @@ namespace hdnum {
 
 }
 #endif
-

@@ -16,6 +16,7 @@
 #include "src/vector.hh"
 #include "src/densematrix.hh"
 #include "src/timer.hh"
+#include "src/opcounter.hh"
 #include "src/precision.hh"
 #include "src/lr.hh"
 #include "src/ode.hh"
