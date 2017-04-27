@@ -1,4 +1,4 @@
-/** @brief Example class for a differential equation model 
+/** @brief Example class for a differential equation model
 
     The model is
 
@@ -25,7 +25,7 @@ public:
     : lambda(lambda_)
   {}
 
-  //! return number of componentes for the model
+  //! return number of components for the model
   std::size_t size () const
   {
     return 1;

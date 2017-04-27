@@ -37,7 +37,7 @@ namespace hdnum {
       : model(model_), u(model.size()), f(model.size())
     {
       model.initialize(t,u);
-      dt = 0.1; 
+      dt = 0.1;
     }
 
     //! set time step for subsequent steps
@@ -84,7 +84,7 @@ namespace hdnum {
     {
       return 1;
     }
-    
+
   private:
     const M& model;
     time_type t, dt;
@@ -121,7 +121,7 @@ namespace hdnum {
       a21 = 0.5;
       b2 = 1.0;
       model.initialize(t,u);
-      dt = 0.1; 
+      dt = 0.1;
     }
 
     //! set time step for subsequent steps
@@ -176,7 +176,7 @@ namespace hdnum {
     {
       return 2;
     }
-    
+
   private:
     const M& model;
     time_type t, dt;
@@ -216,7 +216,7 @@ namespace hdnum {
       b1 = 0.5;
       b2 = 0.5;
       model.initialize(t,u);
-      dt = 0.1; 
+      dt = 0.1;
     }
 
     //! set time step for subsequent steps
@@ -272,7 +272,7 @@ namespace hdnum {
     {
       return 2;
     }
-    
+
   private:
     const M& model;
     time_type t, dt;
@@ -305,7 +305,7 @@ namespace hdnum {
 
     //! constructor stores reference to the model
     Heun3 (const M& model_)
-      : model(model_), u(model.size()), w(model.size()), k1(model.size()), 
+      : model(model_), u(model.size()), w(model.size()), k1(model.size()),
         k2(model.size()), k3(model.size())
     {
       c2 = time_type(1.0)/time_type(3.0);
@@ -316,7 +316,7 @@ namespace hdnum {
       b2 = 0.0;
       b3 = 0.75;
       model.initialize(t,u);
-      dt = 0.1; 
+      dt = 0.1;
     }
 
     //! set time step for subsequent steps
@@ -377,7 +377,7 @@ namespace hdnum {
     {
       return 3;
     }
-    
+
   private:
     const M& model;
     time_type t, dt;
@@ -409,7 +409,7 @@ namespace hdnum {
 
     //! constructor stores reference to the model
     Kutta3 (const M& model_)
-      : model(model_), u(model.size()), w(model.size()), k1(model.size()), 
+      : model(model_), u(model.size()), w(model.size()), k1(model.size()),
         k2(model.size()), k3(model.size())
     {
       c2 = 0.5;
@@ -421,7 +421,7 @@ namespace hdnum {
       b2 = time_type(4.0)/time_type(6.0);
       b3 = time_type(1.0)/time_type(6.0);
       model.initialize(t,u);
-      dt = 0.1; 
+      dt = 0.1;
     }
 
     //! set time step for subsequent steps
@@ -484,7 +484,7 @@ namespace hdnum {
     {
       return 3;
     }
-    
+
   private:
     const M& model;
     time_type t, dt;
@@ -516,7 +516,7 @@ namespace hdnum {
 
     //! constructor stores reference to the model
     RungeKutta4 (const M& model_)
-      : model(model_), u(model.size()), w(model.size()), k1(model.size()), 
+      : model(model_), u(model.size()), w(model.size()), k1(model.size()),
         k2(model.size()), k3(model.size()), k4(model.size())
     {
       c2 = 0.5;
@@ -530,7 +530,7 @@ namespace hdnum {
       b3 = time_type(2.0)/time_type(6.0);
       b4 = time_type(1.0)/time_type(6.0);
       model.initialize(t,u);
-      dt = 0.1; 
+      dt = 0.1;
     }
 
     //! set time step for subsequent steps
@@ -598,7 +598,7 @@ namespace hdnum {
     {
       return 4;
     }
-    
+
   private:
     const M& model;
     time_type t, dt;
@@ -626,7 +626,7 @@ namespace hdnum {
 
     //! constructor stores reference to the model
     RKF45 (const M& model_)
-      : model(model_), u(model.size()), w(model.size()), ww(model.size()), k1(model.size()), 
+      : model(model_), u(model.size()), w(model.size()), ww(model.size()), k1(model.size()),
         k2(model.size()), k3(model.size()), k4(model.size()), k5(model.size()), k6(model.size()),
         steps(0), rejected(0)
     {
@@ -676,7 +676,7 @@ namespace hdnum {
       bb6 = time_type(2.0)/time_type(55.0);
 
       model.initialize(t,u);
-      dt = 0.1; 
+      dt = 0.1;
     }
 
     //! set time step for subsequent steps
@@ -795,7 +795,7 @@ namespace hdnum {
     {
       return 5;
     }
-    
+
     //! print some information
     void get_info () const
     {
@@ -836,14 +836,14 @@ namespace hdnum {
 
     //! constructor stores reference to the model
     RE (const M& model_, S& solver_)
-      : model(model_), solver(solver_), u(model.size()), 
+      : model(model_), solver(solver_), u(model.size()),
         wlow(model.size()), whigh(model.size()), ww(model.size()),
         steps(0), rejected(0)
     {
       model.initialize(t,u); // initialize state
       dt = 0.1;              // set initial time step
       two_power_m = 1.0;
-      for (size_type i=0; i<solver.get_order(); i++) 
+      for (size_type i=0; i<solver.get_order(); i++)
         two_power_m *= 2.0;
       TOL = time_type(0.0001);
       rho = time_type(0.8);
@@ -938,7 +938,7 @@ namespace hdnum {
     {
       std::cout << "RE: steps=" << steps << " rejected=" << rejected << std::endl;
     }
-    
+
   private:
     const M& model;
     S& solver;
@@ -962,19 +962,19 @@ namespace hdnum {
   template<class M, class S>
   class IE
   {
-    //! class providing nonlinear problem to be solved 
+    //! class providing nonlinear problem to be solved
     // h_n f(t_n, y_n) - y_n + y_{n-1} = 0
     class NonlinearProblem
     {
     public:
       /** \brief export size_type */
       typedef typename M::size_type size_type;
-      
+
       /** \brief export number_type */
       typedef typename M::number_type number_type;
 
       //! constructor stores parameter lambda
-      NonlinearProblem (const M& model_, const Vector<number_type>& yold_, 
+      NonlinearProblem (const M& model_, const Vector<number_type>& yold_,
                         typename M::time_type tnew_, typename M::time_type dt_)
         : model(model_), yold(yold_), tnew(tnew_), dt(dt_)
       {}
@@ -1030,7 +1030,7 @@ namespace hdnum {
       : verbosity(0), model(model_), newton(newton_), u(model.size()), unew(model.size())
     {
       model.initialize(t,u);
-      dt = dtmax = 0.1; 
+      dt = dtmax = 0.1;
     }
 
     //! set time step for subsequent steps
@@ -1048,7 +1048,7 @@ namespace hdnum {
     //! do one step
     void step ()
     {
-      if (verbosity>=2) 
+      if (verbosity>=2)
         std::cout << "IE: step" << " t=" << t << " dt=" << dt << std::endl;
       NonlinearProblem nlp(model,u,t+dt,dt);
       bool reduced = false;
@@ -1064,7 +1064,7 @@ namespace hdnum {
               if (!reduced && dt<dtmax-1e-13)
                 {
                   dt = std::min(2.0*dt,dtmax);
-                  if (verbosity>0) 
+                  if (verbosity>0)
                     std::cout << "IE: increasing time step to " << dt << std::endl;
                 }
               return;
@@ -1121,7 +1121,7 @@ namespace hdnum {
     {
       return 1;
     }
-    
+
     //! print some information
     void get_info () const
     {
@@ -1271,25 +1271,25 @@ namespace hdnum {
         HDNUM_ERROR("Order not available for Runge Kutta solver.");
       }
     }
-    
 
-    //! class providing nonlinear problem to be solved 
+
+    //! class providing nonlinear problem to be solved
     // h_n f(t_n, y_n) - y_n + y_{n-1} = 0
     class NonlinearProblem
     {
     public:
       /** \brief export size_type */
       typedef typename M::size_type size_type;
-      
+
       /** \brief export number_type */
       typedef typename M::number_type number_type;
 
       //! constructor stores parameter lambda
-      NonlinearProblem (const M& model_, const Vector<number_type>& yold_, 
+      NonlinearProblem (const M& model_, const Vector<number_type>& yold_,
                         typename M::time_type told_, typename M::time_type dt_,
                         const ButcherTableau & butcher_, const int rk_step_,
                         const std::vector< Vector<number_type> > & k_)
-        : model(model_), yold(yold_), told(told_), 
+        : model(model_), yold(yold_), told(told_),
           dt(dt_), butcher(butcher_), rk_step(rk_step_), k_old(model.size(),0)
       {
         for(int i=0; i<rk_step; ++i)
@@ -1355,11 +1355,11 @@ namespace hdnum {
     //! constructor stores reference to the model and requires a
     //! butcher tableau
     DIRK (const M& model_, const S& newton_, const ButcherTableau & butcher_, const int order_)
-      : verbosity(0), butcher(butcher_), model(model_), newton(newton_), 
+      : verbosity(0), butcher(butcher_), model(model_), newton(newton_),
         u(model.size()), order(order_)
     {
       model.initialize(t,u);
-      dt = dtmax = 0.1; 
+      dt = dtmax = 0.1;
     }
 
     //! constructor stores reference to the model and sets the default
@@ -1369,7 +1369,7 @@ namespace hdnum {
         order(initOrder(method))
     {
       model.initialize(t,u);
-      dt = dtmax = 0.1; 
+      dt = dtmax = 0.1;
     }
 
 
@@ -1403,7 +1403,7 @@ namespace hdnum {
           // Perform R Runge-Kutta steps
           std::vector< Vector<number_type> > k;
           for(size_type i=0; i<R; ++i) {
-            if (verbosity>=2) 
+            if (verbosity>=2)
               std::cout << "DIRK: step nr "<< i << std::endl;
 
             Vector<number_type> current_z(model.size(),0.0);
@@ -1432,7 +1432,7 @@ namespace hdnum {
             {
               if(verbosity >= 2)
                 std::cout << "DIRK finished"<< std::endl;
-              
+
               // Update to new solution
               for(size_type i=0; i<R; ++i)
                 u.update(dt*butcher[R][1+i],k[i]);
@@ -1441,7 +1441,7 @@ namespace hdnum {
               if (!reduced && dt<dtmax-1e-13)
                 {
                   dt = std::min(2.0*dt,dtmax);
-                  if (verbosity>0) 
+                  if (verbosity>0)
                     std::cout << "DIRK: increasing time step to " << dt << std::endl;
                 }
               return;
@@ -1497,7 +1497,7 @@ namespace hdnum {
     {
       return order;
     }
-    
+
     //! print some information
     void get_info () const
     {
@@ -1505,7 +1505,7 @@ namespace hdnum {
 
   private:
     size_type verbosity;
-    const DenseMatrix<number_type> butcher; 
+    const DenseMatrix<number_type> butcher;
     const M& model;
     const S& newton;
     time_type t, dt, dtmax;
@@ -1523,10 +1523,10 @@ namespace hdnum {
     std::fstream f(fname.c_str(),std::ios::out);
     for (typename std::vector<T>::size_type n=0; n<t.size(); n++)
       {
-        f << std::scientific << std::showpoint 
+        f << std::scientific << std::showpoint
           << std::setprecision(16) << t[n];
         for (typename Vector<N>::size_type i=0; i<u[n].size(); i++)
-          f << " " << std::scientific << std::showpoint 
+          f << " " << std::scientific << std::showpoint
             << std::setprecision(u[n].precision()) << u[n][i];
         f << std::endl;
       }
@@ -1540,12 +1540,12 @@ namespace hdnum {
     std::fstream f(fname.c_str(),std::ios::out);
     for (typename std::vector<T>::size_type n=0; n<t.size(); n++)
       {
-        f << std::scientific << std::showpoint 
+        f << std::scientific << std::showpoint
           << std::setprecision(16) << t[n];
         for (typename Vector<N>::size_type i=0; i<u[n].size(); i++)
-          f << " " << std::scientific << std::showpoint 
+          f << " " << std::scientific << std::showpoint
             << std::setprecision(u[n].precision()) << u[n][i];
-        f << " " << std::scientific << std::showpoint 
+        f << " " << std::scientific << std::showpoint
           << std::setprecision(16) << dt[n];
         f << std::endl;
       }
