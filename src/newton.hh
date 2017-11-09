@@ -283,7 +283,7 @@ namespace hdnum {
 
     //! do one step
     template<class M>
-    void solve (const M& model, Vector<typename M::number_type> x) const
+    void solve (const M& model, Vector<typename M::number_type>& x) const
     {
       typedef typename M::number_type N;
       Vector<N> r(model.size());              // residual
