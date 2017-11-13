@@ -3,7 +3,7 @@
 #define HDNUM_TESTODE_HH
 
 #include<vector>
-#include "../../src/newton.hh"
+#include "newton.hh"
 
 /** @file
  *  @brief solvers for ordinary differential equations
@@ -36,7 +36,7 @@ namespace hdnum {
 
     //! constructor stores reference to the model - ich gehe davon aus, dass Dimension von Matrix und Vektor, sowie der Zahlentyp zusammenpasst
     RungeKutta_n (const M& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV)
-      : model(model_), u(model.size()), w(model.size())
+      : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
     {
       A = Mat;
       B = BV;
@@ -44,7 +44,9 @@ namespace hdnum {
       n = Mat.rowsize ();
       model.initialize(t,u);
       dt = 0.1;
-      K [n];              // ein Array der Größe n erzeugen
+      for (int i = 0; i<n; i++){
+        K[i].resize(model.size());
+      }
     }
 
     //! set time step for subsequent steps
@@ -57,20 +59,26 @@ namespace hdnum {
     void step ()
     {
 
-      // k1 berechnen
+      // compute new u
         w = u;
-        model.f(t, w, K[0]);
+
+        model.f(t, w, K[0]);        
 
         for (int i = 0; i < n; i++)
         {
-            number_type sum = K[0]*B[0];
-            for (int j = 1; j < i-1; j++)       //berechne ki
+            Vector<number_type> sum (K[0].size(), 0.0);
+            sum.update(B[0], K[0]);
+            for (int j = 0; j < i+1; j++)       // compute ki
             {
-                sum = sum + A[i-1][j-1]*K[j-1];
+                sum.update(A[i][j],K[j]);
             }
-            model.f(t + C[i-1]*dt, w + dt*sum, K[i-1]);
-            u.update(dt *B[i-1], K[i-1]);
+            Vector<number_type> wert = w.update(dt,sum);
+
+            model.f(t + C[i]*dt, wert, K[i]);
+
+            u.update(dt *B[i], K[i]);
         }
+        t = t+dt;
 
 
 
@@ -106,8 +114,9 @@ namespace hdnum {
   private:
     const M& model;
     time_type t, dt;
-    Vector<number_type> u,w;
-    Vector<number_type> K;                          // save ki
+    Vector<number_type> u;
+    Vector<number_type> w;
+    Vector<Vector<number_type>> K;                          // save ki
     int n;											// dimension of matrix A
     DenseMatrix<double> A;				            // A, B, C as in the butcher tableau
 	Vector<double> B;
