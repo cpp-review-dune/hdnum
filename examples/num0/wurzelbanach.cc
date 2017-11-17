@@ -2,7 +2,6 @@
 #include <vector>
 #include "hdnum.hh"
 
-using namespace hdnum;
 
 template<class N>
 class WurzelProblem
@@ -26,13 +25,13 @@ public:
   }
 
   //! model evaluation
-  void F (const Vector<N>& x, Vector<N>& result) const
+  void F (const hdnum::Vector<N>& x, hdnum::Vector<N>& result) const
   {
     result[0] = x[0]*x[0] - a;
   }
 
   //! jacobian evaluation needed for implicit solvers
-  void F_x (const Vector<N>& x, DenseMatrix<N>& result) const
+  void F_x (const hdnum::Vector<N>& x, hdnum::DenseMatrix<N>& result) const
   {
     result[0][0] = number_type(2.0)*x[0];
   }
@@ -52,7 +51,7 @@ int main ()
   typedef WurzelProblem<Number> Problem; // problem type
   Problem problem(2.0);                  // an instance of the problem
 
-  Banach banach;                         // an Object of class Banach
+  hdnum::Banach banach;                         // an Object of class Banach
   banach.set_maxit(20);                  // set parameters
   banach.set_verbosity(2);
   banach.set_reduction(1e-100);
@@ -60,7 +59,7 @@ int main ()
   banach.set_linesearchsteps(3);
   banach.set_sigma(0.1);
 
-  Vector<Number> u(problem.size());      // vector for storing solvations
+  hdnum::Vector<Number> u(problem.size());      // vector for storing solvations
   u[0] = 2.0;                            // value for starting
   banach.solve(problem,u);               // compute solvation
   std::cout << "Ergebnis: " << u[0] << std::endl;
