@@ -2,8 +2,7 @@
 #include <vector>
 #include "hdnum.hh"
 
-#include "beispielDGL.hh"
-#include "../../src/ode.hh"
+#include "BeispielDGL.hh"
 
 int main ()
 {
