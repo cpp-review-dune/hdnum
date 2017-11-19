@@ -13,6 +13,17 @@ int main ()
   Model model(-1.0);                   // instantiate model
 
 
+	/*hdnum::DenseMatrix<double> A(2,2,0.0);
+	A[1][0] = 0.5;
+ 	A[1][1] = 0.5;
+
+	hdnum::Vector<double> B(2,0.0);
+	B[0] = 0.5;
+	B[1] = 0.5;
+
+
+	hdnum::Vector<double> C(3, 0.0);
+	C[1] = 1; */
 	hdnum::DenseMatrix<double> A(4,4,0.0);
 	A[1][0] = 0.5;
 	A[2][1] = 0.5;
@@ -28,6 +39,7 @@ int main ()
 	C[1] = 0.5;
 	C[2] = 0.5;
 	C[3] = 1.0;
+
 	
   typedef hdnum::RungeKutta_n<Model> Solver; // Solver type
   Solver solver(model, A, B, C);                // instantiate solver
