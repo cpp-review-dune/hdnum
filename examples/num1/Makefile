@@ -8,6 +8,9 @@ LIOPTSGMP   = -lgmpxx -lgmp -lm
 modelproblem_MAIN = modelproblem
 modelproblem_SOURCES =
 
+system_example_MAIN = system_example
+system_example_SOURCES =
+
 ordertest_MAIN = ordertest
 ordertest_SOURCES =
 
@@ -31,12 +34,15 @@ ecke_SOURCES =
 
 all : nogmp gmp
 
-nogmp : $(modelproblem_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
+nogmp : $(modelproblem_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
 
 gmp :
 
 $(modelproblem_MAIN): $(modelproblem_MAIN).o $(modelproblem_SOURCES) Makefile
 	$(CC) -o $(modelproblem_MAIN) $(modelproblem_MAIN).o $(modelproblem_SOURCES) $(LIOPTS)
+
+$(system_example_MAIN): $(system_example_MAIN).o $(system_example_SOURCES) Makefile
+	$(CC) -o $(system_example_MAIN) $(system_example_MAIN).o $(system_example_SOURCES) $(LIOPTS)
 
 $(ordertest_MAIN): $(ordertest_MAIN).o $(ordertest_SOURCES) Makefile
 	$(CC) -o $(ordertest_MAIN) $(ordertest_MAIN).o $(ordertest_SOURCES) $(LIOPTS)
@@ -65,4 +71,4 @@ $(eingabe_MAIN): $(eingabe_MAIN).o $(eingabe_SOURCES) Makefile
 	$(CC) $(CCOPTS) -c $<
 
 clean:
-	rm -f *.o *.dat *.gp $(modelproblem_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
+	rm -f *.o *.dat *.gp $(modelproblem_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)

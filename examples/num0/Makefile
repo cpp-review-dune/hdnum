@@ -27,11 +27,14 @@ lr_SOURCES =
 wurzel_MAIN = wurzel
 wurzel_SOURCES =
 
+wurzelbanach_MAIN = wurzelbanach
+wurzelbanach_SOURCES =
+
 all : nogmp gmp
 
 nogmp : $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(fibonacci_MAIN) $(lr_opcount_MAIN)
 
-gmp : $(lr_MAIN) $(wurzel_MAIN)
+gmp : $(lr_MAIN) $(wurzel_MAIN) $(wurzelbanach_MAIN)
 
 $(zahlen_MAIN): $(zahlen_MAIN).o $(zahlen_SOURCES) Makefile
 	$(CC) -o $(zahlen_MAIN) $(zahlen_MAIN).o $(zahlen_SOURCES) $(LIOPTS)
@@ -102,8 +105,11 @@ $(lr_MAIN): $(lr_MAIN).o $(lr_SOURCES) Makefile
 $(wurzel_MAIN): $(wurzel_MAIN).o $(wurzel_SOURCES) Makefile
 	$(CC) -o $(wurzel_MAIN) $(wurzel_MAIN).o $(wurzel_SOURCES) $(LIOPTSGMP)
 
+$(wurzelbanach_MAIN): $(wurzelbanach_MAIN).o $(wurzelbanach_SOURCES) Makefile
+	$(CC) -o $(wurzelbanach_MAIN) $(wurzelbanach_MAIN).o $(wurzelbanch_SOURCES) $(LIOPTSGMP)
+
 .cc.o:
 	$(CC) $(CCOPTS) -c $<
 
 clean:
-	rm -f *.o *.dat $(fibonacci_MAIN) $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(lr_MAIN) $(wurzel_MAIN)
+	rm -f *.o *.dat $(fibonacci_MAIN) $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(lr_MAIN) $(wurzel_MAIN) $(wurzelbanach_MAIN)

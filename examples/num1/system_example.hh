@@ -1,3 +1,6 @@
+#ifndef EXAMPLE_NUM1_SYSTEM_EXAMPLE_HH
+#define EXAMPLE_NUM1_SYSTEM_EXAMPLE_HH
+
 /** @brief Example class for a differential equation model
 
     The model is
@@ -9,7 +12,7 @@
 */
 
 template<class T, class N=T>
-class ModelProblem
+class SystemExample
 {
 public:
   /** \brief export size_type */
@@ -22,7 +25,7 @@ public:
   typedef N number_type;
 
   //! constructor
-  ModelProblem ()
+  SystemExample ()
   {}
 
   //! return number of components for the model
@@ -36,25 +39,24 @@ public:
   {
     t0 = 0;
     x0[0] = 1.0;
-		x0[1] = 3.0;
+    x0[1] = 3.0;
   }
 
   //! model evaluation
   void f (const T& t, const hdnum::Vector<N>& x, hdnum::Vector<N>& result) const
   {
     result[0] = 5*x[0] - 2*x[1];
-		result[1] = -2*x[0]+5*x[1];
+    result[1] = -2*x[0]+5*x[1];
   }
 
   //! jacobian evaluation needed for implicit solvers
   void f_x (const T& t, const hdnum::Vector<N>& x, hdnum::DenseMatrix<N>& result) const
   {
-		result[0][0] = 5.0;
-		result[0][1] = -2.0;
-		result[1][0] = -2.0;
-		result[1][1] = 5.0;
+    result[0][0] = 5.0;
+    result[0][1] = -2.0;
+    result[1][0] = -2.0;
+    result[1][1] = 5.0;
   }
-
-private:
-  //
 };
+
+#endif
