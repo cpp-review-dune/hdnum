@@ -22,7 +22,7 @@ int main ()
 	B[1] = 0.5;
 
 
-	hdnum::Vector<double> C(3, 0.0);
+	hdnum::Vector<double> C(2, 0.0);
 	C[1] = 1; */
 	hdnum::DenseMatrix<double> A(4,4,0.0);
 	A[1][0] = 0.5;
