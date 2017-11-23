@@ -31,75 +31,117 @@ public:
       A = Mat;
       B = BV;
       C = CV;
-      n = Mat.rowsize ();
+      s = Mat.rowsize ();
       model.initialize(t,u);
       dt = 0.1;
-      for (int i = 0; i<n; i++){
-        K[i].resize(model.size());
+      n = model.size();
+      for (int i = 0; i<s; i++){
+        K[i].resize(n);
       }
     }
 
   //! return number of componentes for the model
   std::size_t size () const
   {
-    return model.size()*n;
+    return n*s;
   }
 
   //! model evaluation
   void F (const Vector<number_type>& x, Vector<number_type>& result) const
   {
-    Vector<Vector<number_type>> xx (n);    //hilfsvektor
+    Vector<Vector<number_type>> xx (s);    //hilfsvektor
     
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < s; i++)
     {
-        xx[i].resize(model.size());
-        for(int k = 0; k < model.size (); k++)
+        xx[i].resize(n);
+        for(int k = 0; k < n; k++)
         {
-            xx[i][k] = x[i*model.size ()+k];
+            xx[i][k] = x[i*n + k];
         }
     }
     
-    Vector<Vector<number_type>> hr (n);
-    for (int i = 0; i < n; i++)
+    Vector<Vector<number_type>> f (s);
+    for (int i = 0; i < s; i++)
     {
-        hr[i].resize(model.size());
+        f[i].resize(n);
+        model.f(t + C[i] * dt, u + xx[i], f[i]);
     }
 
-    for (int i = 0; i < n; i++)
+
+    Vector<Vector<number_type>> hr (s);
+    for (int i = 0; i < s; i++)
     {
-        Vector<number_type> sum (model.size(),0.0);
-        for (int j = 0; j<n ; j++)
+        hr[i].resize(n);
+    }
+
+    for (int i = 0; i < s; i++)
+    {
+        Vector<number_type> sum (n, 0.0);
+        
+        for (int j = 0; j < s; j++)
         {
-            sum.update(A[i][j],xx[j]);
+            sum.update(dt*A[i][j], f[j]);
         }
-        Vector<number_type> w = u;
-        w.update(dt, sum);
-        model.f(t+ C[i]*dt, w, hr[i]);
-        hr[i] = hr[i]-xx[i];
+        
+
+        hr[i]  = xx[i] - sum;        
+
     }
 
     //uebersetze hr nach result
-    for (int i = 0; i< n; i++)
+    for (int i = 0; i< s; i++)
     {
-        for (int j = 0; j < model.size(); j++)
+        for (int j = 0; j < n; j++)
         {
-            result[i*model.size()+j] = hr[i][j];
+            result[i*n + j] = hr[i][j];
         }
     }
   }
 
-  /*//! jacobian evaluation needed for newton in implicite solvers
+  //! jacobian evaluation needed for newton in implicite solvers
   void F_x (const Vector<number_type>& x, DenseMatrix<number_type>& result) const
   {
-    result[0][0] = number_type(2.0)*x[0];
-    for(int i = 0; i < model.size(); i++)   //rows
+    Vector<Vector<number_type>> xx (s);    //hilfsvektor
+    
+    for (int i = 0; i < s; i++)
     {
-        for (int j = 0; j < n; j++)         //colums
+        xx[i].resize(n);
+        for(int k = 0; k < n; k++)
         {
-        
+            xx[i][k] = x[i*n + k];
         }
     }
-  }*/
+    
+  DenseMatrix<number_type> I (n, n, 0.0);
+  for (int i = 0; i < n; i++)
+  {
+        I[i][i] = 1.0;
+  }
+ 
+    for (int i = 0; i < s; i++)
+    {
+        for (int j = 0; j < s; j++)
+        {
+            DenseMatrix<number_type> J (n, n, 0.0);
+            DenseMatrix<number_type> H (n, n, 0.0);     //Hilfsmatrix
+            model.f_x(t+C[j]*dt, u + xx[j],H);
+            J.update(-dt*A[i][j],H);
+            if(i==j)                                //add I on diagonal
+            {
+                J+=I;
+            }
+
+            for (int k = 0; k < n; k++)
+            {
+               for (int l = 0; l < n; l++)
+                {
+                    result[n * i + k][n * j + l] = J[k][l];
+                }
+            }
+
+        }          
+    }
+  }
 
 private:
     const T& model;
@@ -107,7 +149,7 @@ private:
     Vector<number_type> u;
     Vector<number_type> w;
     Vector<Vector<number_type>> K;                          // save ki
-    int n;											// dimension of matrix A
+    int n, s;											// dimension of matrix A
     DenseMatrix<double> A;				            // A, B, C as in the butcher tableau
 	Vector<double> B;
 	Vector<double> C;
