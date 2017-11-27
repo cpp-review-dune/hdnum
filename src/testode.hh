@@ -12,7 +12,7 @@
 namespace hdnum {
 
 template<class T>
-class compute_K
+class compute_Z
 {
 public:
     /** \brief export size_type */
@@ -25,19 +25,25 @@ public:
     typedef typename T::number_type number_type; 
 
   //! constructor stores parameter lambda
-  compute_K (const T& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV)
-      : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
+  compute_Z (const T& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, time_type t_, Vector<number_type> u_, time_type dt_)
+      : model(model_) , u(model.size())//, w(model.size()) //, K(Mat.rowsize ())
     {
+
+   //std::cout << "Test" << std::endl;
       A = Mat;
       B = BV;
       C = CV;
       s = Mat.rowsize ();
-      model.initialize(t,u);
-      dt = 0.1;
+    
+      dt = dt_;
       n = model.size();
-      for (int i = 0; i<s; i++){
-        K[i].resize(n);
-      }
+      t = t_;
+      u = u_; 
+      model.initialize(t,u);
+  //std::cout << t << std::endl;
+   //   for (int i = 0; i<s; i++){
+    //    K[i].resize(n);
+      //}
     }
 
   //! return number of componentes for the model
@@ -147,8 +153,8 @@ private:
     const T& model;
     time_type t, dt;
     Vector<number_type> u;
-    Vector<number_type> w;
-    Vector<Vector<number_type>> K;                          // save ki
+//    Vector<number_type> w;
+//    Vector<Vector<number_type>> K;                          // save ki
     int n, s;											// dimension of matrix A
     DenseMatrix<double> A;				            // A, B, C as in the butcher tableau
 	Vector<double> B;
@@ -184,10 +190,11 @@ private:
       A = Mat;
       B = BV;
       C = CV;
-      n = Mat.rowsize ();
+      s = Mat.rowsize ();
+      n = model.size();
       model.initialize(t,u);
       dt = 0.1;
-      for (int i = 0; i<n; i++){
+      for (int i = 0; i<s; i++){
         K[i].resize(model.size());
       }
       //K [n];              // ein Array der Größe n erzeugen
@@ -202,9 +209,9 @@ private:
     bool check_explicit ()
     {
         bool ergebnis = true;
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < s; i++)
         {
-            for (int j = i; j < n; j++)
+            for (int j = i; j < s; j++)
             {
                 if (A[i][j] != 0.0)
                 {
@@ -224,13 +231,12 @@ private:
 
             model.f(t, w, K[0]);        
 
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < s; i++)
             {
                 Vector<number_type> sum (K[0].size(), 0.0);
                 sum.update(B[0], K[0]);
                 for (int j = 0; j < i+1; j++)       //berechne ki
                 {
-                    //sum = sum + A[i-1][j-1]*K[j-1];
                     sum.update(A[i][j],K[j]);
                 }
                 Vector<number_type> wert = w.update(dt,sum);
@@ -242,28 +248,44 @@ private:
         }
         else
         {
-              compute_K<N> problem(model, A, B, C); // Problemtyp
-
-
-              Banach banach;                         // Ein Banachobjekt
+              compute_Z<N> problem(model, A, B, C, t, u, dt); // Problemtyp
+              bool last_row_eq_b = true;
+              for (int i = 0; i<s; i++)
+              {
+                    if (A[s-1][i] != B[i])
+                    {
+                        last_row_eq_b = false;
+                    }
+              }
+              Newton banach;                         // Ein Banachobjekt
               banach.set_maxit(20);                  // Setze diverse Parameter
               banach.set_verbosity(0);
               banach.set_reduction(1e-100);
               banach.set_abslimit(1e-100);
-              banach.set_linesearchsteps(3);
-              banach.set_sigma(0.1);
-              Vector<number_type> kij (model.size()*n,0.0);
-              banach.solve(problem,kij);               // Berechne Lösung
-              Vector<Vector<number_type>> K (n);
-            for(int i = 0; i< n; i++)
+              banach.set_linesearchsteps(6);
+              //banach.set_sigma(0.1);
+    
+              Vector<number_type> zij (s*n,0.0);
+              banach.solve(problem,zij);               // Berechne Lösung
+              Vector<Vector<number_type>> Z (s);
+     std::cout << zij << std::endl;
+            for(int i = 0; i< s; i++)
             {
-                K[i].resize(model.size());
-                for (int j = 0; j< model.size(); j++)
+                Z[i].resize(n);
+                for (int j = 0; j< n; j++)
                 {
-                    K[i][j] = kij[i*model.size()+j];
+         
+                    Z[i][j] = zij[i*n+j];
                 }
-
-                u.update(dt*B[i], K[i]);
+                if(last_row_eq_b)
+                {
+                    u.update(dt*B[i], Z[i]);
+                }
+                else
+                {
+                    //tja
+    
+                }
             }
               
         }
@@ -307,6 +329,7 @@ private:
     Vector<number_type> w;
     Vector<Vector<number_type>> K;                          // save ki
     int n;											// dimension of matrix A
+    int s;
     DenseMatrix<double> A;				            // A, B, C as in the butcher tableau
 	Vector<double> B;
 	Vector<double> C;
