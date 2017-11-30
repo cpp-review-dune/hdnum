@@ -47,7 +47,7 @@ public:
   //! jacobian evaluation needed for implicit solvers
   void f_x (const T& t, const hdnum::Vector<N>& x, hdnum::DenseMatrix<N>& result) const
   {
-    result[0] = lambda;
+    result[0][0] = lambda;
   }
 
 private:

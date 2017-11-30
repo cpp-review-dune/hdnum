@@ -26,24 +26,16 @@ public:
 
   //! constructor stores parameter lambda
   compute_Z (const T& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, time_type t_, Vector<number_type> u_, time_type dt_)
-      : model(model_) , u(model.size())//, w(model.size()) //, K(Mat.rowsize ())
+      : model(model_) , u(model.size())
     {
-
-   //std::cout << "Test" << std::endl;
       A = Mat;
       B = BV;
       C = CV;
       s = Mat.rowsize ();
-    
       dt = dt_;
       n = model.size();
       t = t_;
       u = u_; 
-      model.initialize(t,u);
-  //std::cout << t << std::endl;
-   //   for (int i = 0; i<s; i++){
-    //    K[i].resize(n);
-      //}
     }
 
   //! return number of componentes for the model
@@ -55,11 +47,11 @@ public:
   //! model evaluation
   void F (const Vector<number_type>& x, Vector<number_type>& result) const
   {
-    Vector<Vector<number_type>> xx (s);    //hilfsvektor
+    Vector<Vector<number_type>> xx (s);    //Hilfsvektor
     
     for (int i = 0; i < s; i++)
     {
-        xx[i].resize(n);
+        xx[i].resize(n,number_type(0));
         for(int k = 0; k < n; k++)
         {
             xx[i][k] = x[i*n + k];
@@ -69,7 +61,7 @@ public:
     Vector<Vector<number_type>> f (s);
     for (int i = 0; i < s; i++)
     {
-        f[i].resize(n);
+        f[i].resize(n, number_type(0));
         model.f(t + C[i] * dt, u + xx[i], f[i]);
     }
 
@@ -77,12 +69,12 @@ public:
     Vector<Vector<number_type>> hr (s);
     for (int i = 0; i < s; i++)
     {
-        hr[i].resize(n);
+        hr[i].resize(n, number_type(0));
     }
 
     for (int i = 0; i < s; i++)
     {
-        Vector<number_type> sum (n, 0.0);
+        Vector<number_type> sum (n, number_type(0));
         
         for (int j = 0; j < s; j++)
         {
@@ -118,18 +110,18 @@ public:
         }
     }
     
-  DenseMatrix<number_type> I (n, n, 0.0);
-  for (int i = 0; i < n; i++)
-  {
+    DenseMatrix<number_type> I (n, n, 0.0);
+    for (int i = 0; i < n; i++)
+    {
         I[i][i] = 1.0;
-  }
+    }
  
     for (int i = 0; i < s; i++)
     {
         for (int j = 0; j < s; j++)
         {
-            DenseMatrix<number_type> J (n, n, 0.0);
-            DenseMatrix<number_type> H (n, n, 0.0);     //Hilfsmatrix
+            DenseMatrix<number_type> J (n, n, number_type(0));
+            DenseMatrix<number_type> H (n, n, number_type(0));     //Hilfsmatrix
             model.f_x(t+C[j]*dt, u + xx[j],H);
             J.update(-dt*A[i][j],H);
             if(i==j)                                //add I on diagonal
@@ -153,9 +145,7 @@ private:
     const T& model;
     time_type t, dt;
     Vector<number_type> u;
-//    Vector<number_type> w;
-//    Vector<Vector<number_type>> K;                          // save ki
-    int n, s;											// dimension of matrix A
+    int n, s;											// dimension of matrix A and model.size
     DenseMatrix<double> A;				            // A, B, C as in the butcher tableau
 	Vector<double> B;
 	Vector<double> C;
@@ -246,33 +236,33 @@ private:
                 u.update(dt *B[i], K[i]);
             }
         }
-        else
+        else 
         {
               compute_Z<N> problem(model, A, B, C, t, u, dt); // Problemtyp
               bool last_row_eq_b = true;
               for (int i = 0; i<s; i++)
               {
-                    if (A[s-1][i] != B[i])
+                    if (A[s-1][i] != B[i])     
                     {
                         last_row_eq_b = false;
                     }
               }
-              Newton banach;                         // Ein Banachobjekt
+              Banach banach;                         // Ein Banachobjekt
               banach.set_maxit(20);                  // Setze diverse Parameter
               banach.set_verbosity(0);
-              banach.set_reduction(1e-100);
-              banach.set_abslimit(1e-100);
-              banach.set_linesearchsteps(6);
-              //banach.set_sigma(0.1);
+              banach.set_reduction(1e-10);
+              banach.set_abslimit(1e-10);
+              banach.set_linesearchsteps(10);
+              banach.set_sigma(0.01);
     
               Vector<number_type> zij (s*n,0.0);
               banach.solve(problem,zij);               // Berechne Lösung
               Vector<Vector<number_type>> Z (s);
-     std::cout << zij << std::endl;
+     //std::cout << zij << std::endl;
             for(int i = 0; i< s; i++)
             {
                 Z[i].resize(n);
-                for (int j = 0; j< n; j++)
+                for (int j = 0; j < n; j++)
                 {
          
                     Z[i][j] = zij[i*n+j];
@@ -283,9 +273,33 @@ private:
                 }
                 else
                 {
-                    //tja
-    
-                }
+                    // compute invers of A (Ax_i=e_i  --> [x_1...x_s]=A⁻1)
+                    DenseMatrix<number_type> Ainv (s,s,number_type(0));
+                   	for (int i=0; i < s; i++)                       
+                	{
+                   	  Vector<number_type> e (s, number_type(0));
+                      e[i]=number_type(1);
+                      Vector<number_type> x (s, number_type(0));
+                      Vector<number_type> y (s, number_type(0));
+                      Vector<number_type> z (s, number_type(0));
+                   	  Vector<std::size_t> p(s);
+                  	  Vector<std::size_t> q(s);
+                	  row_equilibrate(A,y);                         // equilibrate rows
+                	  lr_fullpivot(A,p,q);                          // LR decomposition of A
+                 	  apply_equilibrate(y,e);                       // equilibration of right hand side
+                 	  permute_forward(p,e);                         // permutation of right hand side
+                	  solveL(A,e,e);                                // forward substitution
+                	  solveR(A,z,e);                                // backward substitution
+                	  permute_backward(q,z);                        // backward permutation
+                	  for (int j = 0; j < s; j++)
+                  	  {
+	                	Ainv[j][i] = z[j];
+                   	  }
+ 	                }
+                    // compute b[i]'
+                    Vector<number_type> B_ (s, number_type(0));
+
+                }   
             }
               
         }
