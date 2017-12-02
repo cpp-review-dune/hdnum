@@ -259,6 +259,37 @@ private:
               banach.solve(problem,zij);               // Berechne Lösung
               Vector<Vector<number_type>> Z (s);
      //std::cout << zij << std::endl;
+
+              if ( not last_row_eq_b) // compute invers of A (Ax_i=e_i  --> [x_1...x_s]=A⁻1)
+                {
+                    
+                     DenseMatrix<double> Ainv (s,s,double(0));
+                   	 for (int i=0; i < s; i++)                       
+                     {
+                        Vector<double> e (s, double(0));
+                        e[i]=double(1);
+                        Vector<double> w (s, double(0));
+                        Vector<double> x (s, double(0));
+                        Vector<double> z (s, double(0));
+                        Vector<std::size_t> p(s);
+                        Vector<std::size_t> q(s);
+                        DenseMatrix<double> Temp (s,s,0.0);
+                        Temp = A;
+                        row_equilibrate(A,w);                         // equilibrate rows
+                        lr_fullpivot(A,p,q);                          // LR decomposition of A
+                        apply_equilibrate(w,e);                       // equilibration of right hand side
+                        permute_forward(p,e);                         // permutation of right hand side
+                        solveL(A,e,e);                                // forward substitution
+                        solveR(A,z,e);                                // backward substitution
+                        permute_backward(q,z);                        // backward permutation
+                        for (int j = 0; j < s; j++)
+                        {
+	                         Ainv[i][j] = z[j];
+                        }
+                        A = Temp;
+                     }
+                }
+    
             for(int i = 0; i< s; i++)
             {
                 Z[i].resize(n);
@@ -273,31 +304,8 @@ private:
                 }
                 else
                 {
-                    // compute invers of A (Ax_i=e_i  --> [x_1...x_s]=A⁻1)
-                    DenseMatrix<number_type> Ainv (s,s,number_type(0));
-                   	for (int i=0; i < s; i++)                       
-                	{
-                   	  Vector<number_type> e (s, number_type(0));
-                      e[i]=number_type(1);
-                      Vector<number_type> x (s, number_type(0));
-                      Vector<number_type> y (s, number_type(0));
-                      Vector<number_type> z (s, number_type(0));
-                   	  Vector<std::size_t> p(s);
-                  	  Vector<std::size_t> q(s);
-                	  row_equilibrate(A,y);                         // equilibrate rows
-                	  lr_fullpivot(A,p,q);                          // LR decomposition of A
-                 	  apply_equilibrate(y,e);                       // equilibration of right hand side
-                 	  permute_forward(p,e);                         // permutation of right hand side
-                	  solveL(A,e,e);                                // forward substitution
-                	  solveR(A,z,e);                                // backward substitution
-                	  permute_backward(q,z);                        // backward permutation
-                	  for (int j = 0; j < s; j++)
-                  	  {
-	                	Ainv[j][i] = z[j];
-                   	  }
- 	                }
-                    // compute b[i]'
-                    Vector<number_type> B_ (s, number_type(0));
+                    // compute k[i]'
+                    Vector<number_type> k_i (s, number_type(0));
 
                 }   
             }
