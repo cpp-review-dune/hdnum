@@ -87,7 +87,7 @@ public:
     }
 
     //uebersetze hr nach result
-    for (int i = 0; i< s; i++)
+    for (int i = 0; i < s; i++)
     {
         for (int j = 0; j < n; j++)
         {
@@ -184,10 +184,10 @@ private:
       n = model.size();
       model.initialize(t,u);
       dt = 0.1;
-      for (int i = 0; i<s; i++){
-        K[i].resize(model.size());
+      for (int i = 0; i < s; i++)
+      {
+        K[i].resize(n, number_type(0));
       }
-      //K [n];              // ein Array der Größe n erzeugen
     }
 
     //! set time step for subsequent steps
@@ -236,7 +236,7 @@ private:
                 u.update(dt *B[i], K[i]);
             }
         }
-        else 
+        if (not check_explicit()) 
         {
               compute_Z<N> problem(model, A, B, C, t, u, dt); // Problemtyp
               bool last_row_eq_b = true;
@@ -248,7 +248,7 @@ private:
                     }
               }
               Banach banach;                         // Ein Banachobjekt
-              banach.set_maxit(20);                  // Setze diverse Parameter
+              banach.set_maxit(20);                  // set parameters
               banach.set_verbosity(0);
               banach.set_reduction(1e-10);
               banach.set_abslimit(1e-10);
@@ -256,14 +256,13 @@ private:
               banach.set_sigma(0.01);
     
               Vector<number_type> zij (s*n,0.0);
-              banach.solve(problem,zij);               // Berechne Lösung
-              Vector<Vector<number_type>> Z (s);
-     //std::cout << zij << std::endl;
+              banach.solve(problem,zij);               // compute solution
+              Vector<Vector<number_type>> Z (s, 0.0);
+              DenseMatrix<double> Ainv (s,s,double(0));
 
               if ( not last_row_eq_b) // compute invers of A (Ax_i=e_i  --> [x_1...x_s]=A⁻1)
                 {
                     
-                     DenseMatrix<double> Ainv (s,s,double(0));
                    	 for (int i=0; i < s; i++)                       
                      {
                         Vector<double> e (s, double(0));
@@ -290,22 +289,28 @@ private:
                      }
                 }
     
-            for(int i = 0; i< s; i++)
+            for(int i = 0; i < s; i++)
             {
-                Z[i].resize(n);
+                Z[i].resize(n, number_type(0.0));
                 for (int j = 0; j < n; j++)
                 {
          
                     Z[i][j] = zij[i*n+j];
                 }
-                if(last_row_eq_b)
+                if (last_row_eq_b)
                 {
                     u.update(dt*B[i], Z[i]);
                 }
-                else
+                if (not last_row_eq_b)
                 {
-                    // compute k[i]'
-                    Vector<number_type> k_i (s, number_type(0));
+                    // compute k[i]
+                    Vector<Vector<number_type>> k(s, number_type(0));
+                    K[i].resize(n, number_type(0.0));
+                    Ainv.mv(k[i],Z[i]); //k = Ainv*z_i
+                    k[i]*= (1.0/dt);
+
+                    // compute u
+                     u.update(dt*B[i], k[i]);
 
                 }   
             }
