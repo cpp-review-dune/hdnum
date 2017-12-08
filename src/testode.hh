@@ -248,7 +248,7 @@ private:
                     }
               }
               Banach banach;                         // Ein Banachobjekt
-              banach.set_maxit(2000);                  // set parameters
+              banach.set_maxit(2000);                  // set parameters - maxit should be 2000 at least!!!
               banach.set_verbosity(1);
               banach.set_reduction(1e-10);
               banach.set_abslimit(1e-10);
@@ -300,31 +300,25 @@ std::cout << zij << std::endl;
          
                     Z[i][j] = zij[i*n+j];
                 }
-std::cout << Z << " Z" << std::endl;
-                if (last_row_eq_b)
+            }
+            if (last_row_eq_b)
+            {
+                u += Z[s-1];
+            }
+            else
+            {
+                // compute ki
+                Vector<Vector<number_type>> k(s);
+                for (int i = 0; i < s; i++)
                 {
-//std::cout << dt*B[i] << " dt*B[i]" << std::endl;
-std::cout << i << s << std::endl;
-                    if (i == s-1)
-                    {
-std::cout << u << "u1" << std::endl;
-                        u += Z[i];
-std::cout << u << "u2" << std::endl;
-                    }
-std::cout << u << " u" << std::endl;
-                }
-                if (not last_row_eq_b)
-                {
-                    // compute k[i]
-                    Vector<Vector<number_type>> k(s, number_type(0));
                     K[i].resize(n, number_type(0.0));
                     Ainv.mv(k[i],Z[i]); //k = Ainv*z_i
                     k[i]*= (1.0/dt);
 
-                    // compute u
-                     u.update(dt*B[i], k[i]);
 
-                }   
+                    // compute u
+                    u.update(dt*B[i], k[i]);
+                }
             }
               
         }
