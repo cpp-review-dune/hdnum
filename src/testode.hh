@@ -248,15 +248,18 @@ private:
                     }
               }
               Banach banach;                         // Ein Banachobjekt
-              banach.set_maxit(20);                  // set parameters
-              banach.set_verbosity(0);
+              banach.set_maxit(2000);                  // set parameters
+              banach.set_verbosity(1);
               banach.set_reduction(1e-10);
               banach.set_abslimit(1e-10);
               banach.set_linesearchsteps(10);
               banach.set_sigma(0.01);
     
               Vector<number_type> zij (s*n,0.0);
+
               banach.solve(problem,zij);               // compute solution
+std::cout << zij << std::endl;
+
               Vector<Vector<number_type>> Z (s, 0.0);
               DenseMatrix<double> Ainv (s,s,double(0));
 
@@ -297,9 +300,18 @@ private:
          
                     Z[i][j] = zij[i*n+j];
                 }
+std::cout << Z << " Z" << std::endl;
                 if (last_row_eq_b)
                 {
-                    u.update(dt*B[i], Z[i]);
+//std::cout << dt*B[i] << " dt*B[i]" << std::endl;
+std::cout << i << s << std::endl;
+                    if (i == s-1)
+                    {
+std::cout << u << "u1" << std::endl;
+                        u += Z[i];
+std::cout << u << "u2" << std::endl;
+                    }
+std::cout << u << " u" << std::endl;
                 }
                 if (not last_row_eq_b)
                 {
