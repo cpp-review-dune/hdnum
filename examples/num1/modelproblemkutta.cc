@@ -3,7 +3,7 @@
 #include "hdnum.hh"
 
 #include "modelproblem.hh"
-#include "../../src/testode.hh"
+
 
 int main ()
 {

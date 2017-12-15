@@ -160,7 +160,7 @@ private:
 
       \tparam M the model type
   */
-  template<class N>
+  template<class N, class S = Newton>
   class RungeKutta_n
   {
   public:
@@ -188,6 +188,25 @@ private:
       {
         K[i].resize(n, number_type(0));
       }
+      sigma = 0.01;
+    }
+
+    //! constructor stores reference to the model - ich gehe davon aus, dass Dimension von Matrix und Vektor, sowie der Zahlentyp zusammenpasst, hier kann man auserdem noch Sigma setzen
+    RungeKutta_n (const N& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, double sigma_)
+      : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
+    {
+      A = Mat;
+      B = BV;
+      C = CV;
+      s = Mat.rowsize ();
+      n = model.size();
+      model.initialize(t,u);
+      dt = 0.1;
+      for (int i = 0; i < s; i++)
+      {
+        K[i].resize(n, number_type(0));
+      }
+      sigma = sigma_;
     }
 
     //! set time step for subsequent steps
@@ -247,17 +266,17 @@ private:
                         last_row_eq_b = false;
                     }
               }
-              Banach banach;                         // Ein Banachobjekt
-              banach.set_maxit(2000);                  // set parameters - maxit should be 2000 at least!!!
-              banach.set_verbosity(1);
-              banach.set_reduction(1e-10);
-              banach.set_abslimit(1e-10);
-              banach.set_linesearchsteps(10);
-              banach.set_sigma(0.01);
+              S Solver;                         // Ein Solverobjekt
+              Solver.set_maxit(2000);                  // set parameters - maxit should be 2000 at least!!!
+              Solver.set_verbosity(1);
+              Solver.set_reduction(1e-10);
+              Solver.set_abslimit(1e-10);
+              Solver.set_linesearchsteps(10);
+              Solver.set_sigma(0.01);
     
               Vector<number_type> zij (s*n,0.0);
 
-              banach.solve(problem,zij);               // compute solution
+              Solver.solve(problem,zij);               // compute solution
 std::cout << zij << std::endl;
 
               Vector<Vector<number_type>> Z (s, 0.0);
@@ -366,6 +385,7 @@ std::cout << zij << std::endl;
     DenseMatrix<double> A;				            // A, B, C as in the butcher tableau
 	Vector<double> B;
 	Vector<double> C;
+    double sigma;
   };
 
 } // namespace hdnum
