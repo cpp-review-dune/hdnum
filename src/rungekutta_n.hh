@@ -389,7 +389,7 @@ std::cout << zij << std::endl;
   };
 
 
-template<class N, class S>
+template<class N, class S = Newton>
 void ordertest(const N& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, double t_0, double T, double h_0, int L)
 {
     // aim Earray[i] = ||u(T)-u_i(T)||
