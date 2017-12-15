@@ -44,6 +44,12 @@ public:
     result[0] = lambda*x[0];
   }
 
+  //! exact solution if known
+  void u (const T& t, hdnum::Vector<N>& result) const
+  {
+    result[0] = exp(t);
+  }
+
   //! jacobian evaluation needed for implicit solvers
   void f_x (const T& t, const hdnum::Vector<N>& x, hdnum::DenseMatrix<N>& result) const
   {

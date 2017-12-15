@@ -388,6 +388,49 @@ std::cout << zij << std::endl;
     double sigma;
   };
 
+
+template<class N, class S>
+void ordertest(const N& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, double t_0, double T, double h_0, int L)
+{
+    // aim Earray[i] = ||u(T)-u_i(T)||
+    float Earray[L];
+
+    float alpha[L-1];
+
+    for (int i = 0; i++; i< L)
+    {
+        RungeKutta_n<N,S> solver(const N& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV);
+        solver.set_dt(h_0/pow(2,i));                  // set initial time step
+
+          hdnum::Vector<double> times;           // store time values here
+          hdnum::Vector<hdnum::Vector<double> > states; // store states here
+          times.push_back(solver.get_time());  // initial time
+          states.push_back(solver.get_state()); // initial state
+          while (solver.get_time()<=T) // the time loop
+            {
+              solver.step();                  // advance model by one time step
+              times.push_back(solver.get_time()); // save time
+              states.push_back(solver.get_state()); // and state
+            }
+        U(T, Earray[i]);
+        Earray[i] = norm(Earray[i]-states[(T/h_0)-1]);
+
+        if(i = 0)
+        {
+            std::cout << Earray[0] << std::endl;
+        }
+
+        if(i > 0)
+        {
+            alpha[i] = log(Earray[i-1]/Earray[i])/log(2);
+            std::cout << Earray[i] << " " << alpha[i-1] << std::endl;
+        }
+
+    }
+
+}
+
+
 } // namespace hdnum
 
 #endif
