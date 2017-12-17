@@ -189,6 +189,7 @@ private:
         K[i].resize(n, number_type(0));
       }
       sigma = 0.01;
+      verbosity = 0;
     }
 
     //! constructor stores reference to the model - ich gehe davon aus, dass Dimension von Matrix und Vektor, sowie der Zahlentyp zusammenpasst, hier kann man auserdem noch Sigma setzen
@@ -207,6 +208,7 @@ private:
         K[i].resize(n, number_type(0));
       }
       sigma = sigma_;
+      verbosity = 0;
     }
 
     //! set time step for subsequent steps
@@ -268,7 +270,7 @@ private:
               }
               S Solver;                         // Ein Solverobjekt
               Solver.set_maxit(2000);                  // set parameters - maxit should be 2000 at least!!!
-              Solver.set_verbosity(1);
+              Solver.set_verbosity(verbosity);
               Solver.set_reduction(1e-10);
               Solver.set_abslimit(1e-10);
               Solver.set_linesearchsteps(10);
@@ -277,7 +279,7 @@ private:
               Vector<number_type> zij (s*n,0.0);
 
               Solver.solve(problem,zij);               // compute solution
-std::cout << zij << std::endl;
+//std::cout << zij << std::endl;
 
               Vector<Vector<number_type>> Z (s, 0.0);
               DenseMatrix<double> Ainv (s,s,double(0));
@@ -372,6 +374,11 @@ std::cout << zij << std::endl;
       return dt;
     }
 
+    void set_verbosity(int verbosity_)
+    {
+        verbosity = verbosity_;
+    }
+
 
 
   private:
@@ -386,36 +393,57 @@ std::cout << zij << std::endl;
 	Vector<double> B;
 	Vector<double> C;
     double sigma;
+    int verbosity;
   };
 
 
 template<class N, class S = Newton>
-void ordertest(const N& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, double t_0, double T, double h_0, int L)
+void ordertest(const N& model, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, double t_0, double T, double h_0, int L)
 {
+
+    /** \brief export size_type */
+    typedef typename N::size_type size_type;
+
+    /** \brief export time_type */
+    typedef typename N::time_type time_type;
+
+    /** \brief export number_type */
+    typedef typename N::number_type number_type;
+
+    // aim U[i] = u_i(T)
+    Vector<number_type> U[L];
     // aim Earray[i] = ||u(T)-u_i(T)||
     float Earray[L];
 
     float alpha[L-1];
 
-    for (int i = 0; i++; i< L)
+    Vector<number_type> exact_solution;
+
+    model.u(T, exact_solution);
+
+    for (int i = 0; i<L; i++)
     {
-        RungeKutta_n<N,S> solver(const N& model_, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV);
+        RungeKutta_n<N,S> solver(model, Mat, BV, CV);
         solver.set_dt(h_0/pow(2,i));                  // set initial time step
 
-          hdnum::Vector<double> times;           // store time values here
-          hdnum::Vector<hdnum::Vector<double> > states; // store states here
+
+          Vector<time_type> times;           // store time values here
+          Vector<Vector<number_type>> states; // store states here
           times.push_back(solver.get_time());  // initial time
           states.push_back(solver.get_state()); // initial state
+
           while (solver.get_time()<=T) // the time loop
             {
               solver.step();                  // advance model by one time step
               times.push_back(solver.get_time()); // save time
               states.push_back(solver.get_state()); // and state
             }
-        U(T, Earray[i]);
-        Earray[i] = norm(Earray[i]-states[(T/h_0)-1]);
 
-        if(i = 0)
+        
+        Earray[i] = norm(exact_solution-states[(T/h_0)-1]);
+
+
+        if(i == 0)
         {
             std::cout << Earray[0] << std::endl;
         }

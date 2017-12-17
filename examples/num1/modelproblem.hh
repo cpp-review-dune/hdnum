@@ -47,7 +47,8 @@ public:
   //! exact solution if known
   void u (const T& t, hdnum::Vector<N>& result) const
   {
-    result[0] = exp(t);
+    result.resize(size());
+    result[0] = exp(lambda*t);
   }
 
   //! jacobian evaluation needed for implicit solvers

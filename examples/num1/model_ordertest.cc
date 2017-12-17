@@ -12,7 +12,7 @@ int main ()
   typedef ModelProblem<Number> Model;  // Model type
   Model model(-1.0);                   // instantiate model
 
-/*
+
 	//implicit euler
 	hdnum::DenseMatrix<double> A(1,1,0.0);
  	A[0][0] = 1.0;
@@ -23,7 +23,7 @@ int main ()
 
 	hdnum::Vector<double> C(1, 0.0);
 	C[0] = 1.0; 
-*/
+
 
 /*
 	//implicit Trapez Regel
@@ -39,7 +39,7 @@ int main ()
 	hdnum::Vector<double> C(2, 0.0);
 	C[1] = 1; 
 */
-
+/*
 	//implicit Alexander Dirk Verfahren
   double alpha = 1+sqrt(2)/2;
 	hdnum::DenseMatrix<double> A(2,2,0.0);
@@ -55,7 +55,7 @@ int main ()
 	hdnum::Vector<double> C(2, 0.0);
   C[0] = alpha;
 	C[1] = 1; 
-
+*/
 
 	//explicit
 	
