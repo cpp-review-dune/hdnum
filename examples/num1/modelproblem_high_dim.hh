@@ -1,3 +1,5 @@
+#ifndef HDNUM_MODELPROBLEM_HIGH_DIM_HH
+#define HDNUM_MODELPROBLEM_HIGH_DIM_HH
 /** @brief Example class for a differential equation model
 
     The model is
@@ -9,7 +11,7 @@
 */
 
 template<class T, class N=T>
-class ModelProblem
+class ModelProblem_high_dim
 {
 public:
   /** \brief export size_type */
@@ -22,7 +24,7 @@ public:
   typedef N number_type;
 
   //! constructor
-  ModelProblem ()
+  ModelProblem_high_dim ()
   {}
 
   //! return number of components for the model
@@ -58,3 +60,4 @@ public:
 private:
   //
 };
+#endif
