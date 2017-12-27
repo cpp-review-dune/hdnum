@@ -1,12 +1,12 @@
 // -*- tab-width: 4; indent-tabs-mode: nil -*-
-#ifndef HDNUM_TESTODE_HH
-#define HDNUM_TESTODE_HH
+#ifndef HDNUM_RUNGEKUTTA_N_HH
+#define HDNUM_RUNGEKUTTA_N_HH
 
 #include<vector>
 #include "newton.hh"
 
 /** @file
- *  @brief solvers for ordinary differential equations
+ *  @general Runge-Kutta solver
  */
 
 namespace hdnum {
@@ -430,26 +430,50 @@ void ordertest(const N& model, DenseMatrix<double> Mat, Vector<double> BV, Vecto
           times.push_back(solver.get_time());  // initial time
           states.push_back(solver.get_state()); // initial state
 
-          while (solver.get_time()<=T) // the time loop
+          while (solver.get_time()<T-2*solver.get_dt()) // the time loop
             {
               solver.step();                  // advance model by one time step
               times.push_back(solver.get_time()); // save time
               states.push_back(solver.get_state()); // and state
             }
 
+        // drei fälle, damit man den richtigen Zeitpunkt trifft
+        time_type t = times[times.size()-1];
+        number_type eps = 0.000001;
+        if (t < T-solver.get_dt())
+        {
+            solver.set_dt((T-t)/2.0);
+            for(int i = 0; i < 2;i++)
+            {
+                solver.step();                  // advance model by one time step
+                times.push_back(solver.get_time()); // save time
+                states.push_back(solver.get_state()); // and state
+            }
+        }
+
+        else if ( t < T and abs(t-T) > eps)
+        {
+            solver.set_dt(T-t);
+            solver.step();                  // advance model by one time step
+            times.push_back(solver.get_time()); // save time
+            states.push_back(solver.get_state()); // and state
+
+        }
         
         Earray[i] = norm(exact_solution-states[states.size()-1]);
-        std::cout << times[states.size()-1] << std::endl;
+std::cout << times[states.size()-1] << std::endl;
 
         if(i == 0)
         {
-            std::cout << Earray[0] << std::endl;
+            std::cout << std::scientific << std::showpoint
+                << std::setprecision(8) << Earray[0] << std::endl;
         }
 
         if(i > 0)
         {
-            alpha[i] = log(Earray[i-1]/Earray[i])/log(2);
-            std::cout << Earray[i] << " " << alpha[i-1] << std::endl;
+            alpha[i-1] = log(Earray[i-1]/Earray[i])/log(2);
+            std::cout << std::scientific << std::showpoint
+                << std::setprecision(8) << Earray[i] << " " << alpha[i-1] << std::endl;
         }
 
     }
