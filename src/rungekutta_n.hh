@@ -329,16 +329,17 @@ private:
             else
             {
                 // compute ki
-                Vector<Vector<number_type>> k(s);
                 for (int i = 0; i < s; i++)
                 {
-                    K[i].resize(n, number_type(0.0));
-                    Ainv.mv(k[i],Z[i]); //k = Ainv*z_i
-                    k[i]*= (1.0/dt);
+                    for (int j=0; j < s; j++)
+                    {
+                        K[i].update(Ainv[i][j],Z[j]);
+                    }
+                    K[i]*= (1.0/dt);
 
 
                     // compute u
-                    u.update(dt*B[i], k[i]);
+                    u.update(dt*B[i], K[i]);
                 }
             }
               
@@ -461,7 +462,6 @@ void ordertest(const N& model, DenseMatrix<double> Mat, Vector<double> BV, Vecto
         }
         
         Earray[i] = norm(exact_solution-states[states.size()-1]);
-std::cout << times[states.size()-1] << std::endl;
 
         if(i == 0)
         {
