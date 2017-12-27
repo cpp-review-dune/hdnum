@@ -398,7 +398,7 @@ private:
 
 
 template<class N, class S = Newton>
-void ordertest(const N& model, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, double t_0, double T, double h_0, int L)
+void ordertest(const N& model, DenseMatrix<double> Mat, Vector<double> BV, Vector<double> CV, double T, double h_0, int L)
 {
 
     /** \brief export size_type */
@@ -425,8 +425,6 @@ void ordertest(const N& model, DenseMatrix<double> Mat, Vector<double> BV, Vecto
     {
         RungeKutta_n<N,S> solver(model, Mat, BV, CV);
         solver.set_dt(h_0/pow(2,i));                  // set initial time step
-
-
           Vector<time_type> times;           // store time values here
           Vector<Vector<number_type>> states; // store states here
           times.push_back(solver.get_time());  // initial time
@@ -440,8 +438,8 @@ void ordertest(const N& model, DenseMatrix<double> Mat, Vector<double> BV, Vecto
             }
 
         
-        Earray[i] = norm(exact_solution-states[(T/h_0)-1]);
-
+        Earray[i] = norm(exact_solution-states[states.size()-1]);
+        std::cout << times[states.size()-1] << std::endl;
 
         if(i == 0)
         {
