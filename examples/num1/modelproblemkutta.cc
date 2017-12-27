@@ -51,7 +51,6 @@ int main ()
 	B[0] = 1-alpha;
 	B[1] = alpha;
 
-
 	hdnum::Vector<double> C(2, 0.0);
   C[0] = alpha;
 	C[1] = 1; 
@@ -110,7 +109,7 @@ int main ()
   hdnum::Vector<hdnum::Vector<Number> > states; // store states here
   times.push_back(solver.get_time());           // initial time
   states.push_back(solver.get_state());         // initial state
-  while (solver.get_time()<5.0-1e-6)            // the time loop
+  while (solver.get_time()<1.0-1e-6)            // the time loop
   {
     solver.step();                              // advance model by one time step
     times.push_back(solver.get_time());         // save time

@@ -303,16 +303,20 @@
       else
       {
         // compute ki
+        Vector<number_type> zero(n,number_type(0));
         for (int i = 0; i < s; i++)
         {
+          K[i] = zero;
           for (int j=0; j < s; j++)
           {
             K[i].update(Ainv[i][j],Z[j]);
           }
           K[i]*= (1.0/dt);
+std::cout << K[i] << " k"<< std::endl;
           // compute u
-          u.update(dt*B[i], K[i]);
-          }
+          u.update(dt*B[i], K[i]);      // wenn man dt hier weg laesst, sieht das ergebnis besser aus :(
+        }
+std::cout << u << " u" << std::endl;
         }        
       }
       t = t+dt;
