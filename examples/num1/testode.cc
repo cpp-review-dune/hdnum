@@ -2,15 +2,15 @@
 #include <vector>
 #include "hdnum.hh"
 
-#include "beispielDGL.hh"
-#include "../../src/testode.hh"
+#include "modelproblem_high_dim.hh"
+
 
 
 int main ()
 {
   typedef double Number;               // define a number type
 
-  typedef ModelProblem<Number> Model;  // Model type
+  typedef ModelProblem_high_dim<Number> Model;  // Model type
   Model model;                   // instantiate model
 
 	hdnum::DenseMatrix<double> A(4,4,0.0);
