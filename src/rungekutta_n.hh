@@ -260,7 +260,7 @@
       Solver.solve(problem,zij);                                // compute solution
       Vector<Vector<number_type>> Z (s, 0.0);
       DenseMatrix<number_type> Ainv (s,s,number_type(0));
-      if (not last_row_eq_b) 
+      if ( last_row_eq_b) 
       // compute invers of A with LR decomposition
       {
         for (int i=0; i < s; i++)                       
@@ -296,7 +296,7 @@
           Z[i][j] = zij[i*n+j];
         }
       }
-      if (last_row_eq_b)
+      if (not last_row_eq_b)
       {
         u += Z[s-1];
       }
@@ -309,11 +309,13 @@
           K[i] = zero;
           for (int j=0; j < s; j++)
           {
+std::cout << Ainv[i][j] << std::endl;
             K[i].update(Ainv[i][j],Z[j]);
           }
           K[i]*= (1.0/dt);
 std::cout << K[i] << " k"<< std::endl;
           // compute u
+std::cout << B[i] << " B"<< i << std::endl;
           u.update(dt*B[i], K[i]);      // wenn man dt hier weg laesst, sieht das ergebnis besser aus :(
         }
 std::cout << u << " u" << std::endl;

@@ -39,7 +39,7 @@ int main ()
 	C[1] = 1; 
 */
 
-/*
+
 	//implicit Alexander Dirk Verfahren
   double alpha = 1+sqrt(2)/2;
 	hdnum::DenseMatrix<double> A(2,2,0.0);
@@ -54,8 +54,8 @@ int main ()
 	hdnum::Vector<double> C(2, 0.0);
   C[0] = alpha;
 	C[1] = 1; 
-*/
 
+/*
   // Gauß with s=3
   hdnum::DenseMatrix<double> A(3,3,0.0);
 	A[0][0] = 5.0/36.0;
@@ -77,7 +77,7 @@ int main ()
 	C[0] = (5.0-sqrt(15.0))/10.0;
 	C[1] = 0.5;
 	C[2] = (5.0+sqrt(15.0))/10.0;
-
+*/
 
 	// explicit solver
 	
