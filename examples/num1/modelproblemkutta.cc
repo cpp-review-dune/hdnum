@@ -51,7 +51,7 @@ int main ()
 	B[0] = 1-alpha;
 	B[1] = alpha;
 
-	hdnum::Vector<double> C(2, 0.0);
+	hdnum::Vector<double> C(2,0.0);
   C[0] = alpha;
 	C[1] = 1; 
 
