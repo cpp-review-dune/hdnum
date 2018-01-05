@@ -316,12 +316,8 @@
           K[i]*= (1.0/dt);
 
           // compute u
-
           u.update(dt*B[i], K[i]);      // wenn man dt hier weg laesst, sieht das ergebnis besser aus :(
         }
-//std::cout << Ainv << std::endl;
-//std::cout << Z << std::endl;
-//std::cout << K << std::endl;
       }        
     }
       t = t+dt;

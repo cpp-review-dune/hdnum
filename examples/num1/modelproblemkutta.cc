@@ -39,7 +39,7 @@ int main ()
 	C[1] = 1; 
 */
 
-
+/*
 	//implicit Alexander Dirk Verfahren
   double alpha = 1+sqrt(2)/2;
 	hdnum::DenseMatrix<double> A(2,2,0.0);
@@ -54,8 +54,8 @@ int main ()
 	hdnum::Vector<double> C(2,0.0);
   C[0] = alpha;
 	C[1] = 1; 
+*/
 
-/*
   // Gauß with s=3
   hdnum::DenseMatrix<double> A(3,3,0.0);
 	A[0][0] = 5.0/36.0;
@@ -77,7 +77,7 @@ int main ()
 	C[0] = (5.0-sqrt(15.0))/10.0;
 	C[1] = 0.5;
 	C[2] = (5.0+sqrt(15.0))/10.0;
-*/
+
 
 	// explicit solver
 	
@@ -109,7 +109,7 @@ int main ()
   hdnum::Vector<hdnum::Vector<Number> > states; // store states here
   times.push_back(solver.get_time());           // initial time
   states.push_back(solver.get_state());         // initial state
-  while (solver.get_time()<1.0-1e-6)            // the time loop
+  while (solver.get_time()<1.04-1e-6)            // the time loop
   {
     solver.step();                              // advance model by one time step
     times.push_back(solver.get_time());         // save time

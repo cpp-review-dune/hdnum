@@ -54,7 +54,7 @@ int main ()
   C[0] = alpha;
 	C[1] = 1; 
 */
-/*
+
   // Gauß with s=3
   hdnum::DenseMatrix<Number> A(3,3,0.0);
   A[0][0] = 5.0/36.0;
@@ -76,9 +76,9 @@ int main ()
   C[0] = (5.0-sqrt(15.0))/10.0;
   C[1] = 0.5;
   C[2] = (5.0+sqrt(15.0))/10.0;
-*/
-// explicit solver
 
+// explicit solver
+/*
   //classical runge kutta method
 	hdnum::DenseMatrix<Number> A(4,4,0.0);
 	A[1][0] = 0.5;
@@ -95,9 +95,9 @@ int main ()
 	C[1] = 0.5;
 	C[2] = 0.5;
 	C[3] = 1.0;
+*/
 
-
-  ordertest(model, A, B, C, 1.0, 0.2, 10);
+  ordertest(model, A, B, C, 5.0, 0.2, 10);
 
   return 0;
 }
