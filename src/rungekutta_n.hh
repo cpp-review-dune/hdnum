@@ -283,8 +283,9 @@
           permute_backward(q,z);                        
           for (int j = 0; j < s; j++)
           {
-	        Ainv[i][j] = z[j];
+	        Ainv[j][i] = z[j];
           }
+
           A = Temp;
         }
       }
@@ -310,16 +311,17 @@
           K[i] = zero;
           for (int j=0; j < s; j++)
           {
-//std::cout << Ainv << std::endl;
             K[i].update(Ainv[i][j],Z[j]);
           }
           K[i]*= (1.0/dt);
-std::cout << K[i] << " k"<< std::endl;
+
           // compute u
-std::cout << B[i] << " B"<< i << std::endl;
+
           u.update(dt*B[i], K[i]);      // wenn man dt hier weg laesst, sieht das ergebnis besser aus :(
         }
-std::cout << u << " u" << std::endl;
+//std::cout << Ainv << std::endl;
+//std::cout << Z << std::endl;
+//std::cout << K << std::endl;
       }        
     }
       t = t+dt;
