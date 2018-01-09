@@ -158,7 +158,7 @@
     /** \brief export number_type */
     typedef typename N::number_type number_type;
 
-    //! constructor stores reference to the model - ich gehe davon aus, dass Dimension von Matrix und Vektor, sowie der Zahlentyp zusammenpasst
+    //! constructor stores reference to the model
     RungeKutta_n (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV)
       : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
     {
@@ -175,9 +175,16 @@
       }
       sigma = 0.01;
       verbosity = 0;
+      
+      if (Mat.rowsize()!=Mat.colsize())
+      HDNUM_ERROR("need square and nonempty matrix");
+      if (Mat.rowsize()!=BV.size())
+      HDNUM_ERROR("vector incompatible with matrix");
+      if (Mat.colsize()!=CV.size())
+      HDNUM_ERROR("vector incompatible with matrix");
    }
 
-   //! constructor stores reference to the model - ich gehe davon aus, dass Dimension von Matrix und Vektor, sowie der Zahlentyp zusammenpasst, hier kann man auserdem noch Sigma setzen
+   //! constructor stores reference to the model 
    RungeKutta_n (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV, number_type sigma_)
      : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
    {
@@ -194,6 +201,12 @@
      }
      sigma = sigma_;
      verbosity = 0;
+     if (Mat.rowsize()!=Mat.colsize())
+     HDNUM_ERROR("need square and nonempty matrix");
+     if (Mat.rowsize()!=BV.size())
+     HDNUM_ERROR("vector incompatible with matrix");
+     if (Mat.colsize()!=CV.size())
+     HDNUM_ERROR("vector incompatible with matrix");
   }
 
   //! set time step for subsequent steps
