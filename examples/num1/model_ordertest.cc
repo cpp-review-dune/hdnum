@@ -7,7 +7,8 @@
 
 int main ()
 {
-  typedef double Number;               // define a number type
+  typedef mpf_class Number;
+  mpf_set_default_prec(1024);
   typedef ModelProblem<Number> Model;  // Model type
   Model model(-1.0);                   // instantiate model
 /*
@@ -44,7 +45,7 @@ int main ()
   C[1] = 0.5;
   C[2] = (5.0+sqrt(15.0))/10.0;
 
-  ordertest(model, A, B, C, 5.0, 0.2, 10);
+  ordertest(model, A, B, C, 5.0, 1.0, 10);
 
   return 0;
 }

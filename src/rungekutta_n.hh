@@ -329,7 +329,7 @@
           K[i]*= (1.0/dt);
 
           // compute u
-          u.update(dt*B[i], K[i]);      // wenn man dt hier weg laesst, sieht das ergebnis besser aus :(
+          u.update(dt*B[i], K[i]);     
         }
       }        
     }
@@ -381,9 +381,11 @@
     int verbosity;
   };
 
-  typedef double Number;
+
+
   template<class N, class S = Newton>
-  void ordertest(const N& model, DenseMatrix<Number> Mat, Vector<Number> BV, Vector<Number> CV, Number T, Number h_0, int L)
+  void ordertest(const N& model, DenseMatrix<typename N::number_type> Mat, Vector<typename N::number_type> BV, Vector<typename N::number_type> CV, typename N::number_type T, typename N::number_type h_0,   
+                 int L)
   {
     /** \brief export size_type */
     typedef typename N::size_type size_type;
