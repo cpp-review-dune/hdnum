@@ -7,8 +7,8 @@
 
 int main ()
 {
-  typedef mpf_class Number;
-  mpf_set_default_prec(1024);
+  typedef double Number;
+
   typedef ModelProblem<Number> Model;  // Model type
   Model model(-1.0);                   // instantiate model
 /*

@@ -7,7 +7,9 @@
 
 int main ()
 {
-  typedef double Number;               // define a number type
+
+  typedef mpf_class Number;
+  mpf_set_default_prec(1024);
 
   typedef ModelProblem_high_dim<Number> Model;  // Model type
   Model model;                         // instantiate model
