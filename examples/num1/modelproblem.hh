@@ -45,7 +45,7 @@ public:
   }
 
   //! exact solution if known
-  void u (const T& t, hdnum::Vector<N>& result) const
+  void exact_solution (const T& t, hdnum::Vector<N>& result) const
   {
     result.resize(size());
     result[0] = exp(lambda*t);

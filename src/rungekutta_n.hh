@@ -410,7 +410,7 @@ namespace hdnum {
     number_type error_array[l];
 
     Vector<number_type> exact_solution;
-    model.u(T, exact_solution);
+    model.exact_solution(T, exact_solution);
 
     for (int i=0; i<l; i++)
     {
