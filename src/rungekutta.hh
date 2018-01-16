@@ -1,6 +1,6 @@
 // -*- tab-width: 4; indent-tabs-mode: nil -*-
-#ifndef HDNUM_RUNGEKUTTA_N_HH
-#define HDNUM_RUNGEKUTTA_N_HH
+#ifndef HDNUM_RUNGEKUTTA_HH
+#define HDNUM_RUNGEKUTTA_HH
 
 #include "vector.hh"
 #include "newton.hh"
@@ -11,27 +11,27 @@
 
 namespace hdnum {
 
-  template<class T>
+  template<class M>
   class compute_Z
   {
   public:
     /** \brief export size_type */
-    typedef typename T::size_type size_type;
+    typedef typename M::size_type size_type;
 
     /** \brief export time_type */
-    typedef typename T::time_type time_type;
+    typedef typename M::time_type time_type;
 
     /** \brief export number_type */
-    typedef typename T::number_type number_type;
+    typedef typename M::number_type number_type;
 
     //! constructor stores parameter lambda
-    compute_Z (const T& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV, time_type t_, Vector<number_type> u_, time_type dt_)
+    compute_Z (const M& model_, DenseMatrix<number_type> A_, Vector<number_type> b_, Vector<number_type> c_, time_type t_, Vector<number_type> u_, time_type dt_)
         : model(model_) , u(model.size())
       {
-        A = Mat;
-        B = BV;
-        C = CV;
-        s = Mat.rowsize ();
+        A = A_;
+        b = b_;
+        c = c_;
+        s = A_.rowsize ();
         dt = dt_;
         n = model.size();
         t = t_;
@@ -60,7 +60,7 @@ namespace hdnum {
       for (int i = 0; i < s; i++)
       {
         f[i].resize(n, number_type(0));
-        model.f(t + C[i] * dt, u + xx[i], f[i]);
+        model.f(t + c[i] * dt, u + xx[i], f[i]);
       }
       Vector<Vector<number_type>> hr (s);
       for (int i = 0; i < s; i++)
@@ -109,7 +109,7 @@ namespace hdnum {
         {
           DenseMatrix<number_type> J (n, n, number_type(0));
           DenseMatrix<number_type> H (n, n, number_type(0));
-          model.f_x(t+C[j]*dt, u + xx[j],H);
+          model.f_x(t+c[j]*dt, u + xx[j],H);
           J.update(-dt*A[i][j],H);
           if(i==j)                                //add I on diagonal
           {
@@ -127,13 +127,13 @@ namespace hdnum {
     }
 
   private:
-    const T& model;
+    const M& model;
     time_type t, dt;
     Vector<number_type> u;
     int n, s;						    // dimension of matrix A and model.size
-    DenseMatrix<number_type> A;				// A, B, C as in the butcher tableau
-    Vector<number_type> B;
-    Vector<number_type> C;
+    DenseMatrix<number_type> A;				// A, b, c as in the butcher tableau
+    Vector<number_type> b;
+    Vector<number_type> c;
   };
 
 
@@ -145,27 +145,27 @@ namespace hdnum {
 
       \tparam M the model type
   */
-  template<class N, class S = Newton>
+  template<class M, class S = Newton>
   class RungeKutta
   {
   public:
     /** \brief export size_type */
-    typedef typename N::size_type size_type;
+    typedef typename M::size_type size_type;
 
     /** \brief export time_type */
-    typedef typename N::time_type time_type;
+    typedef typename M::time_type time_type;
 
     /** \brief export number_type */
-    typedef typename N::number_type number_type;
+    typedef typename M::number_type number_type;
 
     //! constructor stores reference to the model
-    RungeKutta (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV)
-      : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
+    RungeKutta (const M& model_, DenseMatrix<number_type> A_, Vector<number_type> b_, Vector<number_type> c_)
+      : model(model_), u(model.size()), w(model.size()), K(A_.rowsize ())
     {
-      A = Mat;
-      B = BV;
-      C = CV;
-      s = Mat.rowsize ();
+      A = A_;
+      b = b_;
+      c = c_;
+      s = A_.rowsize ();
       n = model.size();
       model.initialize(t,u);
       dt = 0.1;
@@ -176,22 +176,22 @@ namespace hdnum {
       sigma = 0.01;
       verbosity = 0;
 
-      if (Mat.rowsize()!=Mat.colsize())
+      if (A_.rowsize()!=A_.colsize())
       HDNUM_ERROR("need square and nonempty matrix");
-      if (Mat.rowsize()!=BV.size())
+      if (A_.rowsize()!=b_.size())
       HDNUM_ERROR("vector incompatible with matrix");
-      if (Mat.colsize()!=CV.size())
+      if (A_.colsize()!=c_.size())
       HDNUM_ERROR("vector incompatible with matrix");
    }
 
    //! constructor stores reference to the model
-   RungeKutta (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV, number_type sigma_)
-     : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
+   RungeKutta (const M& model_, DenseMatrix<number_type> A_, Vector<number_type> b_, Vector<number_type> c_, number_type sigma_)
+     : model(model_), u(model.size()), w(model.size()), K(A_.rowsize ())
    {
-     A = Mat;
-     B = BV;
-     C = CV;
-     s = Mat.rowsize ();
+     A = A_;
+     b = b_;
+     c = c_;
+     s = A_.rowsize ();
      n = model.size();
      model.initialize(t,u);
      dt = 0.1;
@@ -201,11 +201,11 @@ namespace hdnum {
      }
      sigma = sigma_;
      verbosity = 0;
-     if (Mat.rowsize()!=Mat.colsize())
+     if (A_.rowsize()!=A_.colsize())
      HDNUM_ERROR("need square and nonempty matrix");
-     if (Mat.rowsize()!=BV.size())
+     if (A_.rowsize()!=b_.size())
      HDNUM_ERROR("vector incompatible with matrix");
-     if (Mat.colsize()!=CV.size())
+     if (A_.colsize()!=c_.size())
      HDNUM_ERROR("vector incompatible with matrix");
   }
 
@@ -242,24 +242,24 @@ namespace hdnum {
       for (int i = 0; i < s; i++)
       {
         Vector<number_type> sum (K[0].size(), 0.0);
-        sum.update(B[0], K[0]);
+        sum.update(b[0], K[0]);
         //compute k_i
         for (int j = 0; j < i+1; j++)
         {
           sum.update(A[i][j],K[j]);
         }
         Vector<number_type> wert = w.update(dt,sum);
-        model.f(t + C[i]*dt, wert, K[i]);
-        u.update(dt *B[i], K[i]);
+        model.f(t + c[i]*dt, wert, K[i]);
+        u.update(dt *b[i], K[i]);
       }
     }
     if (not check_explicit())
     {
-      compute_Z<N> problem(model, A, B, C, t, u, dt);           // problemtype
+      compute_Z<M> problem(model, A, b, c, t, u, dt);           // problemtype
       bool last_row_eq_b = true;
       for (int i = 0; i<s; i++)
       {
-        if (A[s-1][i] != B[i])
+        if (A[s-1][i] != b[i])
         {
           last_row_eq_b = false;
         }
@@ -331,7 +331,7 @@ namespace hdnum {
           K[i]*= (1.0/dt);
 
           // compute u
-          u.update(dt*B[i], K[i]);
+          u.update(dt*b[i], K[i]);
         }
       }
     }
@@ -369,16 +369,16 @@ namespace hdnum {
    }
 
   private:
-    const N& model;
+    const M& model;
     time_type t, dt;
     Vector<number_type> u;
     Vector<number_type> w;
     Vector<Vector<number_type>> K;                      // save ki
     int n;											    // dimension of matrix A
     int s;
-    DenseMatrix<number_type> A;				            // A, B, C as in the butcher tableau
-	Vector<number_type> B;
-	Vector<number_type> C;
+    DenseMatrix<number_type> A;				            // A, b, c as in the butcher tableau
+	Vector<number_type> b;
+	Vector<number_type> c;
     number_type sigma;
     int verbosity;
   };
