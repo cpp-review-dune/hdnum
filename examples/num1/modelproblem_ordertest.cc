@@ -48,7 +48,7 @@ int main ()
   C[2] = (5.0+sqrt(15.0))/10.0;
 
   // ODE solver
-  typedef hdnum::RungeKutta_n<Model> Solver;
+  typedef hdnum::RungeKutta<Model> Solver;
   Solver solver(model, A, B, C);
 
   ordertest(model, solver, 5.0, 1.0, 10);

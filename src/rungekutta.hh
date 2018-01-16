@@ -146,7 +146,7 @@ namespace hdnum {
       \tparam M the model type
   */
   template<class N, class S = Newton>
-  class RungeKutta_n
+  class RungeKutta
   {
   public:
     /** \brief export size_type */
@@ -159,7 +159,7 @@ namespace hdnum {
     typedef typename N::number_type number_type;
 
     //! constructor stores reference to the model
-    RungeKutta_n (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV)
+    RungeKutta (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV)
       : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
     {
       A = Mat;
@@ -185,7 +185,7 @@ namespace hdnum {
    }
 
    //! constructor stores reference to the model
-   RungeKutta_n (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV, number_type sigma_)
+   RungeKutta (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV, number_type sigma_)
      : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
    {
      A = Mat;

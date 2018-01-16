@@ -23,7 +23,7 @@
 #include "src/pde.hh"
 #include "src/sgrid.hh"
 #include "src/newton.hh"
-#include "src/rungekutta_n.hh"
+#include "src/rungekutta.hh"
 
 
 #endif

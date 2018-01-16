@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+
 #include "hdnum.hh"
 #include "modelproblem.hh"
 
@@ -33,7 +34,7 @@ int main ()
   C[1] = 0.5;
   C[2] = (5.0+sqrt(15.0))/10.0;
 
-  typedef hdnum::RungeKutta_n<Model> Solver;    // Solver type
+  typedef hdnum::RungeKutta<Model> Solver;    // Solver type
   Solver solver(model, A, B, C);                // instantiate solver
   solver.set_dt(Number(0.02));                  // set initial time step
 
@@ -49,7 +50,7 @@ int main ()
     states.push_back(solver.get_state());       // and state
   }
 
-  gnuplot("modelkutta.dat",times,states); // output model result
+  gnuplot("model_runge_kutta.dat",times,states); // output model result
 
   return 0;
 }
