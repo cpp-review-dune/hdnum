@@ -2,14 +2,14 @@
 #ifndef HDNUM_RUNGEKUTTA_N_HH
 #define HDNUM_RUNGEKUTTA_N_HH
 
-#include<vector>
+#include "vector.hh"
 #include "newton.hh"
 
 /** @file
  *  @general Runge-Kutta solver
  */
 
-  namespace hdnum {
+namespace hdnum {
 
   template<class T>
   class compute_Z
@@ -22,7 +22,7 @@
     typedef typename T::time_type time_type;
 
     /** \brief export number_type */
-    typedef typename T::number_type number_type; 
+    typedef typename T::number_type number_type;
 
     //! constructor stores parameter lambda
     compute_Z (const T& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV, time_type t_, Vector<number_type> u_, time_type dt_)
@@ -35,7 +35,7 @@
         dt = dt_;
         n = model.size();
         t = t_;
-        u = u_; 
+        u = u_;
       }
 
     //! return number of componentes for the model
@@ -47,7 +47,7 @@
     //! model evaluation
     void F (const Vector<number_type>& x, Vector<number_type>& result) const
     {
-      Vector<Vector<number_type>> xx (s);    
+      Vector<Vector<number_type>> xx (s);
       for (int i = 0; i < s; i++)
       {
         xx[i].resize(n,number_type(0));
@@ -74,7 +74,7 @@
         {
           sum.update(dt*A[i][j], f[j]);
         }
-        hr[i]  = xx[i] - sum;        
+        hr[i]  = xx[i] - sum;
       }
       //translating hr into result
       for (int i = 0; i < s; i++)
@@ -89,7 +89,7 @@
     //! jacobian evaluation needed for newton in implicite solvers
     void F_x (const Vector<number_type>& x, DenseMatrix<number_type>& result) const
     {
-      Vector<Vector<number_type>> xx (s);   
+      Vector<Vector<number_type>> xx (s);
       for (int i = 0; i < s; i++)
       {
         xx[i].resize(n);
@@ -106,15 +106,15 @@
       for (int i = 0; i < s; i++)
       {
         for (int j = 0; j < s; j++)
-        { 
+        {
           DenseMatrix<number_type> J (n, n, number_type(0));
-          DenseMatrix<number_type> H (n, n, number_type(0));     
+          DenseMatrix<number_type> H (n, n, number_type(0));
           model.f_x(t+C[j]*dt, u + xx[j],H);
           J.update(-dt*A[i][j],H);
           if(i==j)                                //add I on diagonal
           {
             J+=I;
-          } 
+          }
           for (int k = 0; k < n; k++)
           {
             for (int l = 0; l < n; l++)
@@ -122,7 +122,7 @@
               result[n * i + k][n * j + l] = J[k][l];
             }
           }
-        }           
+        }
       }
     }
 
@@ -137,14 +137,14 @@
   };
 
 
-/** @brief classical Runge-Kutta method (order n with n stages)
+  /** @brief classical Runge-Kutta method (order n with n stages)
 
       The ODE solver is parametrized by a model. The model also
       exports all relevant types for time and states.
       The ODE solver encapsulates the states needed for the computation.
 
       \tparam M the model type
-*/
+  */
   template<class N, class S = Newton>
   class RungeKutta_n
   {
@@ -175,7 +175,7 @@
       }
       sigma = 0.01;
       verbosity = 0;
-      
+
       if (Mat.rowsize()!=Mat.colsize())
       HDNUM_ERROR("need square and nonempty matrix");
       if (Mat.rowsize()!=BV.size())
@@ -184,7 +184,7 @@
       HDNUM_ERROR("vector incompatible with matrix");
    }
 
-   //! constructor stores reference to the model 
+   //! constructor stores reference to the model
    RungeKutta_n (const N& model_, DenseMatrix<number_type> Mat, Vector<number_type> BV, Vector<number_type> CV, number_type sigma_)
      : model(model_), u(model.size()), w(model.size()), K(Mat.rowsize ())
    {
@@ -214,6 +214,7 @@
   {
     dt = dt_;
   }
+
   bool check_explicit ()
   {
     bool ergebnis = true;
@@ -229,6 +230,7 @@
     }
     return ergebnis;
   }
+
   //! do one step
   void step ()
   {
@@ -236,13 +238,13 @@
     {
       // compute k_1
       w = u;
-      model.f(t, w, K[0]);        
+      model.f(t, w, K[0]);
       for (int i = 0; i < s; i++)
       {
         Vector<number_type> sum (K[0].size(), 0.0);
         sum.update(B[0], K[0]);
         //compute k_i
-        for (int j = 0; j < i+1; j++)       
+        for (int j = 0; j < i+1; j++)
         {
           sum.update(A[i][j],K[j]);
         }
@@ -251,18 +253,18 @@
         u.update(dt *B[i], K[i]);
       }
     }
-    if (not check_explicit()) 
+    if (not check_explicit())
     {
       compute_Z<N> problem(model, A, B, C, t, u, dt);           // problemtype
       bool last_row_eq_b = true;
       for (int i = 0; i<s; i++)
       {
-        if (A[s-1][i] != B[i])     
+        if (A[s-1][i] != B[i])
         {
           last_row_eq_b = false;
         }
       }
-      S Solver;                         
+      S Solver;
       Solver.set_maxit(2000);
       Solver.set_verbosity(verbosity);
       Solver.set_reduction(1e-10);
@@ -273,10 +275,10 @@
       Solver.solve(problem,zij);                                // compute solution
       Vector<Vector<number_type>> Z (s, 0.0);
       DenseMatrix<number_type> Ainv (s,s,number_type(0));
-      if (not last_row_eq_b) 
+      if (not last_row_eq_b)
       // compute invers of A with LR decomposition
       {
-        for (int i=0; i < s; i++)                       
+        for (int i=0; i < s; i++)
         {
           Vector<number_type> e (s, number_type(0));
           e[i]=number_type(1);
@@ -287,13 +289,13 @@
           Vector<std::size_t> q(s);
           DenseMatrix<number_type> Temp (s,s,0.0);
           Temp = A;
-          row_equilibrate(A,w);                         
-          lr_fullpivot(A,p,q);                          
-          apply_equilibrate(w,e);                       
-          permute_forward(p,e);                         
-          solveL(A,e,e);                  
-          solveR(A,z,e);                                
-          permute_backward(q,z);                        
+          row_equilibrate(A,w);
+          lr_fullpivot(A,p,q);
+          apply_equilibrate(w,e);
+          permute_forward(p,e);
+          solveL(A,e,e);
+          solveR(A,z,e);
+          permute_backward(q,z);
           for (int j = 0; j < s; j++)
           {
 	        Ainv[j][i] = z[j];
@@ -329,12 +331,12 @@
           K[i]*= (1.0/dt);
 
           // compute u
-          u.update(dt*B[i], K[i]);     
+          u.update(dt*B[i], K[i]);
         }
-      }        
+      }
     }
       t = t+dt;
-   }  
+   }
 
    //! set current state
    void set_state (time_type t_, const Vector<number_type>& u_)
@@ -382,75 +384,96 @@
   };
 
 
+  /** @brief Test convergence order of an ODE solver applied to a model problem
 
-  template<class N, class S = Newton>
-  void ordertest(const N& model, DenseMatrix<typename N::number_type> Mat, Vector<typename N::number_type> BV, Vector<typename N::number_type> CV, typename N::number_type T, typename N::number_type h_0,   
-                 int L)
+      \tparam M Type of model
+      \tparam S Type of ODE solver
+
+      \param model Model problem
+      \param solver ODE solver
+      \param T Solve to time T
+      \param dt Roughest time step size
+      \param l Number of different time step sizes dt, dt/2, dt/4, ...
+   */
+  template<class M, class S>
+  void ordertest(const M& model,
+                 S solver,
+                 typename M::number_type T,
+                 typename M::number_type h_0,
+                 int l)
   {
-    /** \brief export size_type */
-    typedef typename N::size_type size_type;
+    // Get types
+    typedef typename M::time_type time_type;
+    typedef typename M::number_type number_type;
 
-    /** \brief export time_type */
-    typedef typename N::time_type time_type;
+    // error_array[i] = ||u(T)-u_i(T)||
+    number_type error_array[l];
 
-    /** \brief export number_type */
-    typedef typename N::number_type number_type;
-
-    // aim U[i] = u_i(T)
-    Vector<number_type> U[L];
-    // aim Earray[i] = ||u(T)-u_i(T)||
-    number_type Earray[L];
-    number_type alpha[L-1];
     Vector<number_type> exact_solution;
     model.u(T, exact_solution);
-    for (int i = 0; i<L; i++)
+
+    for (int i=0; i<l; i++)
     {
-      RungeKutta_n<N,S> solver(model, Mat, BV, CV);
-      solver.set_dt(h_0/pow(2,i));                      // set initial time step
-      Vector<time_type> times;                          // store time values here
-      Vector<Vector<number_type>> states;               // store states here
-      times.push_back(solver.get_time());               // initial time
-      states.push_back(solver.get_state());             // initial state
-      while (solver.get_time()<T-2*solver.get_dt())     // the time loop
+      // Set initial time and value
+      time_type t_start;
+      Vector<number_type> initial_solution(1);
+      model.initialize(t_start, initial_solution);
+      solver.set_state(t_start, initial_solution);
+
+      // Initial time step
+      time_type dt = h_0/pow(2,i) ;
+      solver.set_dt(dt);
+
+      // Time loop
+      while (solver.get_time()<T-2*solver.get_dt())
       {
-        solver.step();                                  // advance model by one time step
-        times.push_back(solver.get_time());             // save time
-        states.push_back(solver.get_state());           // and state
+        solver.step();
       }
-      // three different cases to get to end time T
-      time_type t = times[times.size()-1];
-      number_type eps = 0.000001;
-      if (t < T-solver.get_dt())
+
+      // Last steps
+      if (solver.get_time()<T-solver.get_dt())
       {
-        solver.set_dt((T-t)/2.0);
-        for(int i = 0; i < 2;i++)
+        solver.set_dt((T-solver.get_time())/2.0);
+        for(int i=0; i<2; i++)
         {
-          solver.step();                                // advance model by one time step
-          times.push_back(solver.get_time());           // save time
-          states.push_back(solver.get_state());         // and state
+          solver.step();
         }
       }
-      else if ( t < T and abs(t-T) > eps)
+      else
       {
-        solver.set_dt(T-t);
-        solver.step();                                  // advance model by one time step
-        times.push_back(solver.get_time());             // save time
-        states.push_back(solver.get_state());           // and state
+        solver.set_dt(T-solver.get_time());
+        solver.step();
       }
-      Earray[i] = norm(exact_solution-states[states.size()-1]);
-      if(i == 0)
+
+      // Error
+      Vector<number_type> state = solver.get_state();
+      error_array[i] = norm(exact_solution-state);
+
+      if(i==0)
       {
-        std::cout << std::scientific << std::showpoint
-                  << std::setprecision(8) << Earray[0] << std::endl;
+        std::cout << "dt: "
+                  << std::scientific << std::showpoint << std::setprecision(8)
+                  << dt
+                  << "  "
+                  << "Error: "
+                  << error_array[0] << std::endl;
       }
-      if(i > 0)
+      if(i>0)
       {
-        alpha[i-1] = log(Earray[i-1]/Earray[i])/log(2);
-        std::cout << std::scientific << std::showpoint
-                  << std::setprecision(8) << Earray[i] << " " << alpha[i-1] << std::endl;
+        number_type rate = log(error_array[i-1]/error_array[i])/log(2);
+        std::cout << "dt: "
+                  << std::scientific << std::showpoint << std::setprecision(8)
+                  << dt
+                  << "  "
+                  << "Error: "
+                  << error_array[i]
+                  << "  "
+                  << "Rate: "
+                  << rate << std::endl;
       }
     }
   }
+
 } // namespace hdnum
 
 #endif
