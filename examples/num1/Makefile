@@ -11,8 +11,8 @@ modelproblem_SOURCES =
 modelproblem_high_dim_MAIN = modelproblem_high_dim
 modelproblem_high_dim_SOURCES =
 
-model_ordertest_MAIN = model_ordertest
-model_ordertest_SOURCES =
+modelproblem_ordertest_MAIN = modelproblem_ordertest
+modelproblem_ordertest_SOURCES =
 
 system_example_MAIN = system_example
 system_example_SOURCES =
@@ -40,7 +40,7 @@ ecke_SOURCES =
 
 all : nogmp gmp
 
-nogmp : $(modelproblem_MAIN) $(modelproblem_high_dim_MAIN) $(model_ordertest_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
+nogmp : $(modelproblem_MAIN) $(modelproblem_high_dim_MAIN) $(modelproblem_ordertest_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
 
 gmp :
 
@@ -50,8 +50,8 @@ $(modelproblem_MAIN): $(modelproblem_MAIN).o $(modelproblem_SOURCES) Makefile
 $(modelproblem_high_dim_MAIN): $(modelproblem_high_dim_MAIN).o $(modelproblem_high_dim_SOURCES) Makefile
 	$(CC) -o $(modelproblem_high_dim_MAIN) $(modelproblem_high_dim_MAIN).o $(modelproblem_high_dim_SOURCES) $(LIOPTS)
 
-$(model_ordertest_MAIN): $(model_ordertest_MAIN).o $(model_ordertest_SOURCES) Makefile
-	$(CC) -o $(model_ordertest_MAIN) $(model_ordertest_MAIN).o $(model_ordertest_SOURCES) $(LIOPTS)
+$(modelproblem_ordertest_MAIN): $(modelproblem_ordertest_MAIN).o $(modelproblem_ordertest_SOURCES) Makefile
+	$(CC) -o $(modelproblem_ordertest_MAIN) $(modelproblem_ordertest_MAIN).o $(modelproblem_ordertest_SOURCES) $(LIOPTS)
 
 $(system_example_MAIN): $(system_example_MAIN).o $(system_example_SOURCES) Makefile
 	$(CC) -o $(system_example_MAIN) $(system_example_MAIN).o $(system_example_SOURCES) $(LIOPTS)
@@ -83,4 +83,4 @@ $(eingabe_MAIN): $(eingabe_MAIN).o $(eingabe_SOURCES) Makefile
 	$(CC) $(CCOPTS) -c $<
 
 clean:
-	rm -f *.o *.dat *.gp $(modelproblem_MAIN) $(modelproblem_high_dim_MAIN) $(model_ordertest_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
+	rm -f *.o *.dat *.gp $(modelproblem_MAIN) $(modelproblem_high_dim_MAIN) $(modelproblem_ordertest_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
