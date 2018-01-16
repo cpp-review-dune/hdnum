@@ -48,7 +48,7 @@ $(modelproblem_MAIN): $(modelproblem_MAIN).o $(modelproblem_SOURCES) Makefile
 	$(CC) -o $(modelproblem_MAIN) $(modelproblem_MAIN).o $(modelproblem_SOURCES) $(LIOPTS)
 
 $(modelproblem_high_dim_MAIN): $(modelproblem_high_dim_MAIN).o $(modelproblem_high_dim_SOURCES) Makefile
-	$(CC) -o $(modelproblem_high_dim_MAIN) $(modelproblem_high_dim_MAIN).o $(modelproblem_high_dim_SOURCES) $(LIOPTS)
+	$(CC) -o $(modelproblem_high_dim_MAIN) $(modelproblem_high_dim_MAIN).o $(modelproblem_high_dim_SOURCES) $(LIOPTSGMP)
 
 $(modelproblem_ordertest_MAIN): $(modelproblem_ordertest_MAIN).o $(modelproblem_ordertest_SOURCES) Makefile
 	$(CC) -o $(modelproblem_ordertest_MAIN) $(modelproblem_ordertest_MAIN).o $(modelproblem_ordertest_SOURCES) $(LIOPTS)
