@@ -17,6 +17,7 @@ doc
 /examples/num1/hodgkinhuxley
 /examples/num1/iemodelproblem
 /examples/num1/modelproblem
+/examples/num1/modelproblem_high_dim
 /examples/num1/model_ordertest
 /examples/num1/nbody
 /examples/num1/ordertest
