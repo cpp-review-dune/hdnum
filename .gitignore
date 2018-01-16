@@ -19,6 +19,7 @@ doc
 /examples/num1/modelproblem
 /examples/num1/modelproblem_high_dim
 /examples/num1/model_ordertest
+/examples/num1/model_runge_kutta
 /examples/num1/nbody
 /examples/num1/ordertest
 /examples/num1/system_example
