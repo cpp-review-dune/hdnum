@@ -40,9 +40,9 @@ ecke_SOURCES =
 
 all : nogmp gmp
 
-nogmp : $(modelproblem_MAIN) $(modelproblem_high_dim_MAIN) $(modelproblem_ordertest_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
+nogmp : $(modelproblem_MAIN) $(modelproblem_ordertest_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
 
-gmp :
+gmp : $(modelproblem_high_dim_MAIN)
 
 $(modelproblem_MAIN): $(modelproblem_MAIN).o $(modelproblem_SOURCES) Makefile
 	$(CC) -o $(modelproblem_MAIN) $(modelproblem_MAIN).o $(modelproblem_SOURCES) $(LIOPTS)

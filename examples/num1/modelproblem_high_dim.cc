@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "hdnum.hh"
 
+#include "hdnum.hh"
 #include "modelproblem_high_dim.hh"
 
 
@@ -17,12 +17,12 @@ int main ()
   typedef hdnum::EE<Model> Solver;     			// Solver type
   Solver solver(model);               			// instantiate solver
   solver.set_dt(0.02);                 			// set initial time step
-	
+
   hdnum::Vector<Number> times;                 		// store time values here
   hdnum::Vector<hdnum::Vector<Number>> states; 		// store states here
   times.push_back(solver.get_time());          		// initial time
   states.push_back(solver.get_state());        		// initial state
-	
+
 
   while (solver.get_time()<5.0-1e-6)           		// the time loop
     {
