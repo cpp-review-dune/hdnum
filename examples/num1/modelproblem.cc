@@ -27,9 +27,6 @@ int main ()
       times.push_back(solver.get_time()); // save time
       states.push_back(solver.get_state()); // and state
     }
-std::cout << "times: " << times << std::endl;
-std::cout << "states: " << states << std::endl;
-
 
   gnuplot("mp2-ee-0.02.dat",times,states); // output model result
 
