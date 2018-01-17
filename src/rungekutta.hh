@@ -10,9 +10,10 @@
  */
 
 namespace hdnum {
-
+  /** @brief Nonlinear problem we need to solve to do one step of an implicit Runge Kutta method
+   */
   template<class M>
-  class compute_Z
+  class ImplicitRungeKuttaStepProblem
   {
   public:
     /** \brief export size_type */
@@ -25,7 +26,13 @@ namespace hdnum {
     typedef typename M::number_type number_type;
 
     //! constructor stores parameter lambda
-    compute_Z (const M& model_, DenseMatrix<number_type> A_, Vector<number_type> b_, Vector<number_type> c_, time_type t_, Vector<number_type> u_, time_type dt_)
+    ImplicitRungeKuttaStepProblem (const M& model_,
+                                   DenseMatrix<number_type> A_,
+                                   Vector<number_type> b_,
+                                   Vector<number_type> c_,
+                                   time_type t_,
+                                   Vector<number_type> u_,
+                                   time_type dt_)
         : model(model_) , u(model.size())
       {
         A = A_;
@@ -47,7 +54,7 @@ namespace hdnum {
     //! model evaluation
     void F (const Vector<number_type>& x, Vector<number_type>& result) const
     {
-      Vector<Vector<number_type>> xx (s);
+      Vector<Vector<number_type> > xx (s);
       for (int i = 0; i < s; i++)
       {
         xx[i].resize(n,number_type(0));
@@ -56,13 +63,13 @@ namespace hdnum {
           xx[i][k] = x[i*n + k];
         }
       }
-      Vector<Vector<number_type>> f (s);
+      Vector<Vector<number_type> > f (s);
       for (int i = 0; i < s; i++)
       {
         f[i].resize(n, number_type(0));
         model.f(t + c[i] * dt, u + xx[i], f[i]);
       }
-      Vector<Vector<number_type>> hr (s);
+      Vector<Vector<number_type> > hr (s);
       for (int i = 0; i < s; i++)
       {
         hr[i].resize(n, number_type(0));
@@ -89,7 +96,7 @@ namespace hdnum {
     //! jacobian evaluation needed for newton in implicite solvers
     void F_x (const Vector<number_type>& x, DenseMatrix<number_type>& result) const
     {
-      Vector<Vector<number_type>> xx (s);
+      Vector<Vector<number_type> > xx (s);
       for (int i = 0; i < s; i++)
       {
         xx[i].resize(n);
@@ -143,7 +150,8 @@ namespace hdnum {
       exports all relevant types for time and states.
       The ODE solver encapsulates the states needed for the computation.
 
-      \tparam M the model type
+      \tparam M The model type
+      \tparam S (Nonlinear) solver (default is Newton)
   */
   template<class M, class S = Newton>
   class RungeKutta
@@ -159,7 +167,10 @@ namespace hdnum {
     typedef typename M::number_type number_type;
 
     //! constructor stores reference to the model
-    RungeKutta (const M& model_, DenseMatrix<number_type> A_, Vector<number_type> b_, Vector<number_type> c_)
+    RungeKutta (const M& model_,
+                DenseMatrix<number_type> A_,
+                Vector<number_type> b_,
+                Vector<number_type> c_)
       : model(model_), u(model.size()), w(model.size()), K(A_.rowsize ())
     {
       A = A_;
@@ -185,7 +196,11 @@ namespace hdnum {
    }
 
    //! constructor stores reference to the model
-   RungeKutta (const M& model_, DenseMatrix<number_type> A_, Vector<number_type> b_, Vector<number_type> c_, number_type sigma_)
+   RungeKutta (const M& model_,
+               DenseMatrix<number_type> A_,
+               Vector<number_type> b_,
+               Vector<number_type> c_,
+               number_type sigma_)
      : model(model_), u(model.size()), w(model.size()), K(A_.rowsize ())
    {
      A = A_;
@@ -215,20 +230,21 @@ namespace hdnum {
     dt = dt_;
   }
 
+  //! test if method is explicit
   bool check_explicit ()
   {
-    bool ergebnis = true;
+    bool is_explicit = true;
     for (int i = 0; i < s; i++)
     {
       for (int j = i; j < s; j++)
       {
         if (A[i][j] != 0.0)
         {
-          ergebnis = false;
+          is_explicit = false;
         }
       }
     }
-    return ergebnis;
+    return is_explicit;
   }
 
   //! do one step
@@ -255,7 +271,9 @@ namespace hdnum {
     }
     if (not check_explicit())
     {
-      compute_Z<M> problem(model, A, b, c, t, u, dt);           // problemtype
+      // In the implicit case we need to solve a nonlinear problem
+      // to do a time step.
+      ImplicitRungeKuttaStepProblem<M> problem(model, A, b, c, t, u, dt);
       bool last_row_eq_b = true;
       for (int i = 0; i<s; i++)
       {
@@ -264,47 +282,52 @@ namespace hdnum {
           last_row_eq_b = false;
         }
       }
-      S Solver;
-      Solver.set_maxit(2000);
-      Solver.set_verbosity(verbosity);
-      Solver.set_reduction(1e-10);
-      Solver.set_abslimit(1e-10);
-      Solver.set_linesearchsteps(10);
-      Solver.set_sigma(0.01);
+
+      // Solve nonlinear problem and determine coefficients
+      S solver;
+      solver.set_maxit(2000);
+      solver.set_verbosity(verbosity);
+      solver.set_reduction(1e-10);
+      solver.set_abslimit(1e-10);
+      solver.set_linesearchsteps(10);
+      solver.set_sigma(0.01);
       Vector<number_type> zij (s*n,0.0);
-      Solver.solve(problem,zij);                                // compute solution
-      Vector<Vector<number_type>> Z (s, 0.0);
+      solver.solve(problem,zij);
+
+
       DenseMatrix<number_type> Ainv (s,s,number_type(0));
       if (not last_row_eq_b)
-      // compute invers of A with LR decomposition
       {
-        for (int i=0; i < s; i++)
+        // Compute LR decomposition of A
+        Vector<number_type> w (s, number_type(0));
+        Vector<number_type> x (s, number_type(0));
+        Vector<number_type> z (s, number_type(0));
+        Vector<std::size_t> p(s);
+        Vector<std::size_t> q(s);
+        DenseMatrix<number_type> Temp (s,s,0.0);
+        Temp = A;
+        row_equilibrate(Temp,w);
+        lr_fullpivot(Temp,p,q);
+
+        // Use LR decomposition to calculate inverse of A
+        for (int i=0; i<s; i++)
         {
           Vector<number_type> e (s, number_type(0));
           e[i]=number_type(1);
-          Vector<number_type> w (s, number_type(0));
-          Vector<number_type> x (s, number_type(0));
-          Vector<number_type> z (s, number_type(0));
-          Vector<std::size_t> p(s);
-          Vector<std::size_t> q(s);
-          DenseMatrix<number_type> Temp (s,s,0.0);
-          Temp = A;
-          row_equilibrate(A,w);
-          lr_fullpivot(A,p,q);
           apply_equilibrate(w,e);
           permute_forward(p,e);
-          solveL(A,e,e);
-          solveR(A,z,e);
+          solveL(Temp,e,e);
+          solveR(Temp,z,e);
           permute_backward(q,z);
           for (int j = 0; j < s; j++)
           {
 	        Ainv[j][i] = z[j];
           }
-
-          A = Temp;
         }
       }
-      for(int i = 0; i < s; i++)
+
+      Vector<Vector<number_type> > Z (s, 0.0);
+      for(int i=0; i<s; i++)
       {
         Vector<number_type> zero(n,number_type(0));
         Z[i] = zero;
@@ -363,6 +386,7 @@ namespace hdnum {
      return dt;
    }
 
+   //! how much should the ODE solver talk
    void set_verbosity(int verbosity_)
    {
      verbosity = verbosity_;
@@ -373,7 +397,7 @@ namespace hdnum {
     time_type t, dt;
     Vector<number_type> u;
     Vector<number_type> w;
-    Vector<Vector<number_type>> K;                      // save ki
+    Vector<Vector<number_type> > K;                     // save ki
     int n;											    // dimension of matrix A
     int s;
     DenseMatrix<number_type> A;				            // A, b, c as in the butcher tableau
