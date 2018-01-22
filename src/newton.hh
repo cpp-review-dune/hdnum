@@ -77,6 +77,11 @@ namespace hdnum {
       maxit = n;
     }
 
+    void set_sigma (double sigma_)
+    {
+    
+    }
+
     //! maximum number of steps in linesearch before giving up
     void set_linesearchsteps (size_type n)
     {

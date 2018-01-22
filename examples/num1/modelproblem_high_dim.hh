@@ -1,14 +1,17 @@
+#ifndef HDNUM_MODELPROBLEM_HIGH_DIM_HH
+#define HDNUM_MODELPROBLEM_HIGH_DIM_HH
 /** @brief Example class for a differential equation model
 
     The model is
 
-    u'(t) = lambda*u(t), t>=t_0, u(t_0) = u_0.
-
+		u'(t) = (5 -2// -2 5)*u(t)
+		u(0) = (1 3)
     \tparam T a type representing time values
     \tparam N a type representing states and f-values
 */
+
 template<class T, class N=T>
-class ModelProblem
+class ModelProblem_high_dim
 {
 public:
   /** \brief export size_type */
@@ -20,15 +23,14 @@ public:
   /** \brief export number_type */
   typedef N number_type;
 
-  //! constructor stores parameter lambda
-  ModelProblem (const N& lambda_)
-    : lambda(lambda_)
+  //! constructor
+  ModelProblem_high_dim ()
   {}
 
   //! return number of components for the model
   std::size_t size () const
   {
-    return 1;
+    return 2; // as the dimension of the differential equation ist two
   }
 
   //! set initial state including time value
@@ -36,27 +38,26 @@ public:
   {
     t0 = 0;
     x0[0] = 1.0;
+		x0[1] = 3.0;
   }
 
   //! model evaluation
   void f (const T& t, const hdnum::Vector<N>& x, hdnum::Vector<N>& result) const
   {
-    result[0] = lambda*x[0];
-  }
-
-  //! exact solution if known
-  void exact_solution (const T& t, hdnum::Vector<N>& result) const
-  {
-    result.resize(size());
-    result[0] = exp(lambda*t);
+    result[0] = 5*x[0] - 2*x[1];
+		result[1] = -2*x[0]+5*x[1];
   }
 
   //! jacobian evaluation needed for implicit solvers
   void f_x (const T& t, const hdnum::Vector<N>& x, hdnum::DenseMatrix<N>& result) const
   {
-    result[0][0] = lambda;
+		result[0][0] = 5.0;
+		result[0][1] = -2.0;
+		result[1][0] = -2.0;
+		result[1][1] = 5.0;
   }
 
 private:
-  N lambda;
+  //
 };
+#endif

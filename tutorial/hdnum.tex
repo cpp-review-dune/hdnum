@@ -11,14 +11,14 @@
 \usepackage[envcountsect,noamsthm]{beamerarticle}
 
 \usepackage{grffile}
-\usepackage{tikz} 
+\usepackage{tikz}
 \usetikzlibrary{3d,calc}
-\usepackage{eurosym} 
+\usepackage{eurosym}
 \usepackage{graphicx}
 \usepackage{color}
 \definecolor{listingbg}{gray}{0.95}
 \usepackage{listings}
-\lstset{language=C++, basicstyle=\ttfamily, 
+\lstset{language=C++, basicstyle=\ttfamily,
   keywordstyle=\color{black}\bfseries, tabsize=4, stringstyle=\ttfamily,
   commentstyle=\itshape, extendedchars=false,backgroundcolor=\color{listingbg},escapeinside={/*@}{@*/}}
 \usepackage{paralist}
@@ -53,6 +53,8 @@
 
 \maketitle
 
+
+
 \begin{abstract}
 Die Heidelberger Numerikbibliothek wurde begleitend zu den Vorlesungen
 \textit{Einführung in die Numerik} und \textit{Numerik} in der Programmiersprache C++
@@ -61,6 +63,8 @@ einfach zu benutzende Klassen für grundlegende Aufgaben in der Numerik bis hin 
 von gewöhnlichen Differentialgleichungen zur Verfügung. In fast allen Klassen ist der
 benutzte Zahlentyp parametrisierbar so dass auch hochpräzise Rechnungen durchgeführt werden können.
 \end{abstract}
+
+\tableofcontents{tocdepth}{5}
 
 \section{Einführung}
 
@@ -76,8 +80,8 @@ unter
 verfügbar und wird mit dem Versionskontrollsystem \lstinline{git} verwaltet.
 Spezifische Versionen können auf der jeweiligen Vorlesungswebseite veröffentlicht werden.
 
-Ziele bei der Entwicklung von HDNUM waren i) die einfache Benutzbarkeit (inklusive einfacher 
-Installation), 
+Ziele bei der Entwicklung von HDNUM waren i) die einfache Benutzbarkeit (inklusive einfacher
+Installation),
 ii) die Demonstration objektorientierter Programmierung in der Numerik sowie die
 Möglichkeit zur Durchführung von Berechnungen mit beliebiger Genauigkeit auf Basis
 der Gnu Multiple Precision\footnote{\url{https://gmplib.org}} Bibliothek.
@@ -98,7 +102,7 @@ ausser dem Herunterladen der Dateien. Die aktuelle Version kann man mittels
 $ git clone https://parcomp-git.iwr.uni-heidelberg.de/Teaching/hdnum.git
 \end{lstlisting}
 herunterladen. Hierzu ist das Programm \lstinline{git} erforderlich, welches für alle
-Betriebssysteme frei erhältlich ist. Alternativ wird üblicherweise auch ein 
+Betriebssysteme frei erhältlich ist. Alternativ wird üblicherweise auch ein
 komprimiertes \lstinline{tar}-archive auf der Homepage der jeweiligen Vorlesung angeboten.
 Dies entpackt man mittels
 \begin{lstlisting}[basicstyle=\ttfamily\small,frame=single]
@@ -108,9 +112,9 @@ In dem entpackten bzw. installiertem Verzeichnis findet man die folgenden Dateie
 Unterverzeichnisse:
 \begin{itemize}
 \item \lstinline{hdnum.hh}: Diese Header-Datei ist in ein C++-Programm einzubinden um HDNUM
-nutzen zu können. 
+nutzen zu können.
 \item Das Verzeichnis \lstinline{mystuff} ist für ihre Programme vorgesehen aber Sie können
-natürlich jedes andere Verzeichnis nutzen. Wichtig ist nur, dass der Compiler die Datei 
+natürlich jedes andere Verzeichnis nutzen. Wichtig ist nur, dass der Compiler die Datei
 \lstinline{hdnum.hh} findet. Im Verzeichnis \lstinline{mystuff} ist schon ein Beispielprogramm
 um gleich loslegen zu können. Dieses Programm übersetzt man mit:
 \begin{lstlisting}[basicstyle=\ttfamily\small,frame=single]
@@ -132,8 +136,8 @@ für dieses Dokument.
 \subsubsection*{GNU Multiple Precision Bibliothek}
 
 HDNUM kann Berechnungen mit hoher Genauigkeit durchführen. Hierzu ist die GNU Multiple Precision
-Bibliothek (GMP) erforderlich, 
-welche Sie für viele Systeme kostenlos erhalten können. Um GMP nutzen zu können müssen 
+Bibliothek (GMP) erforderlich,
+welche Sie für viele Systeme kostenlos erhalten können. Um GMP nutzen zu können müssen
 Sie in der Datei \lstinline{hdnum.hh} die Zeile
 \begin{lstlisting}[basicstyle=\ttfamily\small,frame=single]
 #define HDNUM_HAS_GMP 1
@@ -143,6 +147,7 @@ die Headerdateien und Bibliotheken von GMP findet. Dies kann dann so aussehen:
 \begin{lstlisting}[basicstyle=\ttfamily\footnotesize,frame=single]
 $ g++ -I.. -I/opt/local/include -o example example.cc -L/opt/local/lib -lgmpxx -lgmp
 \end{lstlisting}
+% $
 
 \section{Lineare Algebra}
 
@@ -436,19 +441,1286 @@ void initialize (hdnum::DenseMatrix<T>& A, hdnum::Vector<T>& b)
 \end{lstlisting}}}
 \end{frame}
 
+Im Folgenden geht es um Löser für Gleichungssysteme. Ist das zu
+lösende Gleichungssystem linear, so verwendet man eine LR- oder
+QR-Zerlegung. Im nichtlinearen Fall, der beispielsweise bei den in
+Numerik 1 behandelten impliziten Runge-Kutta Verfahren auftritt, macht
+man sich Fixpunktiterationen, wie z.B. im Newtonverfahren zunutze.
+
 \subsection{LR Zerlegung}
 
-\subsection{QR Zerlegung}
+\subsubsection{Kurze Erklärung des Algorithmus}
+
+Die LR-Zerlegung wird angewandt, um ein Gleichungssystem der Form
+$Ax=b$ zu lösen. Dabei wird die reguläre, quadratische Matrix $A$ in
+eine linke untere Dreiecksmatrix $L$ und in eine rechte obere
+Dreiecksmatrix $R$ Zerlegt, sodass $A=LR$. Zusätzlich ist meistens
+eine Pivotisierung erforderlich, womit man schließlich auf das System
+$PA=LR$ kommt. Durch diese Pivotisierung ist sichergestellt, dass das
+Diagonalelement der Matrix ungleich null ist, denn sonst könnten wir
+unseren Algorithmus nicht anwenden.
+
+Dabei unterscheidet man zum einen die Partialpivotisierung, bei der
+sichergestellt wird, dass das betragsmäßig größte Element der Spalte
+unterhalb der Diagonale durch Zeilenpermutationen auf die Diagonale
+getauscht wird. Bei der Totalpivotisierung betrachtet man die ganze
+Matrix unterhalb der Diagonalen und sucht dort das betragsmäßig größte
+Element, um es durch Zeilen- und Spaltenoperationen auf den aktuellen
+Diagonaleintrag zu tauschen. Das betragsmäßig größte Element wird
+gewählt, um numerische Fehler zu verringern.
+
+\subsubsection{LR-Zerlegung - How to}
+
+Will man ein Programm schreiben, dass ein lineares Gleichungssystem
+der Form $Ax=b$ mittels LR-Zerlegung der Matrix $A$ löst, ist wie
+folgt vorzugehen:
+\begin{itemize}
+\item Zu Beginn erstellt man den Rechteseitevektor $b$ und die Matrix
+  $A$. Dies sieht zum Beispiel so aus:
+
+  {\footnotesize{\begin{lstlisting}{}
+Vector<number> b(3);
+b[0]=15;
+b[1]=73;
+b[2]=12;
+
+DenseMatrix <number> A(3,3);
+A[0][0]=2;   A[0][1]=1;   A[0][2]=7;
+A[1][0]=8;   A[1][1]=8;   A[1][2]=33;
+A[2][0]=-4;  A[2][1]=10;  A[2][2]=4;
+\end{lstlisting}}}
+
+\item Zusätzlich benötigen wir Vektoren $x$ und $p$. Falls eine
+  Totalpivotisierung durchgeführt wird, ist ein weiterer Vektor $q$ zu
+  erstellen. Um die Kondition der Matrix zu verbessern können die
+  Funktionen \lstinline{row_equilibrate} sowie
+  \lstinline{apply_equilibrate} angewendet werden, für die ein
+  zusätzlicher Vektor $s$ benötigt wird:
+
+  {\footnotesize{\begin{lstlisting}{}
+Vector<number> x(3,0.0);
+Vector<number> s(3);
+Vector<std::size_t> p(3);
+Vector<std::size_t> q(3);
+\end{lstlisting}}}
+
+\item Wie bereits im vorangegangenen Punkt erwähnt, kann zu Beginn die
+  Kondition der Matrix $A$ verbessert werden. Dies geschieht mithilfe
+  der Funktionen \lstinline{row_equilibrate} und
+  \lstinline{apply_equilibrate}. Wie diese angewendet werden, kann man
+  in den nachfolgenden Punkten sehen.
+
+\item Nun wendet man eine der folgenden  Funktionen auf die Matrix $A$
+  und den zuvor erstellten Permutationsvektor $p$ an. In unserem
+  Beispiel führen wir eine Totalpivotisierung durch, weshalb wir den
+  zusätzlichen Vektor $q$ benötigen:
+
+  {\footnotesize{\begin{lstlisting}{}
+row_equilibrate (A,s);
+lr_fullpivot(A,p,q);
+\end{lstlisting}}}
+
+  Für eine Partialpivotisierung ist die Funktion
+  \lstinline{lr_partialpivot}, für eine LR-Zerlegung ohne Pivotisierung
+  die Funktion \lstinline{lr} zu verwenden. (Hierbei ist der zusätzliche
+  Permutationsvektor $q$ nicht notwendig.)  Jetzt können wir das
+  Gleichungssystem für viele unterschiedliche rechte Seiten lösen.
+
+\item Dafür müssen wir die rechte Seite wie folgt vorbereiten:
+
+{\footnotesize{\begin{lstlisting}{}
+apply_equilibrate(s,b);
+permute_forward(p,b);
+\end{lstlisting}}}
+
+\item Daraufhin rufen wir die Funktion \lstinline{solveL} auf, die als
+  Parameter die Matrix $A$, den Rechteseitevektor $b$ und einen Vektor
+  $y$ bekommt, in dem die Lösung des Gleichungssystems $Ly=b$
+  gespeichert wird. Um Speicherplatz zu sparen können wir das Ergebnis
+  gleich in den bereits vorhandenen Vektor $b$ schreiben.
+
+\item Schließlich wird noch die Funktion \lstinline{solveR} benötigt,
+  die das Gleichungssystem $Rx=y$ löst. Die Funktion braucht als
+  Parameter die Matrix $A$, den Rechteseitevektor $y$ (des
+  Gleichungssystems $Ly=b$) sowie den Vektor $x$, in dem das
+  endgültige Ergebnis gespeichert wird:
+
+  {\footnotesize{\begin{lstlisting}{}
+solveL(A,b,b);
+solveR(A,x,b);
+\end{lstlisting}}}
+
+\item Falls eine Totalpivotisierung vorgenommen wurde, müssen zum
+  Schluss die Permutationen, die im Vektor $q$
+  (Spaltentransvormationen von $A$) gespeichert wurden, auf das
+  Ergebnis $x$ mittels \lstinline{permute_backward} angewendet werden:
+  {\footnotesize{\begin{lstlisting}{} permute_backward(q,x);
+\end{lstlisting}}}
+
+\item Die Lösung des linearen Gleichungssystems ist nun im Vektor $x$
+  gespeichert. In unserem Fall:
+
+    {\footnotesize{\begin{lstlisting}{}
+x[0] = 1
+x[1] = 2
+x[2] = 3
+\end{lstlisting}}}
+  \end{itemize}
+
+
+
+\subsection{Ausführliche Erläuterungen zur Datei \lstinline{lr.hh}}
+\begin{itemize}
+\item \textbf{Die Funktion \lstinline{lr}}: Zu Beginn wird bei allen
+  Funktionen überprüft, ob eine quadratische, nichtleere Matrix
+  vorliegt und ob der Vektor $p$ mit der gegebenen Matrix kompatibel
+  ist.  In der ersten $for$-Schleife wird eine Zeile der Matrix
+  gesucht, deren Diagonalelement ungleich null ist. Anschließend wird
+  diese Zeile mit der des aktuellen Diagonalelements getauscht. Die
+  Permutationen, welche durch die Pivotsuche entstehen, werden im
+  Vektor $p$ gespeichert.
+
+{\footnotesize{\begin{lstlisting}{}
+for (std::size_t k=0; k<A.rowsize()-1; ++k)
+{
+  // finde Pivotelement und vertausche Reihen
+  for (std::size_t r=k; r<A.rowsize(); ++r)
+    if (A[r][k]!=0)
+    {
+      p[k] = r;   // speichere Permutation im Schritt k
+      if (r>k)    //tausche komplette Reihe falls r!=k
+        for (std::size_t j=0; j<A.colsize(); ++j)
+        {
+          T temp(A[k][j]);
+          A[k][j] = A[r][j];
+          A[r][j] = temp;
+        }
+      break;
+    }
+    if (A[k][k]==0) HDNUM_ERROR("matrix is singular");
+    // Moifikation
+    for (std::size_t i=k+1; i<A.rowsize(); ++i)
+    {
+      T qik(A[i][k]/A[k][k]);
+      A[i][k] = qik;
+        for (std::size_t j=k+1; j<A.colsize(); ++j)
+          A[i][j] -= qik * A[k][j];
+    }
+}
+\end{lstlisting}}}
+
+  In der zweiten $for$-Schleife wird dann die obere Dreiecksmatrix mit
+  dem permutierten A erstellt.
+
+\item \textbf{Die Funktion \lstinline{lr_partialpivot}}:Parameter:
+  Matrix $A$ sowie Permutationsvektor $p$.  Diese Funktion führt eine
+  partielle Pivotisierung durch. Dabei geht sie wie folgt vor:
+  Zunächst wird der Vektor $p$ initialisiert, indem er mit den Werten
+  $0$ bis $n-1$ (wobei
+  $A \in \mathbb{R^{\mathrm{n}\times \mathrm{n}}}$) beschrieben
+  wird. Danach wird in der Matrix $A$ das Pivotelement (betragsmäßig
+  größte Element) in der aktuellen Spalte unterhalb des
+  Diagonalelementes gesucht und die erforderliche Permutation um
+  dieses auf die Diagonale zu tauschen im Vektor $p$ gespeichert:
+
+{\footnotesize{\begin{lstlisting}{}
+for (std::size_t k=0; k<A.rowsize()-1; ++k)
+{
+   // finde Pivotelement
+  for (std::size_t r=k+1; r<A.rowsize(); ++r)
+    if (abs(A[r][k])>abs(A[k][k]))
+    p[k] = r; // speichert Permutation im Schritt k
+}
+\end{lstlisting}}}
+
+  In der darauffolgenden Schleife werden die Zeilen $k$ und $j$
+  getauscht, sodass das Pivotelement auf der Diagonalen liegt.
+
+\item \textbf{Die Funktion \lstinline{lr_fullpivot}}: Diese Funktion
+  geht ähnlich wie die Funktion \lstinline{lr_partialpivot} vor,
+  allerdings braucht sie einen zusätzlichen Vektor $q$, um eine
+  Totalpivotisierung durchzuführen. Hierbei sind nicht nur Zeilen-
+  sondern auch Spaltenvertauschungen möglich, welche im Vektor $q$
+  gespeichert werden.
+
+\item \textbf{Die Funktion \lstinline{permute_forward}}: Der Vektor
+  $p$ hat die notwendigen Permutationen gespeichert. In dieser
+  Funktion werden die Zeilenpermutationen auf den Vektor $b$
+  übertragen:
+
+{\footnotesize{\begin{lstlisting}{}
+for (std::size_t k=0; k<b.size()-1; ++k)
+  if (p[k]!=k)
+  {
+     T temp(b[k]);
+     b[k] = b[p[k]];
+     b[p[k]] = temp;
+  }
+\end{lstlisting}}}
+
+\item \textbf{Die Funktion \lstinline{permute_backward}}: Diese
+  Funktion wird am Ende der Lr-Zerlegung angewendet, um die in der
+  Funktion \lstinline{permute_forward} vorgenommenen Permutationen
+  beim Rechteseitevektor wieder rückgängig zu machen.
+
+
+\item \textbf{Die Funktion \lstinline{row_equilibrate}}: Diese
+  Funktion wird vor dem eigentlichen Algorithmus angewendet, um die
+  Kondition der Matrix zu verbessern (Equilibration).  Die Werte,
+  durch die die Zeilen der Matrix dividiert werden, sind im Vektor $s$
+  gespeichert:
+
+{\footnotesize{\begin{lstlisting}{}
+for (std::size_t k=0; k<A.rowsize(); ++k)
+{
+  s[k] = T(0.0);
+    for (std::size_t j=0; j<A.colsize(); ++j)
+      s[k] += abs(A[k][j]);
+  if (s[k]==0) HDNUM_ERROR("row sum is zero");
+    for (std::size_t j=0; j<A.colsize(); ++j)
+      A[k][j] /= s[k];
+}
+\end{lstlisting}}}
+
+
+\item \textbf{Die Funktion \lstinline{apply_equilibrate}}: Die
+  Veränderungen, die an der Matrix $A$ durchgeführt wurden, werden
+  hier ebenfalls auf den Vektor $b$ angewandt, um die Lösung nicht zu
+  verfälschen.
+
+\item \textbf{Die Funktion \lstinline{solveL}}: Parameter: Vektor $x$
+  und Rechteseitevektor $b$.  Diese Funktion löst die Gleichung
+  $Lx=b$. Dabei wird $x$ folgendermaßen, iterativ bestimmt:
+  $x_i= b_i - \sum_{j=0}^{i-1} l_{ij}x_j$
+
+{\footnotesize{\begin{lstlisting}{}
+for (std::size_t i=0; i<A.rowsize(); ++i)
+{
+  T rhs(b[i]);
+  for (std::size_t j=0; j<i; j++)
+    rhs -= A[i][j] * x[j];
+  x[i] = rhs;
+}
+\end{lstlisting}}}
+
+\item \textbf{Die Funktion \lstinline{solveR}}: Diese Funktion löst
+  die Gleichung $Rx=b$. Dabei wird $x$ folgendermaßen bestimmt:
+  $x_i= b_i - \sum_{j=i+1}^{n-1}r_{ij}x_j$ (hierbei ist
+  $R \in \mathbb{R}^{n \times n}$)
+
+{\footnotesize{\begin{lstlisting}{}
+for (int i=A.rowsize()-1; i>=0; --i)
+{
+  T rhs(b[i]);
+  for (std::size_t j=i+1; j<A.colsize(); j++)
+    rhs -= A[i][j] * x[j];
+  x[i] = rhs/A[i][i];
+}
+\end{lstlisting}}}
+
+\end{itemize}
+
+
+
+\subsection{Iterationsverfahren - die Datei \lstinline{newton.hh}}
+
+Jetzt wissen wir, wie wir lineare Gleichungssysteme der Form $Ax = b$
+lösen können. Was ist jedoch zu tun, wenn das Gleichungssystem nicht
+linear ist, z.B. im simplen, eindimensionalen Fall $x^2 = a$? In der
+Vorlesung lernt man Verfahren, die sich Fixpunktiterationen zunutze
+machen, um der Lösung sehr nahe zu kommen. Die Datei
+\lstinline{newton.hh} stellt hilfreiche Werkzeuge bereit, um derartige
+Gleichungen und Gleichungssystem zu lösen. Das wichtigste ist das
+Newtonverfahren, mit dem man nichtlineare Gleichungen der Form
+$F(x) = 0$ lösen kann. Zunächst betrachten wir jedoch die konkrete
+Formulierung eines Problems in einer Klasse.
+
+
+
+\subsubsection{Die Klasse \lstinline{SquareRootProblem}}
+Um ein nichtlineares Gleichungssystem der Form $f(x)=0$ lösen zu
+können müssen wir zu Beginn eine Klasse für unser Problem
+erstellen. Diese benötigt neben einem geeigneten Konstruktor und den
+Angaben über die Dimension des Problems eine Methode, die den
+Funktionswert bereitstellt, und eine andere, welche die Ableitung der
+Funktion bereitstellt.  Wir zeigen dies beispielhaft an der Klasse
+SquareRootProblem:
+
+{\footnotesize{\begin{lstlisting}{}
+class WurzelProblem
+{
+   public:
+    typedef std::size_t size_type;
+    typedef N number_type;
+    WurzelProblem (number_type a_);
+    std::size_t size () const;
+    void F (const Vector<N>& x, Vector<N>& result) const;
+    void F_x (const Vector<N>& x, DenseMatrix<N>& result) const;
+
+  private:
+    number_type a;
+};
+\end{lstlisting}}}
+
+
+\begin{itemize}
+\item Typedef:
+
+  {\footnotesize{\begin{lstlisting}{}
+typedef std::size_t size_type;
+typedef N number_type;
+\end{lstlisting}}}
+
+Bei den Typedefs am Anfang handelt es sich zwar nicht um Methoden,
+diese sind jedoch ebenso wichtig. Wir wissen von vornherein nicht,
+welcher Datentyp letztlich verwendet wird. Die Typedefs sind da, damit
+der Solver später erkennen kann, mit welchem Zahlentyp die Klasse
+eigentlich arbeitet.
+
+\item Konstruktor:
+  {\footnotesize{\begin{lstlisting}{}
+WurzelProblem::WurzelProblem (number_type a_)
+: a(a_)
+{}
+\end{lstlisting}}}
+
+Damit haben wir die Möglichkeit unterschiedliche Probleme der Form
+$x^2=a$ zu lösen, indem wir dem Konstruktor das gewünschte a
+übergeben.
+
+\item Dimension:
+
+  {\footnotesize{\begin{lstlisting}{}
+std::size_t Wurzelproblem::size () const
+{
+  return 1;
+}
+\end{lstlisting}}}
+
+\item Funktionswert: $f(x)=x^2-a$:
+
+  {\footnotesize{\begin{lstlisting}{}
+void Wurzelproblem::F (const Vector<N>& x, Vector<N>& result) const
+{
+  result[0] = x[0]*x[0] - a;
+}
+\end{lstlisting}}}
+
+Wir benötigen diese spezielle Form, da wir nur Probleme der Form
+$f(x)=0$ lösen können.
+
+\item Ableitung: $f'(x)=2x$:
+  {\footnotesize{\begin{lstlisting}{}
+void Wurzelprobelem::F_x (const Vector<N>& x,
+    DenseMatrix<N>& result) const
+{
+  result[0][0] = number_type(2.0)*x[0];
+}
+\end{lstlisting}}}
+(Die Ableitung muss manuell berechnet werden.)
+\end{itemize}
+
+\noindent
+Nachdem wir unsere Problemklasse erstellt haben, können wir nun ein
+Objekt dieser Klasse z.B. das Problem $x^2=5$ erstellen und dieses mit
+dem Newtonalgorithmus lösen. Dazu gehen wir wie folgt vor:
+\begin{itemize}
+  \item Objekt der Klasse \lstinline{WurzelProblem} mit dem Namen
+    \glqq problem\grqq{} erstellen, welches die Gleichung $x^2=5$
+    repräsentiert:
+
+  {\footnotesize{\begin{lstlisting}{}
+WurzelProblem<Number> problem(5.0);
+\end{lstlisting}}}
+\end{itemize}
+
+\noindent
+Nun müssen wir ein Objekt der Klasse Newton erstellen und diverse
+Parameter setzen:
+
+\subsubsection{Die Klasse \lstinline{Newton}}
+\begin{itemize}
+\item Folgendermaßen kann man eine Instanz der Klasse
+  \lstinline{Newton} erstellen und alle Parameter setzen:
+
+    {\footnotesize{\begin{lstlisting}{}
+Newton newton;                    // Ein Newtonobjekt
+newton.set_maxit(20);             // maximale Anzahl der Iteratioenen
+newton.set_verbosity(2);          // Ausfuehrlichkeit der Ausgaben
+newton.set_reduction(1e-100);     // Reduktionsfaktor
+newton.set_abslimit(1e-100);      // maximaler absoluter Fehler
+newton.set_linesearchsteps(3);    // Wie viele Schritte fuer Linesearch
+\end{lstlisting}}}
+
+\item Schließlich benötigen wir noch einen Vektor $u$, in dem die
+  Lösung gespeichert wird. Dieser muss die selbe Größe wie unser
+  Problem haben:
+
+  {\footnotesize{\begin{lstlisting}{}
+Vector<Number> u(problem.size());
+\end{lstlisting}}}
+
+\item Den Startwert für das Newton Verfahren setzten wir hier auf
+  17. Es kann natürlich auch ein anderer Wert gewählt werden, man muss
+  allerdings beachten, dass der Startwert nicht zu weit von der Lösung
+  entfernt ist, da das Newton-Verfahren nicht global konvergent ist.
+
+  {\footnotesize{\begin{lstlisting}{}
+u[0]=17.0;
+\end{lstlisting}}}
+
+\item Jetzt können wir die Methode \lstinline{solve} der Klasse Newton
+  auf unser Problem anwenden:
+
+  {\footnotesize{\begin{lstlisting}{}
+newton.solve(problem,u);
+\end{lstlisting}}}
+
+\item Wir bekommen als Lösung dieses speziellen Wurzelproblems das Ergebnis:\\
+  $u= 2.2361e+00$
+\end{itemize}
+
+Man kann solche Probleme nicht nur mit dem Newton-Verfahren lösen, wie
+bereits gesehen, sondern auch mittels der Klasse \lstinline{Banach}.
+
+\subsubsection{Ausführliche Erläuterungen zur Klasse Newton}
+
+Die Klasse Newton besteht im Wesentlichen aus einer Methode
+\lstinline{solve} welche zum Lösen von nichtlinearen Gleichungen
+benutzt werden kann. Neben dieser Methode gibt es noch einige
+Verfahrens-Parameter wie die maximale Iterationsanzahl, welche im
+Konstruktor gesetzt werden können.
+
+Beim Lösen wird zuerst überprüft ob das Residuum $r=F(x)$ bereits
+kleiner oder gleich der Schranke \lstinline{abslimit} ist. Ist dies
+der Fall, so ist der Startwert bereits gut genug und wir sind
+fertig. Im anderen Fall wird mittels der LR-Zerlegung die nächste
+Suchrichtung $\bigtriangledown f(x_k)^{-1}f(x_k) = z_k$
+bestimmt. Mittels einer simplen Line-Search Methode wird ein
+geeignetes $\lambda$ bestimmt und $x_{k+1}=x_k-\lambda z_k$ gesetzt.
+
+{\footnotesize{\begin{lstlisting}{}
+for (size_type k=0; k<linesearchsteps; k++)
+{
+  y = x;
+  y.update(-lambda,z);                       // y = x-lambda*z
+  model.F(y,r);                              // r = F(y)
+  N newR(norm(r));                           // berechnet Norm
+}
+if (newR<(1.0-0.25*lambda)*R)                // pruefe Konvergenz
+{
+  x = y;
+  R = newR;
+  break;
+}
+else lambda *= 0.5;                          // reduziert Daempgungsfaktor
+if (R<=reduction*R0)                         // pruefe Konvergenz
+{
+  converged = true;
+  return;
+}
+\end{lstlisting}}}
+
+
+\subsubsection{Die Klasse \lstinline{Banach}}
+\begin{itemize}
+\item Löst ein nichtlineares System der Form $F(x)=0$ mittels
+  Fixpunktiteration $x = x - \sigma*F(x)$
+\item Die wichtigste Funktion ist die Funktion \lstinline{solve}, die
+  die eigentliche Lösung durchführt.
+\item Bei diesem Verfahren macht man sich den banachschen Fixpunktsatz
+  zunutze.
+\item Eine konkrete Implementierung, wie ein Problem mit der Klasse
+  \lstinline{Banach} gelöst wird ist nicht in dieser Dokumentation
+  enthalten, da dies sehr ahnlich zur Lösung mit der Klasse
+  \lstinline{Newton} funktioniert. Ein Beispiel sieht man in der Datei
+  \lstinline{wurzelbanach.cc}. Der einzige Unterschied besteht im
+  Verfahrensparameter sigma, den man bei Banach noch zusätzlich
+  beachten muss.
+\end{itemize}
+
+
+
+
+\subsubsection{Implementierung}
+{\footnotesize{\begin{lstlisting}{}
+class Banach
+{
+  typedef std::size_t size_type;
+  public:
+    Banach ()
+      : maxit(25), linesearchsteps(10), verbosity(0),
+        reduction(1e-14), abslimit(1e-30),  sigma(1.0), converged(false);
+    void set_maxit (size_type n);
+    void set_sigma (double sigma_);
+    void set_linesearchsteps (size_type n);
+    void set_verbosity (size_type n);
+    void set_abslimit (double l);
+    void set_reduction (double l);
+    template<class M>
+    void solve (const M& model, Vector<typename M::number_type> x) const;
+    bool has_converged () const;
+
+  private:
+    size_type maxit;
+    size_type linesearchsteps;
+    size_type verbosity;
+    double reduction;
+    double abslimit;
+    double sigma;
+    mutable bool converged;
+};
+\end{lstlisting}}}
+
+\begin{itemize}
+\item Mit folgender Typdefinition spart man sich Schreibarbeit und es
+  ist klarer, dass damit eine Größe gemeint ist.
+
+  {\footnotesize{\begin{lstlisting}{}
+typedef std::size_t size_type;
+\end{lstlisting}}}
+
+\item Im Konstruktor werden allen privaten Parametern der Klasse Werte
+  zugewiesen,...
+
+{\footnotesize{\begin{lstlisting}{}
+Banach::Banach ()
+  : maxit(25), linesearchsteps(10), verbosity(0),
+  reduction(1e-14), abslimit(1e-30),  sigma(1.0), converged(false)
+{}
+\end{lstlisting}}}
+
+\item ...die man dann mit den folgenden Funktionen nachträglich noch
+  ändern kann. Der Parameter \glqq maxit\grqq{}  sorgt dafür, dass der
+  später noch erläuterte Solver in keine Endlosschleife gerät, falls
+  die Fixpunktiteration nicht konvergiert, sondern in diesem Fall
+  abbricht und meldet, dass keine Konvergenz vorliegt.
+
+  {\footnotesize{\begin{lstlisting}{}
+void Banach::set_maxit (size_type n)
+{
+  maxit = n;
+}
+\end{lstlisting}}}
+
+\item Hier legt man den Verfahrensparameter $\sigma$ fest.
+
+  {\footnotesize{\begin{lstlisting}{}
+void Banach::set_sigma (double sigma_)
+{
+  sigma = sigma_;
+}
+\end{lstlisting}}}
+
+\item Wie viele Schritte soll der Solver machen, bevor er abbricht?
+  Die kann man hier festlegen.
+
+{\footnotesize{\begin{lstlisting}{}
+void Banach::set_linesearchsteps (size_type n)
+{
+  linesearchsteps = n;
+}
+\end{lstlisting}}}
+
+\item Ausgabekontrolle: Je höher die gesetzte Zahl ist, desto genauere
+  Informationen zur Konvergenz werden auf der Konsole ausgegeben. Was
+  die einzelnen Zahlen bedeuten sollte man sich allerdings bei Bedarf
+  im Quellcode ansehen.
+
+  {\footnotesize{\begin{lstlisting}{}
+void Banach::set_verbosity (size_type n)
+{
+  verbosity = n;
+}
+\end{lstlisting}}}
+
+\item Fehlertoleranz
+  {\footnotesize{\begin{lstlisting}{}
+void Banach::set_abslimit (double l)
+{
+  abslimit = l;
+}
+\end{lstlisting}}}
+
+\item Reduktionsfaktor
+  {\footnotesize{\begin{lstlisting}{}
+void Banach::set_reduction (double l)
+{
+  reduction = l;
+}
+\end{lstlisting}}}
+
+\item Mit der Methode \lstinline{solve} kann dann ein gegebenes Model
+  unter Rückgriff auf die 'private Members' gelöst werden.
+
+  {\footnotesize{\begin{lstlisting}{}
+template<class M>
+void Banach::solve (const M& model, Vector<typename M::number_type> x) const
+{
+  typedef typename M::number_type N;
+  Vector<N> r(model.size());              // Residuum
+  Vector<N> y(model.size());              // temporaere Loesungen
+
+  model.F(x,r);          // berechne das nichtlineare Residuum
+  N R0(norm(r));         // Norm des Anfangsresiduums
+  N R(R0);               // Norm des aktuellen Residuums
+
+  converged = false;
+
+  // maximal so viele Iterationen wie in Matrix festgelegt sind
+  for (size_type i=1; i<=maxit; i++)
+  {
+    if (R<=abslimit)     //pruefe Absolutbetrag des Residuums
+    {
+      converged = true;
+      return;
+    }
+  \end{lstlisting}}}
+
+Falls das vorläufige Ergebnis noch nicht genau genug war $(\leqslant
+abslimit)$, geht es in die nächste Iteration, bei der zunächst der
+eigentliche Iterationsschritt ausgeführt wird und anschließend mittels
+Norm getestet wird, ob das Ergebnis nun genau genug ist und man
+anschließend wieder zum Beginn der for-Schleife springt. Ist das
+Ergebnis genau genug, hat die Funktion ihren Zweck erfüllt und wird
+beendet.
+
+{\footnotesize{\begin{lstlisting}{}
+  // next iterate
+  y = x;
+  y.update(-sigma,r);             // y = x-sigma*z
+  model.F(y,r);                   // r = F(y)
+  N newR(norm(r));                // Norm berechnen
+
+  x = y;                          // Annahme der neuen Iterierten
+  R = newR;                       // Normspeicherung
+
+  // check convergence
+  if (R<=reduction*R0 || R<=abslimit)
+  {
+    converged = true;
+    return;
+  }
+}
+\end{lstlisting}}}
+
+\item Der bool-Wert, den folgende Funktion zurück gibt, wird am Anfang
+  immer auf false gesetzt. Löst die Funktion \lstinline{solve} das
+  Gleichungssystem erfolgreich, so setzt sie den Wert auf true und als
+  private Member der Klasse bleibt dieser Wert dann auch
+  erhalten. Somit sagt einem diese Funktion, ob das Fixpunktverfahren
+  schon mal erfolgreich war und damit auch wieder erfolgreich sein
+  wird.
+
+{\footnotesize{\begin{lstlisting}{}
+bool Banach::has_converged () const
+{
+  return converged;
+}
+\end{lstlisting}}}
+\end{itemize}
+
+
+
+\section{Gewöhnliche Differentialgleichungen}
+
+Im folgenden Kapitel soll es um das zentrale Thema der Vorlesung
+Numerik 1 gehen, das Lösen von gewöhnlichen Differentialgleichungen.
+Zur Wiederholung: das ist eine Gleichung bei der eine Funktion, sowie
+auch Ableitungen der Funktion vorkommen und man versucht
+herauszufinden, welche Funktion die Gleichung erfüllt. HDNUM stellt
+einige hilfreiche Werkzeuge zum Lösen von solchen
+Differentialgleichungen zur Verfügung.  Es zeigt, wie eine
+Differentialgleichung aufzubereiten ist, damit sie ein Solver (wie die
+im einzelnen Funktionieren sei der Vorlesung und ihren Beweisen
+überlassen) lösen kann und beinhaltet zugleich mehrere solcher
+Solver. Fakt ist, dass sowohl Differentialgleichungen, als auch Solver
+in Klassen verpackt sind. Diese Klassen müssen bestimmte Methoden
+haben, damit sie untereinander kompatible sind. Fangen wir doch einmal
+mit einem Beispiel für eine Differentialgleichung an:
+
+\subsection{Das Paradebeispiel für eine DGL in HDNUM - \lstinline{modelproblem.hh}}
+
+\begin{itemize}
+\item Diese Datei beinhaltet lediglich die Klasse
+  \lstinline{ModelProblem}, welche genau die Methoden enthält, die für
+  die Kompatibilität mit jedem Solver aus HDNUM nötig sind. Also muss
+  jede Differentialgleiungsklasse genau diese Methodendeklarationen
+  aufweißen!
+\item Die komplette Information über eine Differentialgleichung ist in
+  der Implementierung der Methoden enthalten.
+\item Die Datei ist so geschrieben, dass Objekte der Klasse
+  \lstinline{ModelProblem} Modelprobleme im Sinne der Vorlesung sind,
+  kann aber für jede beliebige Differentalgleichung umgeschrieben
+  werden. Dabei ist zu beachten, dass alle Funktionsköpfe der Methoden
+  nicht verändert werden. Nur so bleibt die neue DGL mit unseren
+  Solvern kompatibel.
+\item Ein Objekt der Klasse Modelproblem entspricht dann einer zu
+  lösenden Differentialgleichung.
+\item Ist die Datei im Header eingebunden, kann man im Programm
+  Objekte der Klasse Modelproblem erstellen und mit dem Wissen der
+  nächsten Abschnitte dann auch lösen.
+\end{itemize}
+
+{\footnotesize{\begin{lstlisting}{}
+template<class T, class N=T>
+class ModelProblem
+{
+  public:
+    typedef std::size_t size_type;
+    typedef T time_type;
+    typedef N number_type;
+
+    ModelProblem (const N& lambda_)
+      : lambda(lambda_);
+
+    std::size_t size () const;
+    void initialize (T& t0, hdnum::Vector<N>& x0) const;  //Anfangswerte
+    void f (const T& t, const hdnum::Vector<N>& x,        //Funktion f
+      hdnum::Vector<N>& result) const;
+    void f_x (const T& t, const hdnum::Vector<N>& x,  //Jacobi Matrix von f
+       hdnum::DenseMatrix<N>& result) const;
+
+  private:
+    N lambda;
+};
+\end{lstlisting}}}
+
+
+\begin{itemize}
+\item Bei den Typedefs am Anfang handelt es sich zwar nicht um
+  Methoden, diese sind jedoch auch eine kurze Erklärung wert. Man
+  sieht daran gut, dass es sich um eine Template-Klasse handelt und
+  nie von vornherein klar ist, welcher Datentyp dann eigentlich
+  verwendet wird. Die Typedefs sind da, damit der Solver später
+  erkennen kann, mit welchem Zahlentyp die Modellklasse eigentlich
+  arbeitet. Wir verwenden sie, damit uns die Möglichkeit bleibt, mit
+  sehr genauen Datentypen (multiple precision) zu arbeiten.
+
+\item Der Konstruktor initialisiert falls benötigt private
+  Parameter. Solche muss es aber nicht immer geben.
+
+  {\footnotesize{\begin{lstlisting}{}
+template <class T, class N=T>
+ModelProblem::ModelProblem (const N& lambda_)
+  : lambda(lambda_)
+{}
+\end{lstlisting}}}
+
+\item Mit dieser Funktion legt man fest, welche Dimension die zu
+  lösende Differentialgleichung hat.
+
+{\footnotesize{\begin{lstlisting}{}
+template <class T, class N=T>
+std::size_t ModelProblem::size () const
+{
+  return 1;
+}
+\end{lstlisting}}}
+
+\item Hier legt man die Anfangswerte fest. $t_0$ ist der zeitliche
+  Anfangswert, während $x_0$ der Vektor der Anfangswerte ist. Im
+  eindimensionalen enthält er also nur einen Eintrag.
+
+{\footnotesize{\begin{lstlisting}{}
+template <class T, class N=T>
+void ModelProblem::initialize (T& t0, hdnum::Vector<N>& x0) const
+{
+  t0 = 0;
+  x0[0] = 1.0;
+}
+\end{lstlisting}}}
+
+\item Die Funktion f beinhaltet die eigentliche
+  Differentialgleichung. Dabei wird der Vektor \lstinline{result},
+  also die Lösung der Funktion \lstinline{f} zum Zeitpunkt
+  \lstinline{t} berechnet.
+
+{\footnotesize{\begin{lstlisting}{}
+template <class T, class N=T>
+void ModelProblem::f (const T& t, const hdnum::Vector<N>& x,
+  hdnum::Vector<N>& result) const
+{
+  result[0] = lambda*x[0];
+}
+\end{lstlisting}}}
+
+\item Diese Funktion stellt die Jacobi-Matrix der Funktion
+  \lstinline{f} in \lstinline{result} zur Verfügung. Diese wird von
+  impliziten Solvern benötigt.
+
+{\footnotesize{\begin{lstlisting}{}
+template <class T, class N=T>
+void ModelProblem::f_x (const T& t, const hdnum::Vector<N>& x,
+  hdnum::DenseMatrix<N>& result) const
+{
+  result[0] = lambda;
+}
+\end{lstlisting}}}
+
+\item Im privaten Teil der Klasse stehen eventuell benötigte Parameter.
+
+\end{itemize}
+
+
+\subsection{Anwendungsbeispiel für \lstinline{modelproblem.hh}}
+Die Datei \lstinline{modelproblem_high_dim.hh} ist eine Umformulierung
+der Datei \lstinline{modelproblem.hh} und stellt die
+Differentialgleichung $u'(t) = \begin{pmatrix}
+  5 & -2\\
+  -2 & 5
+\end{pmatrix}*u(t)$ mit Anfangswert
+$ u(t) = \left( \begin{array}{c}1 \\\ 3 \end{array}\right)$ da. Damit
+ist sie ein Beispiel für die Darstellung einer mehrdimensionalen
+Differentialgleichung.
+
+\subsection{Der Solver löst die DGL - \lstinline{modelproblem.cc}}
+\begin{itemize}
+\item Diese Datei ist ein Musterbeispiel zum Lösen von gewöhnlichen
+  Differentialgleichungen.
+\item Sie zeigt, wie man Differentialgleichungsklasse und Solverklasse
+  so kombiniert, dass die Differentialgleichung gelöst und das
+  Ergebnis derart in eine Datei geschrieben wird, dass man es plotten
+  kann.
+\end{itemize}
+
+{\footnotesize{\begin{lstlisting}{}
+#include <iostream>
+#include <vector>
+#include "hdnum.hh"
+#include "modelproblem.hh"
+#include "expliciteuler.hh"
+\end{lstlisting}}}
+
+Im Header wird neben Bibliotheken auch das Modelproblem, sowie eine
+Datei zur Lösung der Differentialgleichung eingebunden. In diesem Fall
+soll die Differentialgleichung mit dem expliziten Euler gelöst werden.
+
+{\footnotesize{\begin{lstlisting}{}
+int main ()
+{
+  typedef double Number;                // Definiert Zahlentyp
+  typedef ModelProblem<Number> Model;   // Definiert Modeltyp
+  Model model(-1.0);                    // Objekt der Klasse mit lambda=-1
+  typedef ExplicitEuler<Model> Solver;  // Waehle einen Solver
+  Solver solver(model);                 // initialisiere Solver mit Model
+  solver.set_dt(0.02);                  // Setze Zeitabstaende
+  hdnum::Vector<Number> times;          // Vektor fuer Zeitabstaende
+  hdnum::Vector<hdnum::Vector<Number>> states; // Loesungsvektor
+  times.push_back(solver.get_time());   // Anfangszeit in Vektor speichern
+  states.push_back(solver.get_state()); // Anfangswert in Vektor speichern
+  while (solver.get_time()<5.0-1e-6)    // Schleife zum Loesen
+    {
+      solver.step();
+      times.push_back(solver.get_time());    // Zeit speichern
+      states.push_back(solver.get_state());  // Wert speichern
+    }
+
+  gnuplot("mp2-ee-0.02.dat",times,states);   // Ausgabe wird im Abschnitt
+                                             // ueber Gnuplot erklaert
+  return 0;
+}
+\end{lstlisting}}}
+
+Ein Alternativbeispiel ist die Datei
+\lstinline{modelproblem_high_dim.cc}. Indem man beim Solver EE durch
+andere Solver aus \lstinline{ode.hh} (Erklärung siehe unten) ersetzt,
+kann man die DGL mit verschiedenen Mitteln lösen und sieht dabei
+gleich ein Beispiel, dass eine DGL mit allen unseren Solvern
+kompatibel ist.
+
+\subsection{Was muss ein Solver können? - \lstinline{expliciteuler.hh}}
+\begin{itemize}
+\item Diese Datei enthält die Klasse \lstinline{ExplicitEuler}.
+\item In der Klasse gibt es alle Methoden, die ein Solver in unserem
+  Kontext braucht.
+\item Alle Solver haben mindestens die Methoden, die
+  \lstinline{ExplicitEuler} hat, eventuell noch ein paar mehr.
+\item Mit Hilfe dieser Datei kann man alle Differentialgleichungen
+  lösen, die die bereits erwähnte Darstellung in einer Klasse
+  besitzen.
+\end{itemize}
+
+{\footnotesize{\begin{lstlisting}{}
+template<class M>
+class ExplicitEuler
+{
+  public:
+    typedef typename M::size_type size_type;
+    typedef typename M::time_type time_type;
+    typedef typename M::number_type number_type;
+
+    ExplicitEuler (const M& model_)
+      : model(model_), u(model.size()), f(model.size());
+    void set_dt (time_type dt_);
+    void step ();
+    const hdnum::Vector<number_type>& get_state () const;
+    time_type get_time () const;
+    time_type get_dt () const;
+
+  private:  //Die private Member sind bei jedem Solver ähnlich.
+    const M& model;      //Referenz auf das Model ist IMMER vorhanden
+    time_type t, dt;     //Zeitlichen Variablen
+    hdnum::Vector<number_type> u;  //Vektor zur Speicherung von Zeitschritten
+    hdnum::Vector<number_type> f;  //mindestens einem Vektor
+                  // zur Speicherung von Loesungen
+};
+\end{lstlisting}}}
+
+\begin{itemize}
+\item Zuerst noch eine kurze Bemerkung zu den Typedefs am Anfang: Der
+  Solver hat zuanächst im Konstruktor nur eine Referenz auf ein Model
+  bekommen. Damit ist aber noch nicht klar, mit welchen Zahlentypen im
+  Model gearbeitet wird und ob man die Funktionen davon aufrufen
+  kann. Um dies festzusetzen dienen die Typedefs. Somit kann der
+  Solver DGLs für beliebige Zahlentypen lösen und erst beim
+  Kompilieren wird festgelegt, welcher eigentlich gemeint ist.
+
+\item Der Konstruktor speichert eine Referenz zu dem Model, das er
+  lösen soll. Außerdem werden hier Parameter für den
+  Lösungsalgorithmus wie die Größe der Zeitschritte, Anfangswerte,
+  oder ähnliches festgelegt.
+
+{\footnotesize{\begin{lstlisting}{}
+template<class M>
+ExplicitEuler::ExplicitEuler (const M& model_)
+  : model(model_), u(model.size()), f(model.size())
+{
+  model.initialize(t,u);
+  dt = 0.1;
+}
+\end{lstlisting}}}
+
+\item Da Solver die Lösung (Zeit-)Schritt für (Zeit-)Schritt
+  berechnen, kann man festlegen, wie groß diese Schritte sein
+  sollen. Je größer die Schritte, desto ungenauer das Ergebnis, aber
+  desto geringer der Rechenaufwand.
+
+{\footnotesize{\begin{lstlisting}{}
+template<class M>
+void ExplicitEuler::set_dt (time_type dt_)
+{
+  dt = dt_;
+}
+\end{lstlisting}}}
+
+\item Der eigentliche Lösungsalgorithmus steht in der Funktion
+  step. Sie entscheidet, wie man vom einem zum nächsten Schritt
+  gelangt. Hier steht also der Algorithmus des expliziten Eulers.
+
+{\footnotesize{\begin{lstlisting}{}
+template<class M>
+void ExplicitEuler::step ()
+{
+  model.f(t,u,f);   // berechnet Wert von f an der Stelle t
+  u.update(dt,f);   // naechster Funktionswert ist alter Wert+dt*f(t)
+  t += dt;          // die Zeit wird um dt nach vorne gesetzt
+}
+\end{lstlisting}}}
+
+\item Der bisher errechnete Lösungsvektor:
+{\footnotesize{\begin{lstlisting}{}
+template<class M>
+const hdnum::Vector<number_type>& ExplicitEuler::get_state () const
+{
+  return u;
+}
+\end{lstlisting}}}
+\item Der Zeitpunkt, der gerade berechnet wurde:
+{\footnotesize{\begin{lstlisting}{}
+template<class M>
+time_type ExplicitEuler::get_time () const
+{
+  return t;
+}
+\end{lstlisting}}}
+
+\item Das aktuelle dt (Schrittweite):
+{\footnotesize{\begin{lstlisting}{}
+template<class M>
+time_type ExplicitEuler::get_dt () const
+{
+  return dt;
+}
+\end{lstlisting}}}
+\end{itemize}
+
+\subsection{Einschub: Gnuplot in \lstinline{ode.hh}}
+Ein numerischer Solver kann uns natürlich keine analytische Lösung
+einer DGL in Form einer konkreten Funktion liefern. Er kann uns aber
+sagen, wie die Lösungsfunktion an ganz vielen Punkten aussieht. Damit
+wir mit diesen vielen Zahltupeln etwas anfangen können, visualisieren
+wir sie mit Gnuplot.  Folgende Template-Funktionen machen uns dies
+sehr leicht und schreiben das Ergebnis im richtigen Format in eine
+Datei, sodass wir es dann direkt plotten können.
+
+\begin{enumerate}
+\item
+{\footnotesize{\begin{lstlisting}{}
+void gnuplot (const std::string& fname, const std::vector<T> t,
+ const std::vector<Vector<N> > u)
+\end{lstlisting}}}
+
+Nur für eindimensionale DGL geeignet!  Man übergibt der Funktion einen
+Dateinamen (.dat) in Anführungsstrichen, sowie Zeit und
+Lösungsvektor. Die Funktion sorgt dafür, dass die Daten in einer Art
+Tabelle in einer Datei mit dem gewünschten Namen stehen. Diese Datei
+kann man dann plotten.
+\item
+{\footnotesize{\begin{lstlisting}{}
+void gnuplot (const std::string& fname, const std::vector<T> t,
+ const std::vector<Vector<N> > u, const std::vector<T> dt)
+\end{lstlisting}}}
+
+Für zweidimensionale DGL geeignet!  Man übergibt der Funktion die
+gleichen Daten wie oben und zusätzlich noch den zweiten
+Lösungsvektor. Das Ergebnis ist ebenfalls analog. Man beachte beim
+plotten dann allerdings die Eigenheiten der Mehrdimensionalität.
+\end{enumerate}
+
+Als Beispielvorlage kann der Code im vorhergehenden Abschnitt am Ende
+gesehen werden.
+
+Die wichtigsten Gnuplotbefehle im Terminal:
+\begin{enumerate}
+\item \lstinline{gnuplot} - öffnet Gnuplot
+\item \lstinline{plot 'dateiname.dat' using 1:2} - plottet im zweidimensionalen unter Verwendung der Zeilen eins und zwei
+\item \lstinline{plot 'dateiname.dat' using 1:2, 'dateiname.dat' using 1:3} - plottet im zweidimensionalen zwei Graphen
+\item \lstinline{splot 'dateiname.dat' using 1:2:3} - plottet im dreidimensionalen
+\item \lstinline{exit} - beendet gnuplot
+\end{enumerate}
+
+
+\subsection{Einschrittverfahren - \lstinline{ode.hh}}
+
+Nachdem wir uns jetzt angeschaut haben, wie genau eine
+Differentialgleichung und ein Solver in eine Klasse verpackt werden
+müssen, damit sie untereinander kompatibel sind und wie man mit dem
+Solver dann die Differentialgleichung löst, können wir dazu übergehen
+uns mehrere solcher Solver anzuschauen. In der Vorlesung lernt man
+dazu die impliziten und expliziten Runge-Kutta Verfahren als
+wichtigste Beispiele kennen. Der explizite Euler den wir zuvor schon
+als Beispiel hatten gehört auch dazu. In der Datei \lstinline{ode.hh}
+sind mehrerer solche Solver implementiert. Damit man eine beliebige
+Differentialgleichung (natürlich wieder in einer Klasse verpackt) mit
+jedem Solver lösen kann, haben diese Solverklassen alle Methoden mit
+den jeweils gleichen Funktionsköpfen. Lediglich in der Art wie diese
+Funktionen dann implementiert sind unterscheiden sie sich, was dann
+das einzelne Verfahren ausmacht.  Zusätzlich zu den Methoden der zuvor
+behandelten Klasse \lstinline{ExplicitEuler} haben die Klassen in
+\lstinline{ode.hh} noch einige zusätzliche Funktionen. Die Verfahren
+mit Schrittweitensteuerung sind ebenfalls leicht abgewandelt.
+
+
+\subsubsection{Die Verfahren in ode.hh}
+\begin{itemize}
+\item Explizite Runge-Kutta Verfahren
+  \begin{itemize}
+  \item\lstinline{EE} - expliziter Euler
+  \item\lstinline{ModifiedEuler}
+  \item\lstinline{Heun2}
+  \item\lstinline{Heun3}
+  \item\lstinline{Kutta3}
+  \item\lstinline{RungeKutta4}
+  \end{itemize}
+\item Implizite Runge-Kutta Verfahren
+  \begin{itemize}
+  \item \lstinline{IE} - impliziter Euler
+  \item \lstinline{DIRK} - Diagonal implizites Verfahren
+  \end{itemize}
+\item Schrittweitensteuerung
+  \begin{itemize}
+  \item\lstinline{RKF45}
+  \item\lstinline{RE} - Richardsonextrapolation
+  \end{itemize}
+\end{itemize}
+
+\subsection{Das allgemeine Runge-Kutta-Verfahren - \lstinline{RungeKutta}}
+Diese Klasse ist dazu gebaut, um eine Differentialgleichung mit einem
+beliebigen expliziten oder impliziten Runge-Kutta-Verfahren zu
+Lösen. Die Differentialgleichung muss dabei auf die gleiche Weise wie
+bisher in einer Klasse implementiert sein.
+
+\subsubsection{Bedienung der Klasse \lstinline{RungeKutta}}
+Der einzige Unterschied zur Handhabung einer anderen Solverklasse
+besteht darin, dass dem Konstruktor zusätzlich noch das
+Butcher-Tableau des gewünschten Verfahrens übergeben werden muss. Der
+Funktionskopf im Namespace hdnum sieht folgendermaßen aus:
+{\footnotesize{\begin{lstlisting}{} RungeKutta::RungeKutta (const
+      M& model, DenseMatrix<number_type> A_, Vector<number_type> b_,
+      Vector<number_type> c_)
+\end{lstlisting}}}
+
+Die Matrix \lstinline{A_} und die Vektoren \lstinline{b_} und
+\lstinline{c_} kommen direkt aus dem Butcher Tableau. Alles Weitere
+ist dann analog zu den anderen Solverklassen. N ist ein
+Templateparameter der Klasse. Möchte man statt dem Newtonverfahren das
+Banachverfahren zur Lösung von nichtlinearen Gleichungssystemen
+verwenden, so ist Banach ein zweiter Templateparameter den man beim
+Erzeugen eines Objektes davor schreibt. In diesem Fall macht es auch
+Sinn dem Konstruktor als weiteres Argument am Schluss noch einen
+$number\_type \ sigma\_$ zu übergeben. Der entsprechende Konstruktor
+ist implementiert.  Das könnte dann folgendermaßen aussehen:
+{\footnotesize{\begin{lstlisting}{} RungeKutta<Model, Banach>
+      Solver(model, A, b, c, 0.5)
+\end{lstlisting}}}
+
+Dabei müsste dann model ein Modelproblem vom Typ Model sein und $A$ eine
+$n \times n$ Matrix, sowie $b$ und $c$ $n$-dimensionale Vektoren. Das
+Sigma im Banachverfahren wäre in diesem Fall dann 0,5.
+
+
+\paragraph{Die Algorithmen hinter Funktion \lstinline{void step}}
+\begin{itemize}
+\item Die Funktion \lstinline{step} unterscheidet von Anfang an, ob es
+  sich um ein explizites oder implizites Verfahren handelt. (Die
+  Testfunktion erkennt dies am Butchertableau).
+\item Im expliziten Fall sind alle Werte bekannt und in privaten
+  Variablen gespeichert, um
+  $u_{n}^h = u_{n-1}^h +h_n(b_1k_1+...+b_sk_s)$ mittels
+  $k_1 = f(t_{n-1},u_{n-1}^h)$,
+  $k_i = f(t_{n-1}+c_ih_n, u_{n-1}^h+h_n \sum_{j=1}^{i-1}a_{ij}k_j)$
+  zu berechnen. Dabei wird die Funktion $f$ von der Problemklasse
+  bereitgestellt
+
+\item Im impliziten Fall gilt es $k_i = f(t_{n-1}+c_ih_n,
+  u_{n-i}^h+h_n \sum_{j=1}^s a_{ij}k_j)$ für $i = 1,...,s$ zu lösen
+  und damit $u_n^h = u_{n-1}^h + h_n \sum_{i = 1}^s b_ik_i $ zu
+  bestimmen. Numerisch ist es jedoch einfacher, zunächst $z_i := h_n
+  \sum_{j=1}^s a_{ij}k_j$ für $i = 1,...,s$ zu berechnen und dann die
+  $k_i$ über $K= h_n^{-1}A^{-1}Z$ zu bestimmen. Dabei sind $K$ und $Z$
+  Vektoren aus Vektoren.
+
+  Falls $b^T$ gleich der letzten Zeile von $A$ ist, kann man sich die
+  Berechnung der $k_i$ sparen und direkt $u_n^h = u_{n-1}+z_s$
+  berechnen. Die nichtlinearen Gleichungssysteme bei der Berechnung
+  der $z_i$ werden wahlweise mit dem Banach- oder Newtonverfahren
+  gelöst, für die eine Problemklasse erstellt wird.
+
+\item Sowohl für das Banach- als auch für das Newtonverfahren benötigt
+  man eine bestimmte Problemklasse, die das zu lösende Problem
+  modelliert. In unserem Fall erfüllt diesen Zweck die Klasse
+  \lstinline{ImplicitRungeKuttaStepProblem}. Diese wird im Konstruktor
+  mit allen wichtigen Größen der Klasse \lstinline{RungeKutta}
+  initialisiert. Wichtig zu wissen ist jedoch, dass Banach- und
+  Newtonverfahren keine Nullstellen von Funktionen, die Vektoren von
+  Vektoren als Argument haben, berechnen können. Deshalb muss man $Z$
+  als einen Vektor der Größe $n*s$ auffassen und erst danach wieder
+  auf $s$ Vektoren der Größe $n$ zurückrechnen.
+
+\item Das Herzstück der Klasse
+  \lstinline{ImplicitRungeKuttaStepProblem} sind die Funktionen
+  \lstinline{void F} und \lstinline{void F_x}. In der ersten wird die
+  Funktion modelliert, die annuliert wird, wenn die richtigen $z_i$
+  getroffen sind, während die zweite Funktion nur im Newtonverfahren
+  benötigt wird und die Jacobimatrix der ersten Funktion bereitstellt.
+
+\item Die Funktion \lstinline{F} sieht dabei folgendermaßen aus:
+  \begin{align*}
+    F: \mathbb{R}^{n*s} \to \mathbb{R}^{n*s}, \left( \begin{array}{c}z_1 \\...\\...\\z_s\end{array} \right) \mapsto \left( \begin{array}{c}F_1(z_1,...,z_s)\\...\\...\\F_s(z_1,...,z_s)\end{array} \right)
+  \end{align*}
+  wobei $F_i(z_1,...,z_s) = z_i-h_n \sum_{j=1}^s
+  a_{ij}f(t_{n-1}+c_jh_n, u_{n-1}+z_j)$ für $i = 1,...,s$.
+
+\item Die zu berechnende Jacobimatrix ist eine Blockmatrix aus
+  $s\times s$ Blöcken der Größe $n \times n$. Dabei gilt für den
+  $(i,j)$-ten Block:
+  \begin{align}
+    J_{ij} &= \frac{\partial F_i}{\partial z_j}(z_1,...,z_s) = \frac{\partial}{\partial z_j}(z_i - h_n \sum_{k=1}^s a_{ik}f(t_{n-1}+c_kh_n, u_{n-1}+z_k)) \\
+           &= \delta_{ij}I-h_n \sum_{k=1}^s a_{ik} \frac{\partial}{\partial z_j}f(t_{n-1}+c_kh_n, u_{n-1}+z_k)\\
+           &= \delta_{ij}I-h_n a_{ij} \frac{\partial f}{\partial z_j}(t_{n-1}+c_jh_n, u_{n-1}+z_j)
+  \end{align}
+  $ \frac{\partial f}{\partial z_j}$ erhalten wir dabei aus der
+  Funktion \lstinline{f_x} der Differentialgleichungsklasse.
+\end{itemize}
+
+\subsubsection{Konsistenzordnungstests mit \lstinline{void ordertest}}
+
+Mit dieser Funktion kann man die Konsistenzordnung eines allgemeinen
+Runge-Kutta-Verfahrens, dessen Butchertableau man kennt,
+bestimmen. Dazu ist es jedoch nötig, in der Klasse der
+Differentialgleichung die exakte Lösung in der eine Funktion u
+anzugeben.  Ein Beispiel dazu findet man in der Datei
+\lstinline{modelproblem.hh}.  Der Funktionskopf von
+\lstinline{ordertest} sieht folgendermaßen aus:
+{\footnotesize{\begin{lstlisting}{} typedef double Number;
+      template<class M, class S> void ordertest(const M&
+      model, S solver, Number T, Number h_0, int L)
+    \end{lstlisting}}}
+
+Dabei beschreibt \lstinline{model} eine gewöhnliche
+Differentialgleichung, \lstinline{solver} ist ein Löser und T der
+Zeitpunkt, der für den Konsistenzordnungstest verwendet werdern
+soll. $h_0$ ist die initiale Schrittweite und L die Anzahl, wie oft
+$h_0$ bei der Berechnung halbiert werden soll.  Auf der Konsole wird
+dann in der i-ten Zeile der Fehler im i-ten Schritt, sowie die damit
+berechnete Konsistenzordnung ausgegeben.  Ein kurzes
+Anwendungsbeispiel gibt es in der Datei
+\lstinline{model_ordertest.cc}.
+
+\paragraph{Berechnung der Konsistenzordnung}
+\begin{itemize}
+\item Für die Konsistenzordnung $\alpha$ gilt: $||u-u_h||=Ch^\alpha$
+\item
+  $E_{n_1,n_2}= \frac{||u(T)-u_{h_1}(T)||}{||u(T)-u_{h_2}(T)||} =
+  \frac{Ch_1^\alpha}{Ch_2^\alpha}=
+  \left(\frac{h_1}{h_2}\right)^\alpha$, wobei $h_i=\frac{h_0}{2^i}$
+  gewählt wird.
+\item
+  $\alpha= \frac{log E_{n_1,n_2}}{log \left( \frac{h_1}{h_2} \right)}$
+\item Im Fall, dass T nicht direkt von einem Zeitschritt getroffen
+  wird, also $u_{h_i}(T)$ nicht direkt berechnet wird, muss man den
+  Berechnungsalgorithmus anpassen. Dabei unterscheidet man mehrere
+  Fälle. Wird T fast getroffen (Abstand kleiner als vorgegebenes
+  $\epsilon$), so nimmt man diesen Wert, das heißt man vergrößert den
+  letzten Schritt um maximal $\epsilon$, sodass man T genau
+  trifft. Andernfalls verändert man die Schrittweite der letzten ein
+  oder zwei Schritte um T genau zu treffen.
+\end{itemize}
+
+
+
+\subsection{Anwendungsbeispiele}
+Im Ordner \lstinline{examples/num1} sind einige interessante Anwendungsbeispiele gegeben, bei denen man sehen kann, wie die Verfahren aus der Vorlesung in anderen Naturwissenschaften verwendet werden.
+
+\subsubsection{Hodgkin-Huxley-Modell}
+Das Hodgkin-Huxley-Modell kommt aus der Neurobiologie und beschreibt die Vorgänge an der Zellmembran einer Nevenzelle bei der Reizweiterleitung. Für genauere Erklärungen siehe \url{https://de.wikipedia.org/wiki/Hodgkin-Huxley-Modell}.
+
+\subsubsection{n-body Problem}
+Das n-body Problem ist ein Problem der Astrophysik, bei dem es um die Bewegungen von Himmelskörpern geht. Für genauere Erklärungen siehe \url{https://en.wikipedia.org/wiki/N-body_problem}.
+
+\subsection{Van der Pol Oszillator}
+Dabei handelt es sich um ein Schwingungsbeispiel, dass in unserem Fall ein gutes Beispiel für eine steife Differentialgleichung ist. Genaueres dazu gibt es unter \url{https://de.wikipedia.org/wiki/Van-der-Pol-System} bei Wikipedia.
+
+
+
 
 \begin{appendices}
 
 \section{Kleiner Programmierkurs}
 
 \section{Unix Kommandos}
+In der folgenden Tabelle sind die wichtigsten Kommandos fürs Terminal (das schwarze Fenster) zusammengestellt. Alle Worte in Großbuchstaben sind Platzhalter.
+
+
+\begin{tabular}{|c|c|}\hline
+   Kommando & Auswirkungen \\ \hline
+   cd & gehe ins home-Verzeichnis \\ \hline
+   cd ORDNERNAME & gehe in einen Ordner, dieser muss im Ordner enthalten sein, \\ & in dem man sich gerade befindet \\ \hline
+   cd .. & gehe einen Ordner höher \\ \hline
+   ls & zeigt an, was sich in dem Ordner befindet, \\
+   & in dem man gerade ist \\ \hline
+   tar cvf GEWÜNSCHTERNAME.tar & \\  Inhalt1.cc Inhalt2.cc ... Inhaltn.cc & erstellt ein Tar-Archiv \\ \hline
+   tar xvf TARNAME.tar  & entpackt das Tar \\ \hline
+   g++ -std=c++11 -o DATEINAME & \\  DATEINAME.cc & kompilieren (-std=c++11 braucht nicht jeder) \\ \hline
+   ./DATEI & Ausführen der Datei \\ \hline
+
+
+ \end{tabular}
 
 \end{appendices}
 
 \bibliographystyle{plain}
 \bibliography{hdnum.bib}
- 
+
 \end{document}
