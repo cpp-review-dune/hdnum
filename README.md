@@ -32,6 +32,13 @@ Installation
 There is no installation. Just include the header file `hdnum.hh` and
 that is it.
 
+Building the documentation
+--------------------------
+
+In the `hdnum` top-level directory just run `doxygen`. This will build
+the Doxygen documentation into the directory `doc/html` or `doc/latex`,
+respectively.
+
 History
 -------
 
