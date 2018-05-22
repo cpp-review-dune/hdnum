@@ -361,20 +361,17 @@ namespace hdnum {
       \param[in] i first row index of the new matrix
       \param[in] j first column index of the new matrix
       \param[in] rows row size of the new matrix, i.e. it has components [i,i+rows-1]
-      \param[in] cols column size of the new matrix, i.e. it has components [j,j+m-1]
+      \param[in] cols column size of the new matrix, i.e. it has components [j,j+cols-1]
     */
     DenseMatrix sub (size_type i, size_type j, size_type rows, size_type cols)
     {
       DenseMatrix A(rows,cols);
       DenseMatrix &self = *this;
-      size_type k1=0, k2=0;
-      for (size_type i_=i; i_ < i+rows; i_++){
-        for (size_type j_=j; j_ < j+cols; j_++){
-          A[k1][k2] = self[i_][j_];
-          k2++;
+      for(size_type k1=0; k1<rows; k1++)
+        for(size_type k2=0; k2<cols; k2++)
+        {
+          A[k1][k2] = self[k1+i][k2+j];
         }
-        k1++;
-      }
       return A;
     }
 
