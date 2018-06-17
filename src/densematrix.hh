@@ -1009,7 +1009,7 @@ namespace hdnum {
     */
 	Vector<REAL> operator* (const Vector<REAL> & x)
 	{
-	  assert( x.size() == rowsize() );
+	  assert( x.size() == colsize() );
 
 	  Vector<REAL> y( rowsize() );
 	  for(std::size_t r=0; r<rowsize(); ++r){
@@ -1128,7 +1128,8 @@ namespace hdnum {
     */
 	DenseMatrix operator+ (const DenseMatrix & x) const
 	{
-	  assert(colsize() == x.rowsize());
+	  assert(colsize() == x.colsize());
+	  assert(rowsize() == x.rowsize());
 
 	  const std::size_t out_rows = rowsize();
 	  const std::size_t out_cols = x.colsize();
@@ -1185,7 +1186,8 @@ namespace hdnum {
     */
 	DenseMatrix operator- (const DenseMatrix & x) const
 	{
-	  assert(colsize() == x.rowsize());
+	  assert(colsize() == x.colsize());
+	  assert(rowsize() == x.rowsize());
 
 	  const std::size_t out_rows = rowsize();
 	  const std::size_t out_cols = x.colsize();
