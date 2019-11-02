@@ -82,9 +82,9 @@ int main ()
   newton.set_linesearchsteps(3);  
 
   /* Runge-Kutta Fehlberg solver */
-  //typedef RKF45<Model> Solver;         
-  //Solver solver(model);                
-  //solver.set_TOL(1E-1); 
+  // typedef RKF45<Model> Solver;
+  // Solver solver(model);
+  // solver.set_TOL(0.2);
 
   /* DIRK solver 
 
@@ -96,10 +96,11 @@ int main ()
   */
   typedef DIRK<Model,Newton> Solver;         
   Solver solver(model,newton,"Implicit Euler");               
+  //Solver solver(model,newton,"Alexander");
 
   const Number dt = 1.0/16.0;
   solver.set_dt(dt);             // set initial time step
-  solver.set_verbosity(1);
+  //solver.set_verbosity(1);
 
   std::vector<Number> times;           // store time values here
   std::vector<Vector<Number> > states; // store states here
@@ -130,7 +131,8 @@ int main ()
 	    << " number of f evaluations: " << model.get_count() 
             << " minimum step width: " << min_dt
 	    << std::endl;
-  gnuplot("vanderpol.dat",times,states,dts); // output model result
+  //gnuplot("vanderpol_rk45_loose.dat",times,states,dts); // output model result
+  gnuplot("vanderpol_IE_loose.dat",times,states,dts); // output model result
 
   return 0;
 }
