@@ -47,7 +47,7 @@ public:
     x0[10] = -0.93240737;
     x0[11] = -0.86473146;
 
-    normalize(x0);
+    this->normalize(x0);
   }
 
 };
