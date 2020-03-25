@@ -42,13 +42,13 @@ class Timer
 {
 public:
 	//! A new timer, start immediately
-        Timer () throw(TimerError)
+        Timer () 
 	{
 	  reset();
 	}
 
 	//! Reset timer
-	void reset() throw (TimerError)
+	void reset()
 	{
 #ifdef TIMER_USE_STD_CLOCK
 	  cstart = std::clock();
@@ -61,7 +61,7 @@ public:
 	}
 
 	//! Get elapsed user-time in seconds
-	double elapsed () const throw (TimerError)
+	double elapsed () const
         {
 #ifdef TIMER_USE_STD_CLOCK
 	  return (std::clock()-cstart) / static_cast<double>(CLOCKS_PER_SEC);
