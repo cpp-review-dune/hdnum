@@ -52,6 +52,11 @@ namespace hdnum {
     {
     }
 
+    //! constructor from initializer list
+    Vector (const std::initializer_list<REAL> &v)
+    {
+      for (auto it : v) this->push_back(it);
+    }
 
     // Methods:
 
