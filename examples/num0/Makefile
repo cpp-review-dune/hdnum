@@ -1,10 +1,13 @@
-CC          = g++
+CC          = g++-mp-8
 HDNUMPATH   = ../..
 CCOPTS      = -I$(HDNUMPATH) -O3
 #CCOPTS      = -I/opt/local/include -I$(HDNUMPATH) -O3
 LIOPTSGMP   = -lgmpxx -lgmp -lm
 #LIOPTSGMP   = -L/opt/local/lib -lgmpxx -lgmp -lm
 LIOPTS      = -lm
+
+corona_MAIN = corona
+corona_SOURCES =
 
 precision_MAIN = precision
 precision_SOURCES =
@@ -32,7 +35,7 @@ wurzelbanach_SOURCES =
 
 all : nogmp gmp
 
-nogmp : $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(fibonacci_MAIN) $(lr_opcount_MAIN)
+nogmp : $(corona_MAIN) $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(fibonacci_MAIN) $(lr_opcount_MAIN)
 
 gmp : $(lr_MAIN) $(wurzel_MAIN) $(wurzelbanach_MAIN)
 
@@ -65,6 +68,9 @@ $(whitespace_MAIN): $(whitespace_MAIN).o $(whitespace_SOURCES) Makefile
 
 $(funktion_MAIN): $(funktion_MAIN).o $(funktion_SOURCES) Makefile
 	$(CC) -o $(funktion_MAIN) $(funktion_MAIN).o $(funktion_SOURCES) $(LIOPTS)
+
+$(corona_MAIN): $(corona_MAIN).o $(corona_SOURCES) Makefile
+	$(CC) -o $(corona_MAIN) $(corona_MAIN).o $(corona_SOURCES) $(LIOPTS)
 
 $(precision_MAIN): $(precision_MAIN).o $(precision_SOURCES) Makefile
 	$(CC) -o $(precision_MAIN) $(precision_MAIN).o $(precision_SOURCES) $(LIOPTS)
