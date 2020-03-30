@@ -55,7 +55,7 @@ namespace hdnum {
     //! constructor from initializer list
     Vector (const std::initializer_list<REAL> &v)
     {
-      for (auto it : v) this->push_back(it);
+      for (auto elem : v) this->push_back(elem);
     }
 
     // Methods:
@@ -570,6 +570,40 @@ namespace hdnum {
           {
             f << std::setw(x.width())
               << i
+              << std::fixed
+              << std::showpoint
+              << std::setw( x.width() )
+              << std::setprecision( x.precision() )
+              << x[i]
+              << std::endl;
+          }
+      }
+    f.close();
+  }
+
+  template<typename REAL>
+  inline void gnuplot(
+                      const std::string& fname,
+                      const std::vector<std::string>& t,
+                      const Vector<REAL> x
+                      )
+  {
+    std::fstream f(fname.c_str(),std::ios::out);
+    for (typename Vector<REAL>::size_type i=0; i<x.size(); i++)
+      {
+        if( x.scientific() )
+          {
+            f << t[i] << " "
+              << std::scientific
+              << std::showpoint
+              << std::setw( x.width() )
+              << std::setprecision( x.precision() )
+              << x[i]
+              << std::endl;
+          }
+        else
+          {
+            f << t[i] << " "
               << std::fixed
               << std::showpoint
               << std::setw( x.width() )

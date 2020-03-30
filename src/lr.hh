@@ -256,5 +256,26 @@ namespace hdnum {
       }
   }
 
+    //! a complete solver; Note A, x and b are modified!
+  template<class T>
+  void linsolve (DenseMatrix<T>& A, Vector<T>& x, Vector<T>& b)
+  {
+    if (A.rowsize()!=A.colsize() || A.rowsize()==0)
+      HDNUM_ERROR("need square and nonempty matrix");
+    if (A.rowsize()!=b.size())
+      HDNUM_ERROR("right hand side incompatible with matrix");
+
+    Vector<T> s(x.size());
+    Vector<std::size_t> p(x.size());
+    Vector<std::size_t> q(x.size());
+    row_equilibrate(A,s);
+    lr_fullpivot(A,p,q);
+    apply_equilibrate(s,b);
+    permute_forward(p,b);
+    solveL(A,b,b);
+    solveR(A,x,b);
+    permute_backward(q,x);
+  }
+
 }
 #endif

@@ -86,6 +86,23 @@ namespace hdnum {
 	{
 	}
 
+    //! constructor from initializer list
+    DenseMatrix (const std::initializer_list<std::initializer_list<REAL>> &v)
+    {
+      m_rows = v.size();
+      m_cols = v.begin()->size();
+      for (auto row : v)
+        {
+          if (row.size()!=m_cols)
+            {
+              std::cout << "Zeilen der Matrix nicht gleich lang" << std::endl;
+              exit(1);
+            }
+          for (auto elem : row) 
+            m_data.push_back(elem);
+        }
+    }
+    
     void addNewRow( const hdnum::Vector<REAL> & rowvector ){
       m_rows++;
       m_cols = rowvector.size();
@@ -372,6 +389,21 @@ namespace hdnum {
         {
           A[k1][k2] = self[k1+i][k2+j];
         }
+      return A;
+    }
+
+    /*!
+      \brief Transposition
+
+      Return the transposed as a new matrix.
+    */
+    DenseMatrix transpose ()
+    {
+      DenseMatrix A(m_cols,m_rows);
+      DenseMatrix &self = *this;
+      for (size_type i=0; i<m_rows; i++)
+        for (size_type j=0; j<m_cols; j++)
+          A[j][i] = self[i][j];
       return A;
     }
 
