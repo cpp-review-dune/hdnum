@@ -6,7 +6,7 @@ set output "corona_daten.eps"
 set grid
 set xdata time
 set timefmt "%d/%m"
-set xrange ["24/02":"30/03"]
+set xrange ["24/02":"31/03"]
 set format x "%d.%m"
 set xlabel "Datum"
 set ylabel "Infizierte Personen"
@@ -18,19 +18,34 @@ set grid
 set logscale y
 set xdata time
 set timefmt "%d/%m"
-set xrange ["24/02":"30/03"]
+set xrange ["24/02":"31/03"]
 set format x "%d.%m"
 set xlabel "Datum"
 set ylabel "Infizierte Personen"
 plot "N.dat" u 1:2 lw 4 title "Infizierte"
 ! epstopdf corona_daten_logscale.eps
 
+set output "corona_vorhersage5_logscale.eps"
+set grid
+set logscale y
+set xdata time
+set timefmt "%d/%m"
+set xrange ["01/03":"31/03"]
+set format x "%d.%m"
+set xlabel "Datum"
+set ylabel "Infizierte Personen"
+plot "N.dat" u 1:2 lw 4 title "Daten", \
+"fit1.dat" u 1:2 w l lw 4 title "Interpolation", \
+"fit2.dat" u 1:2 w l lw 4 title "Ausgleichsgerade", \
+"fit3.dat" u 1:2 w l lw 4 title "nichtl. Schaetzer"
+! epstopdf corona_vorhersage5_logscale.eps
+
 set output "corona_vorhersage5.eps"
 set grid
 set nologscale y
 set xdata time
 set timefmt "%d/%m"
-set xrange ["24/02":"30/03"]
+set xrange ["01/03":"31/03"]
 set format x "%d.%m"
 set xlabel "Datum"
 set ylabel "Infizierte Personen"
@@ -45,7 +60,7 @@ set grid
 set nologscale y
 set xdata time
 set timefmt "%d/%m"
-set xrange ["24/02":"30/03"]
+set xrange ["24/02":"31/03"]
 set format x "%d.%m"
 set xlabel "Datum"
 set ylabel "Verdopplungszeit [Tag]"
