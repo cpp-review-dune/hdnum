@@ -1,4 +1,5 @@
 include ../../make.def
+HDNUMPATH  = ../..
 
 # rule to build all programs without GMP support. That is the default
 nogmp: ecke eemodelproblem fem1d_linear fem1d_quadratic hodgkinhuxley iemodelproblem linearoscillator\

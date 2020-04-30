@@ -1,7 +1,5 @@
 # define your compiler
 CC         = clang++
-# path to hdnum header file from this directory
-HDNUMPATH  = ../..
 # compilation flags without GMP stuff
 CCFLAGS    = -I$(HDNUMPATH) -std=c++11 -O3
 # additional compilation flags for GMP

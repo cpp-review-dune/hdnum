@@ -1,4 +1,5 @@
 include ../../make.def
+HDNUMPATH  = ../..
 
 # rule to build all programs without GMP support. That is the default
 nogmp: corona lr_opcount matrizen vektoren precision
