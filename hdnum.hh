@@ -4,13 +4,12 @@
 
 #define HDNUM_DEVEL_MODE 1
 
-#define HDNUM_HAS_GMP 0
-
 #include <math.h>
 #include <complex>
 #if HDNUM_HAS_GMP
 #include <gmpxx.h>
 #endif
+
 
 #include "src/exceptions.hh"
 #include "src/vector.hh"

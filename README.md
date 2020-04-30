@@ -32,6 +32,13 @@ Installation
 There is no installation. Just include the header file `hdnum.hh` and
 that is it.
 
+Using the Makefiles
+-----------------
+
+Edit the file make.def in the top level directory to define your compiler command,
+compilation flags, linker flags, and flags related to the GNU multiprecision library.
+Compiler should be C++11 at least.
+
 Building the documentation
 --------------------------
 
@@ -50,6 +57,7 @@ History
 -    Version 0.24 from September, 9 2011. (import methods to solve odes/pdes)
 -    Version 0.25 from October, 20 2013. (add exceptions in linear algebra)
 -    Version 0.26 from October, 24 2013. delete countingptr and arrays
+-    no version numbers .. reworked makefiles April, 30 2020
 
 Links
 -----

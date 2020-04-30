@@ -1,121 +1,45 @@
-CC          = g++-mp-8
-HDNUMPATH   = ../..
-CCOPTS      = -I$(HDNUMPATH) -O3
-#CCOPTS      = -I/opt/local/include -I$(HDNUMPATH) -O3
-LIOPTSGMP   = -lgmpxx -lgmp -lm
-#LIOPTSGMP   = -L/opt/local/lib -lgmpxx -lgmp -lm
-LIOPTS      = -lm
+include ../../make.def
 
-corona_MAIN = corona
-corona_SOURCES =
+# rule to build all programs without GMP support. That is the default
+nogmp: corona lr_opcount matrizen vektoren precision
 
-precision_MAIN = precision
-precision_SOURCES =
+# rule to build programs with GMP support
+gmp: wurzel wurzelbanach lr
 
-fibonacci_MAIN = fibonacci
-fibonacci_SOURCES =
+all: nogmp gmp
 
-vektoren_MAIN = vektoren
-vektoren_SOURCES =
+#
+# Programs reqiring no GMP support
+#
 
-matrizen_MAIN = matrizen
-matrizen_SOURCES =
+corona: corona.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-lr_opcount_MAIN = lr_opcount
-lr_opcount_SOURCES =
+lr_opcount: lr_opcount.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-lr_MAIN = lr
-lr_SOURCES =
+matrizen: matrizen.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-wurzel_MAIN = wurzel
-wurzel_SOURCES =
+vektoren: vektoren.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-wurzelbanach_MAIN = wurzelbanach
-wurzelbanach_SOURCES =
+precision: precision.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-all : nogmp gmp
+#
+# Programs reqiring GMP support
+#
 
-nogmp : $(corona_MAIN) $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(fibonacci_MAIN) $(lr_opcount_MAIN)
+wurzel: wurzel.cc
+	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
 
-gmp : $(lr_MAIN) $(wurzel_MAIN) $(wurzelbanach_MAIN)
+wurzelbanach: wurzelbanach.cc
+	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
 
-$(zahlen_MAIN): $(zahlen_MAIN).o $(zahlen_SOURCES) Makefile
-	$(CC) -o $(zahlen_MAIN) $(zahlen_MAIN).o $(zahlen_SOURCES) $(LIOPTS)
+lr: lr.cc
+	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
 
-$(string_MAIN): $(string_MAIN).o $(string_SOURCES) Makefile
-	$(CC) -o $(string_MAIN) $(string_MAIN).o $(string_SOURCES) $(LIOPTS)
-
-$(pendelwhile_MAIN): $(pendelwhile_MAIN).o $(pendelwhile_SOURCES) Makefile
-	$(CC) -o $(pendelwhile_MAIN) $(pendelwhile_MAIN).o $(pendelwhile_SOURCES) $(LIOPTS)
-
-$(pendel_MAIN): $(pendel_MAIN).o $(pendel_SOURCES) Makefile
-	$(CC) -o $(pendel_MAIN) $(pendel_MAIN).o $(pendel_SOURCES) $(LIOPTS)
-
-$(pendelmittimer_MAIN): $(pendelmittimer_MAIN).o $(pendelmittimer_SOURCES) Makefile
-	$(CC) -o $(pendelmittimer_MAIN) $(pendelmittimer_MAIN).o $(pendelmittimer_SOURCES) $(LIOPTS)
-
-$(pendelnumerisch_MAIN): $(pendelnumerisch_MAIN).o $(pendelnumerisch_SOURCES) Makefile
-	$(CC) -o $(pendelnumerisch_MAIN) $(pendelnumerisch_MAIN).o $(pendelnumerisch_SOURCES) $(LIOPTS)
-
-$(pendelmitfunktion_MAIN): $(pendelmitfunktion_MAIN).o $(pendelmitfunktion_SOURCES) Makefile
-	$(CC) -o $(pendelmitfunktion_MAIN) $(pendelmitfunktion_MAIN).o $(pendelmitfunktion_SOURCES) $(LIOPTS)
-
-$(pendelmitfunktionstemplate_MAIN): $(pendelmitfunktionstemplate_MAIN).o $(pendelmitfunktionstemplate_SOURCES) Makefile
-	$(CC) -o $(pendelmitfunktionstemplate_MAIN) $(pendelmitfunktionstemplate_MAIN).o $(pendelmitfunktionstemplate_SOURCES) $(LIOPTS)
-
-$(whitespace_MAIN): $(whitespace_MAIN).o $(whitespace_SOURCES) Makefile
-	$(CC) -o $(whitespace_MAIN) $(whitespace_MAIN).o $(whitespace_SOURCES) $(LIOPTS)
-
-$(funktion_MAIN): $(funktion_MAIN).o $(funktion_SOURCES) Makefile
-	$(CC) -o $(funktion_MAIN) $(funktion_MAIN).o $(funktion_SOURCES) $(LIOPTS)
-
-$(corona_MAIN): $(corona_MAIN).o $(corona_SOURCES) Makefile
-	$(CC) -o $(corona_MAIN) $(corona_MAIN).o $(corona_SOURCES) $(LIOPTS)
-
-$(precision_MAIN): $(precision_MAIN).o $(precision_SOURCES) Makefile
-	$(CC) -o $(precision_MAIN) $(precision_MAIN).o $(precision_SOURCES) $(LIOPTS)
-
-$(hallohdnum_MAIN): $(hallohdnum_MAIN).o $(hallohdnum_SOURCES) Makefile
-	$(CC) -o $(hallohdnum_MAIN) $(hallohdnum_MAIN).o $(hallohdnum_SOURCES) $(LIOPTS)
-
-$(vektoren_MAIN): $(vektoren_MAIN).o $(vektoren_SOURCES) Makefile
-	$(CC) -o $(vektoren_MAIN) $(vektoren_MAIN).o $(vektoren_SOURCES) $(LIOPTS)
-
-$(matrizen_MAIN): $(matrizen_MAIN).o $(matrizen_SOURCES) Makefile
-	$(CC) -o $(matrizen_MAIN) $(matrizen_MAIN).o $(matrizen_SOURCES) $(LIOPTS)
-
-$(lr_opcount_MAIN): $(lr_opcount_MAIN).o $(lr_opcount_SOURCES) Makefile
-	$(CC) -o $(lr_opcount_MAIN) $(lr_opcount_MAIN).o $(lr_opcount_SOURCES) $(LIOPTS)
-
-$(modelproblem_MAIN): $(modelproblem_MAIN).o $(modelproblem_SOURCES) Makefile
-	$(CC) -o $(modelproblem_MAIN) $(modelproblem_MAIN).o $(modelproblem_SOURCES) $(LIOPTS)
-
-$(fibonacci_MAIN): $(fibonacci_MAIN).o $(fibonacci_SOURCES) Makefile
-	$(CC) -o $(fibonacci_MAIN) $(fibonacci_MAIN).o $(fibonacci_SOURCES) $(LIOPTS)
-
-$(ordertest_MAIN): $(ordertest_MAIN).o $(ordertest_SOURCES) Makefile
-	$(CC) -o $(ordertest_MAIN) $(ordertest_MAIN).o $(ordertest_SOURCES) $(LIOPTS)
-
-
-# Applications with GNU multiprecision library
-
-$(eingabe_MAIN): $(eingabe_MAIN).o $(eingabe_SOURCES) Makefile
-	$(CC) -o $(eingabe_MAIN) $(eingabe_MAIN).o $(eingabe_SOURCES) $(LIOPTSGMP)
-
-$(mehrzahlen_MAIN): $(mehrzahlen_MAIN).o $(mehrzahlen_SOURCES) Makefile
-	$(CC) -o $(mehrzahlen_MAIN) $(mehrzahlen_MAIN).o $(mehrzahlen_SOURCES) $(LIOPTSGMP)
-
-$(lr_MAIN): $(lr_MAIN).o $(lr_SOURCES) Makefile
-	$(CC) -o $(lr_MAIN) $(lr_MAIN).o $(lr_SOURCES) $(LIOPTSGMP)
-
-$(wurzel_MAIN): $(wurzel_MAIN).o $(wurzel_SOURCES) Makefile
-	$(CC) -o $(wurzel_MAIN) $(wurzel_MAIN).o $(wurzel_SOURCES) $(LIOPTSGMP)
-
-$(wurzelbanach_MAIN): $(wurzelbanach_MAIN).o $(wurzelbanach_SOURCES) Makefile
-	$(CC) -o $(wurzelbanach_MAIN) $(wurzelbanach_MAIN).o $(wurzelbanch_SOURCES) $(LIOPTSGMP)
-
-.cc.o:
-	$(CC) $(CCOPTS) -c $<
-
+# clean up directory
 clean:
-	rm -f *.o *.dat $(fibonacci_MAIN) $(precision_MAIN) $(vektoren_MAIN) $(matrizen_MAIN) $(lr_MAIN) $(wurzel_MAIN) $(wurzelbanach_MAIN)
+	rm -f *.o corona lr_opcount matrizen vektoren precision wurzel wurzelbanach lr

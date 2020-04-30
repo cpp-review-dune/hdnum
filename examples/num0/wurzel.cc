@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #include "hdnum.hh"
 
@@ -42,7 +41,6 @@ private:
 };
 
 
-
 int main ()
 {
   //typedef double Number;                 // Zahlentyp
@@ -51,7 +49,7 @@ int main ()
 
   typedef WurzelProblem<Number> Problem; // Problemtyp
   Problem problem(2.0);                  // Eine Instanz des Problems
-
+  
   Newton newton;                         // Ein Newtonobjekt
   newton.set_maxit(20);                  // Setze diverse Parameter
   newton.set_verbosity(2);
@@ -62,7 +60,7 @@ int main ()
   Vector<Number> u(problem.size());      // Objekt für die Loesung
   u[0] = 17.0;                           // Startwert
   newton.solve(problem,u);               // Berechne Lösung
-  std::cout << "Ergebnis: " << u[0] << std::endl;
+  std::cout << "Ergebnis: " << std::setprecision(50) << u[0] << std::endl;
 
   return 0;
 }
