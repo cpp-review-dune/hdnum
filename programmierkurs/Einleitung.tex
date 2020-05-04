@@ -1,0 +1,180 @@
+\nocite{*}
+\mode<presentation>
+{
+  \begin{frame}
+    \titlepage
+  \end{frame}
+}
+\mode<article>
+{
+\maketitle
+}
+
+%\mode<presentation>{
+%\begin{frame}<presentation>
+%\frametitle{Outline}
+%\tableofcontents[section,sectionstyle=show/show,subsectionstyle=hide/hide/hide]
+%\end{frame}
+%}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Die Kapitel
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{frame}[fragile]
+\frametitle{Beschreibung des Kurses}
+\begin{itemize}
+\item Kurze Einführung in LINUX
+\item Einrichten eines LINUX-Subsystems für Windows 10
+\item Programmierung in C++ unter LINUX
+\item Idee des Kurses: \glqq{}Lernen an Beispielen\grqq{}, keine
+  rigorose Darstellung
+\item Keine Vorkenntnisse erforderlich
+\item Übungsaufgaben zur Vertiefung
+\item Möglichkeit Fragen zu stellen
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Fragen über CodiMD}
+\begin{enumerate}
+\small
+\item \url{https://codimd.mathphys.stura.uni-heidelberg.de/}
+\item Notiz erstellen und mir dann die url schicken.
+\item Beispiel für das Format der Nachricht:
+\item \url{https://codimd.mathphys.stura.uni-heidelberg.de/ProgrammierkursTest?view}
+\item Am besten Programmcode + Fehlermeldung (falls vorhanden) + Problembeschreibung (Wo euer Verständnisproblem liegt)
+
+\end{enumerate}
+\end{frame}
+
+\note{Hier einmal CodiMD zeigen.}
+
+\begin{frame}[fragile]
+\frametitle{Inhaltsverzeichnis}
+\begin{itemize}
+\footnotesize
+\item Kurze Einführung in LINUX
+\item Ein erstes Programm
+\item Variablen
+\item Ein- und Ausgabe
+\item If-Statements
+\item for- und while-Schleifen
+\item Funktionen
+\item Headerdateien
+\item Klassen
+\item HDNum
+\item Hilfe zur Selbsthilfe
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Warum Programmieren lernen?}
+\begin{itemize}
+\item Auch interessant für das Lehramt:
+\item Hilft beim (detaillierten) Verständnis von Algorithmen
+\item Zur Kontrolle von Lösungen
+\item Visualisierung
+\item Für die Lehre
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Beispiel: Lösung eines LGS}
+\begin{itemize}
+\item Für kleine Matrizen noch von Hand machbar
+\item Für N = 100+ oder sogar 1000+ relativ schwierig
+\item Au\ss erdem sehr Fehleranfällig
+\item Ein Programm schafft auch sehr gro\ss e Matrizen in sehr kurzer Zeit
+\item Relativ fehlerfrei, au\ss er natürlich Numerik (Rundungsfehler, etc.)
+\end{itemize}
+\end{frame}
+
+%\note{Demonstration: LGS mittels Programmierung}
+
+\begin{frame}[fragile]
+\frametitle{Linux-Basics}
+Man hat zwei Möglichkeiten Linux zu bedienen:
+\begin{itemize}
+\item graphische Benutzeroberfläche (GUI)
+\item Texteingabe (Shell)
+\item GUI einfach zu erlernen, ähnlich wie bei Windows
+\item Shell ist deutlich produktiver, aber erfordert Lernen der Syntax (am Anfang etwas ungewohnt)
+\end{itemize}
+\end{frame}
+
+\note{Einmal Terminal vormachen, Arbeitsverzeichnis, Befehle eingeben}
+
+\begin{frame}[fragile]
+\frametitle{Wichtige Befehle}
+cd - Wechselt das momentane Arbeitsverzeichnis.
+\begin{itemize}
+\item Syntax: cd <Dateipfad>
+\item Pfadangabe meist relativ zum Arbeitsverzeichnis
+\item Relative Pfadangabe in Linux:
+\item Momentanes Verzeichnis: .
+\item Unterverzeichnis: ./<Verzeichnis>
+\item Oberverzeichnis: ..
+\end{itemize}
+\end{frame}
+
+\note{cd-Befehl und relative Pfadangabe zeigen}
+
+\begin{frame}[fragile]
+\frametitle{Wichtige Befehle}
+\begin{itemize}
+\item ls - Zeige Inhalt des aktuellen Verzeichnisses.
+\item mkdir <Verzeichnis> - Erstelle neues Verzeichnis
+\item cp <datei1> <datei2> - Kopiere datei1 auf datei2 (datei2 kann verzeichnis sein)
+\item mv wie cp nur verschieben anstatt kopieren
+\item rm <datei> - datei löschen
+\item rm -rf Lösche Verzeichnis mit Inhalt
+\end{itemize}
+\end{frame}
+
+\note{Befehle vormachen}
+
+\begin{frame}
+\frametitle{Weitere Befehle}
+\begin{itemize}
+\item sudo <Befehl> Befehl als Administrator ausführen
+\item man <Befehl> - zeigt einem die Bedienungsanweisung für den Befehl
+\item Für alles Weitere: linux cheat sheet bei google eingeben
+\item Zusammenstellung der wichtigsten Befehle
+\end{itemize}
+\end{frame}
+
+\note{Befehle vormachen, sudo, man}
+
+\begin{frame}[fragile]
+\frametitle{LINUX unter Windows 10}
+\begin{itemize}
+\item Nicht alle haben einen LINUX-Rechner zuhause.
+\item Windows 10 hat dafür einen "LINUX-Emulator"
+\item Installation:
+\begin{enumerate} 
+\item Windows Powershell öffnen
+\item Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux eingeben
+\item Computer Neustarten falls gefordert
+\item Im Microsoft Store Ubuntu runterladen \& installieren
+\item Auch zu finden unter: https://docs.microsoft.com/de-de/windows/wsl/install-win10
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\note{ Einrichten der Arbeitsumgebung, git}
+
+\begin{frame}[fragile]
+\frametitle{Aufgabe 1: Einrichten eurer Arbeitsumgebung}
+\begin{itemize}
+\item Entweder Ubuntu oder Ubuntu unter Windows 10 installieren
+\item Git installieren
+\item HDNum repository runterladen
+\item Befehl: git clone \url{https://parcomp-git.iwr.uni-heidelberg.de/Teaching/hdnum.git}
+\item Eigenen Ordner erstellen
+\end{itemize}
+\end{frame}
