@@ -5,7 +5,7 @@ HDNUMPATH  = ../..
 nogmp: corona lr_opcount matrizen vektoren precision
 
 # rule to build programs with GMP support
-gmp: wurzel wurzelbanach lr
+gmp: wurzel wurzelbanach lr integralgleichung
 
 all: nogmp gmp
 
@@ -41,6 +41,9 @@ wurzelbanach: wurzelbanach.cc
 lr: lr.cc
 	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
 
+integralgleichung: integralgleichung.cc
+	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
+
 # clean up directory
 clean:
-	rm -f *.o corona lr_opcount matrizen vektoren precision wurzel wurzelbanach lr
+	rm -f *.o corona lr_opcount matrizen vektoren precision wurzel wurzelbanach lr integralgleichung
