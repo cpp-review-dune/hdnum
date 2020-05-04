@@ -163,12 +163,7 @@ namespace hdnum {
       HDNUM_ERROR("permutation vector incompatible with rhs");
 
     for (std::size_t k=0; k<b.size()-1; ++k)
-      if (p[k]!=k)
-        {
-          T temp(b[k]);
-          b[k] = b[p[k]];
-          b[p[k]] = temp;
-        }
+      if (p[k]!=k) std::swap(b[k],b[p[k]]);
   }
 
   //! apply permutations to a solution vector
@@ -179,12 +174,7 @@ namespace hdnum {
       HDNUM_ERROR("permutation vector incompatible with z");
 
     for (int k=z.size()-2; k>=0; --k)
-      if (q[k]!=std::size_t(k))
-        {
-          T temp(z[k]);
-          z[k] = z[q[k]];
-          z[q[k]] = temp;
-        }
+      if (q[k]!=std::size_t(k)) std::swap(z[k],z[q[k]]);
   }
 
   //! perform a row equilibration of a matrix; return scaling for later use
