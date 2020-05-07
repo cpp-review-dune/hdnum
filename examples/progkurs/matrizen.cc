@@ -16,5 +16,6 @@ int main ()
   hdnum::Vector<float> x(10,1.0);
   hdnum::Vector<float> y(10,1.0);
   A.mv(y,x);    //y = A*x (matrix-vector)
-  
+
+  return 0;
 }

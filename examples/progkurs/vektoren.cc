@@ -13,5 +13,6 @@ int main ()
   
   a = x + y; // Wäre bei Arrays auch nicht so einfach
   float d = x*y; //Skalarprodukt!
-  
+
+  return 0;
 }
