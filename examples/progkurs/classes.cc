@@ -2,12 +2,19 @@
 #include <iostream> // header für Ein-/Ausgabe
 #include <cmath>    // mathematische Funktionen
 
-class Vector3d() // einfaches Beispiel für eine Klasse
+class Vector3d // einfaches Beispiel für eine Klasse
 {
 	public:
 		float x; //Klassenvariablen
 		float y;
 		float z;
+		
+		Vector3d(float par1, float par2, float par3)
+		{
+			x = par1;
+			y = par2;
+			z = par3;
+		}
 		
 		float getNorm() //Klassenmethode (Norm des Vektors)
 		{
@@ -18,7 +25,7 @@ class Vector3d() // einfaches Beispiel für eine Klasse
 		{
 			return x*U.x + y*U.y + z*U.z;
 		}
-}
+};
 
 
 int main ()

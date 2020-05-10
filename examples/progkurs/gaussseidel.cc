@@ -1,4 +1,4 @@
-// gs.cc
+// gaussseidel.cc
 #include <iostream>    // notwendig zur Ausgabe
 #include <vector>
 #include "hdnum.hh"    // hdnum header

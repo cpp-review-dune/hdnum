@@ -15,7 +15,7 @@ int main ()
 	c = a/c;  //a wird durch c geteilt und dann c zugewiesen.
 	
 	// Oder eben auch komplexere Ausdrücke:
-	c = b+a/b-a
-	c = (a+b)/(a-b)
+	c = b+a/b-a;
+	c = (a+b)/(a-b);
 	// es gilt Punkt-vor-Strich, aber Klammern gehen vor
 }

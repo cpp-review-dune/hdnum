@@ -5,7 +5,7 @@
 int main ()
 {
   hdnum::Vector<float> x(10);        // Vektor mit 10 float-Elementen
-  hdnum::Vector<double> y(10,3.14);  // 10 Elemente initialisiert
+  hdnum::Vector<float> y(10,3.14);  // 10 Elemente initialisiert
   hdnum::Vector<float> a;            // uninitialisierter float-Vektor
   
   x[5] = 5.0; // Zugriff erfolgt wie bei Arrays
