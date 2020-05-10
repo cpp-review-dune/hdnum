@@ -4,7 +4,6 @@
 
 class Vector3d // einfaches Beispiel für eine Klasse
 {
-<<<<<<< HEAD
 	public:
 		float x; //Klassenvariablen
 		float y;
@@ -26,22 +25,7 @@ class Vector3d // einfaches Beispiel für eine Klasse
 		{
 			return x*U.x + y*U.y + z*U.z;
 		}
-=======
-public:
-  fload x; //Klassenvariablen
-  float y;
-  float z;
 
-  float getNorm() //Klassenmethode (Norm des Vektors)
-  {
-    return sqrt(x*x + y*y + z*z);
-  }
-
-  float dot(Vector3d U) // Skalarprodukt mit anderem Vektor
-  {
-    return x*U.x + y*U.y + z*U.z;
-  }
->>>>>>> 93d50b796cb09148c7530406fc4bf85d4cb09b38
 };
 
 
