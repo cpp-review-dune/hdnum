@@ -23,6 +23,7 @@
 #include "src/sgrid.hh"
 #include "src/newton.hh"
 #include "src/rungekutta.hh"
+#include "src/qr.hh"
 
 
 #endif

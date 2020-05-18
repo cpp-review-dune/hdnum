@@ -82,6 +82,23 @@ int main ()
   // Diskretisierungsparameter
   int n = 10;
 
+  // Teste Gram-Schmidt Orthogonalisierung
+  {
+    n = 128;
+    gamma = 1e-4;
+    DenseMatrix<double> A_double(setupA(integrateK,alpha,beta,n));
+    Vector<double> b_double(setupb(f,alpha,beta,n));
+    DenseMatrix<double> Q1 = gram_schmidt(A_double);
+    DenseMatrix<double> Q1T(Q1.transpose());
+    DenseMatrix<double> I1(A_double); I1.mm(Q1T,Q1);
+    for (int i=0; i<Q1T.rowsize(); i++) I1[i][i] -= 1.0;
+    DenseMatrix<double> Q2 = modified_gram_schmidt(A_double);
+    DenseMatrix<double> Q2T(Q2.transpose());
+    DenseMatrix<double> I2(A_double); I2.mm(Q2T,Q2);
+    for (int i=0; i<Q2T.rowsize(); i++) I2[i][i] -= 1.0;
+    std::cout << "cgs " << I1.norm_infty() << " mgs " << I2.norm_infty() << std::endl;
+  }
+  
   std::vector<int> sizes = {8,32,128,512};
   std::vector<double> gammas = {0.9,0.5,1e-1,1e-2,1e-3,1e-4,1e-5};
 
