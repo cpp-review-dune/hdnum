@@ -1039,7 +1039,7 @@ namespace hdnum {
 	  \endverbatim
 
     */
-	Vector<REAL> operator* (const Vector<REAL> & x)
+	Vector<REAL> operator* (const Vector<REAL> & x) const
 	{
 	  assert( x.size() == colsize() );
 
