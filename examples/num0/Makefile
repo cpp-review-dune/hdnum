@@ -38,6 +38,9 @@ wurzel: wurzel.cc
 wurzelbanach: wurzelbanach.cc
 	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
 
+ellipse: ellipse.cc
+	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
+
 lr: lr.cc
 	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
 
