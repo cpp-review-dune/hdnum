@@ -142,7 +142,7 @@ namespace hdnum {
               A[i][q[k]] = temp;
             }
 
-        if (A[k][k]==0) HDNUM_ERROR("matrix is singular");
+        if (std::abs(A[k][k])==0) HDNUM_ERROR("matrix is singular");
 
         // modification
         for (std::size_t i=k+1; i<A.rowsize(); ++i)
@@ -192,7 +192,7 @@ namespace hdnum {
         s[k] = T(0.0);
         for (std::size_t j=0; j<A.colsize(); ++j)
           s[k] += abs(A[k][j]);
-        if (s[k]==0) HDNUM_ERROR("row sum is zero");
+        if (std::abs(s[k])==0) HDNUM_ERROR("row sum is zero");
         for (std::size_t j=0; j<A.colsize(); ++j)
           A[k][j] /= s[k];
       }
