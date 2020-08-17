@@ -11,8 +11,8 @@ ausgabe_SOURCES =
 classes_MAIN = classes
 classes_SOURCES =
 
-gs_MAIN = gs
-gs_SOURCES =
+gaussseidel_MAIN = gaussseidel
+gaussseidel_SOURCES =
 
 matrizen_MAIN = matrizen
 matrizen_SOURCES =
@@ -64,7 +64,7 @@ hallohdnum_SOURCES =
 
 all : nogmp gmp
 
-nogmp : $(zahlen_MAIN) $(string_MAIN)  $(pendelwhile_MAIN) $(pendel_MAIN) $(pendelmittimer_MAIN) $(pendelnumerisch_MAIN) $(pendelmitfunktion_MAIN) $(pendelmitfunktionstemplate_MAIN) $(whitespace_MAIN) $(funktion_MAIN) $(hallohdnum_MAIN) $(ausgabe_MAIN) $(classes_MAIN) $(gs_MAIN) $(matrizen_MAIN) $(operationen_MAIN) $(vektoren_MAIN)
+nogmp : $(zahlen_MAIN) $(string_MAIN)  $(pendelwhile_MAIN) $(pendel_MAIN) $(pendelmittimer_MAIN) $(pendelnumerisch_MAIN) $(pendelmitfunktion_MAIN) $(pendelmitfunktionstemplate_MAIN) $(whitespace_MAIN) $(funktion_MAIN) $(hallohdnum_MAIN) $(ausgabe_MAIN) $(classes_MAIN) $(gaussseidel_MAIN) $(matrizen_MAIN) $(operationen_MAIN) $(vektoren_MAIN)
 
 gmp : $(mehrzahlen_MAIN) $(eingabe_MAIN) $(lr_MAIN) $(wurzel_MAIN)
 
@@ -75,8 +75,8 @@ $(ausgabe_MAIN): $(ausgabe_MAIN).o $(ausgabe_SOURCES) Makefile
 $(classes_MAIN): $(classes_MAIN).o $(classes_SOURCES) Makefile
 	$(CC) -o $(classes_MAIN) $(classes_MAIN).o $(classes_SOURCES) $(LIOPTS)
 
-$(gs_MAIN): $(gs_MAIN).o $(gs_SOURCES) Makefile
-	$(CC) -o $(gs_MAIN) $(gs_MAIN).o $(gs_SOURCES) $(LIOPTS)
+$(gaussseidel_MAIN): $(gaussseidel_MAIN).o $(gaussseidel_SOURCES) Makefile
+	$(CC) -o $(gaussseidel_MAIN) $(gaussseidel_MAIN).o $(gaussseidel_SOURCES) $(LIOPTS)
 
 $(matrizen_MAIN): $(matrizen_MAIN).o $(matrizen_SOURCES) Makefile
 	$(CC) -o $(matrizen_MAIN) $(matrizen_MAIN).o $(matrizen_SOURCES) $(LIOPTS)
@@ -157,4 +157,4 @@ $(wurzel_MAIN): $(wurzel_MAIN).o $(wurzel_SOURCES) Makefile
 	$(CC) $(CCOPTS) -c $<
 
 clean:
-	rm -f *.o *.dat $(zahlen_MAIN) $(string_MAIN) $(mehrzahlen_MAIN) $(eingabe_MAIN) $(pendelwhile_MAIN) $(pendel_MAIN) $(pendelmittimer_MAIN) $(pendelnumerisch_MAIN) $(pendelmitfunktion_MAIN) $(pendelmitfunktionstemplate_MAIN) $(whitespace_MAIN) $(funktion_MAIN) $(hallohdnum_MAIN) $(ausgabe_MAIN) $(classes_MAIN) $(gs_MAIN) $(matrizen_MAIN) $(operationen_MAIN) $(vektoren_MAIN)
+	rm -f *.o *.dat $(zahlen_MAIN) $(string_MAIN) $(mehrzahlen_MAIN) $(eingabe_MAIN) $(pendelwhile_MAIN) $(pendel_MAIN) $(pendelmittimer_MAIN) $(pendelnumerisch_MAIN) $(pendelmitfunktion_MAIN) $(pendelmitfunktionstemplate_MAIN) $(whitespace_MAIN) $(funktion_MAIN) $(hallohdnum_MAIN) $(ausgabe_MAIN) $(classes_MAIN) $(gaussseidel_MAIN) $(matrizen_MAIN) $(operationen_MAIN) $(vektoren_MAIN)
