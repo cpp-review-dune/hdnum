@@ -3,6 +3,7 @@
 #define HDNUM_NEWTON_HH
 
 #include "lr.hh"
+#include <type_traits>
 
 /** @file
  *  @brief Newton's method with line search
@@ -182,6 +183,8 @@ namespace hdnum {
     void solve (const M& model, Vector<typename M::number_type> & x) const
     {
       typedef typename M::number_type N;
+      // In complex case, we still need to use real valued numbers for residual norms etc.
+      using Real = typename std::conditional<std::is_same<std::complex<double>, N>::value, double, N>::type;
       Vector<N> r(model.size());              // residual
       DenseMatrix<N> A(model.size(),model.size()); // Jacobian matrix
       Vector<N> y(model.size());              // temporary solution in line search
@@ -191,8 +194,8 @@ namespace hdnum {
       Vector<size_type> q(model.size());                 // column permutations
 
       model.F(x,r);                                     // compute nonlinear residual
-      N R0(norm(r));                          // norm of initial residual
-      N R(R0);                                // current residual norm
+      Real R0(std::abs(norm(r)));                          // norm of initial residual
+      Real R(R0);                                // current residual norm
       if (verbosity>=1)
         {
           std::cout << "Newton " 
@@ -223,13 +226,13 @@ namespace hdnum {
           permute_backward(q,z);                        // backward permutation
 
           // line search
-          N lambda(1.0);                      // start with lambda=1
+          Real lambda(1.0);                      // start with lambda=1
           for (size_type k=0; k<linesearchsteps; k++)
             {
               y = x;                                    
               y.update(-lambda,z);                       // y = x+lambda*z
               model.F(y,r);                             // r = F(y)
-              N newR(norm(r));                // compute norm
+              Real newR(std::abs(norm(r)));                // compute norm
               if (verbosity>=3)
                 {
                   std::cout << "    line search "  << std::setw(2) << k 
@@ -275,12 +278,14 @@ namespace hdnum {
                             << std::setprecision(4) << R/R0
                             << std::endl;
                 }
+              iterations_taken = i;
               converged = true;
               return;
             }
           if (i==maxit)
             {
-              if (verbosity>=2)
+              iterations_taken = i;
+              if (verbosity>=1)
                 std::cout << "Newton not converged within " << maxit << " iterations" << std::endl;
             }
         }
@@ -290,9 +295,14 @@ namespace hdnum {
     {
       return converged;
     }
+    size_type iterations() const {
+      return iterations_taken;
+    }
+
 
   private:
     size_type maxit;
+    mutable size_type iterations_taken = -1;
     size_type linesearchsteps;
     size_type verbosity;
     double reduction;

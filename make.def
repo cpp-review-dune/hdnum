@@ -1,0 +1,10 @@
+# define your compiler
+CC         = clang++
+# compilation flags without GMP stuff
+CCFLAGS    = -I$(HDNUMPATH) -std=c++11 -O3
+# additional compilation flags for GMP
+GMPCCFLAGS = -DHDNUM_HAS_GMP=1 -I/opt/local/include
+# linker flags without GMP stuff
+LFLAGS      = -lm
+# additional GMP linker flags
+GMPLFLAGS   = -L/opt/local/lib -lgmpxx -lgmp

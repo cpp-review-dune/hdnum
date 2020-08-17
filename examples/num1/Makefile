@@ -1,92 +1,69 @@
-CC          = g++
-HDNUMPATH   = ../..
-CCOPTS      = -I$(HDNUMPATH) -O3
-#CCOPTS      = -I/opt/local/include -I$(HDNUMPATH) -O3
-LIOPTSGMP   = -lgmpxx -lgmp -lm
-#LIOPTSGMP   = -L/opt/local/lib -lgmpxx -lgmp -lm
+include ../../make.def
+HDNUMPATH  = ../..
 
-modelproblem_MAIN = modelproblem
-modelproblem_SOURCES =
+# rule to build all programs without GMP support. That is the default
+nogmp: ecke eemodelproblem fem1d_linear fem1d_quadratic hodgkinhuxley iemodelproblem linearoscillator\
+       modelproblem modelproblem_ordertest modelproblem_runge_kutta nbody ordertest system_example vanderpol
 
-modelproblem_high_dim_MAIN = modelproblem_high_dim
-modelproblem_high_dim_SOURCES =
+# rule to build programs with GMP support
+gmp: modelproblem_high_dim
 
-modelproblem_ordertest_MAIN = modelproblem_ordertest
-modelproblem_ordertest_SOURCES =
+all: nogmp gmp
 
-modelproblem_runge_kutta_MAIN = modelproblem_runge_kutta
-modelproblem_runge_kutta_SOURCES =
+#
+# Programs reqiring GMP support
+#
+ecke: ecke.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-system_example_MAIN = system_example
-system_example_SOURCES =
+eemodelproblem: eemodelproblem.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-ordertest_MAIN = ordertest
-ordertest_SOURCES =
+fem1d_linear: fem1d_linear.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-hodgkinhuxley_MAIN = hodgkinhuxley
-hodgkinhuxley_SOURCES =
+fem1d_quadratic: fem1d_quadratic.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-nbody_MAIN = nbody
-nbody_SOURCES =
+hodgkinhuxley: hodgkinhuxley.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-vanderpol_MAIN = vanderpol
-vanderpol_SOURCES =
+iemodelproblem: iemodelproblem.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-wurzel_MAIN = wurzel
-wurzel_SOURCES =
+linearoscillator: linearoscillator.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-iemodelproblem_MAIN = iemodelproblem
-iemodelproblem_SOURCES =
+modelproblem: modelproblem.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-ecke_MAIN = ecke
-ecke_SOURCES =
+modelproblem_ordertest: modelproblem_ordertest.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-all : nogmp gmp
+modelproblem_runge_kutta: modelproblem_runge_kutta.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-nogmp : $(modelproblem_MAIN) $(modelproblem_ordertest_MAIN) $(modelproblem_runge_kutta_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
+nbody: nbody.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-gmp : $(modelproblem_high_dim_MAIN)
+ordertest: ordertest.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-$(modelproblem_MAIN): $(modelproblem_MAIN).o $(modelproblem_SOURCES) Makefile
-	$(CC) -o $(modelproblem_MAIN) $(modelproblem_MAIN).o $(modelproblem_SOURCES) $(LIOPTS)
+system_example: system_example.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-$(modelproblem_high_dim_MAIN): $(modelproblem_high_dim_MAIN).o $(modelproblem_high_dim_SOURCES) Makefile
-	$(CC) -o $(modelproblem_high_dim_MAIN) $(modelproblem_high_dim_MAIN).o $(modelproblem_high_dim_SOURCES) $(LIOPTSGMP)
+vanderpol: vanderpol.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
-$(modelproblem_ordertest_MAIN): $(modelproblem_ordertest_MAIN).o $(modelproblem_ordertest_SOURCES) Makefile
-	$(CC) -o $(modelproblem_ordertest_MAIN) $(modelproblem_ordertest_MAIN).o $(modelproblem_ordertest_SOURCES) $(LIOPTS)
+#
+# Programs reqiring GMP support
+#
 
-$(modelproblem_runge_kutta_MAIN): $(modelproblem_runge_kutta_MAIN).o $(modelproblem_runge_kutta_SOURCES) Makefile
-	$(CC) -o $(modelproblem_runge_kutta_MAIN) $(modelproblem_runge_kutta_MAIN).o $(modelproblem_runge_kutta_SOURCES) $(LIOPTS)
+modelproblem_high_dim: modelproblem_high_dim.cc
+	$(CC) $(CCFLAGS) $(GMPCCFLAGS) -o $@ $^ $(GMPLFLAGS) $(LFLAGS)
 
-$(system_example_MAIN): $(system_example_MAIN).o $(system_example_SOURCES) Makefile
-	$(CC) -o $(system_example_MAIN) $(system_example_MAIN).o $(system_example_SOURCES) $(LIOPTS)
-
-$(ordertest_MAIN): $(ordertest_MAIN).o $(ordertest_SOURCES) Makefile
-	$(CC) -o $(ordertest_MAIN) $(ordertest_MAIN).o $(ordertest_SOURCES) $(LIOPTS)
-
-$(hodgkinhuxley_MAIN): $(hodgkinhuxley_MAIN).o $(hodgkinhuxley_SOURCES) Makefile
-	$(CC) -o $(hodgkinhuxley_MAIN) $(hodgkinhuxley_MAIN).o $(hodgkinhuxley_SOURCES) $(LIOPTS)
-
-$(nbody_MAIN): $(nbody_MAIN).o $(nbody_SOURCES) Makefile
-	$(CC) -o $(nbody_MAIN) $(nbody_MAIN).o $(nbody_SOURCES) $(LIOPTS)
-
-$(vanderpol_MAIN): $(vanderpol_MAIN).o $(vanderpol_SOURCES) Makefile
-	$(CC) -o $(vanderpol_MAIN) $(vanderpol_MAIN).o $(vanderpol_SOURCES) $(LIOPTS)
-
-$(iemodelproblem_MAIN): $(iemodelproblem_MAIN).o $(iemodelproblem_SOURCES) Makefile
-	$(CC) -o $(iemodelproblem_MAIN) $(iemodelproblem_MAIN).o $(iemodelproblem_SOURCES) $(LIOPTS)
-
-$(ecke_MAIN): $(ecke_MAIN).o $(ecke_SOURCES) Makefile
-	$(CC) -o $(ecke_MAIN) $(ecke_MAIN).o $(ecke_SOURCES) $(LIOPTS)
-
-# Applications with GNU multiprecision library
-
-$(eingabe_MAIN): $(eingabe_MAIN).o $(eingabe_SOURCES) Makefile
-	$(CC) -o $(eingabe_MAIN) $(eingabe_MAIN).o $(eingabe_SOURCES) $(LIOPTSGMP)
-
-.cc.o:
-	$(CC) $(CCOPTS) -c $<
-
+# clean up directory
 clean:
-	rm -f *.o *.dat *.gp $(modelproblem_MAIN) $(modelproblem_high_dim_MAIN) $(modelproblem_ordertest_MAIN) $(modelproblem_runge_kutta_MAIN) $(system_example_MAIN) $(ordertest_MAIN) $(hodgkinhuxley_MAIN) $(nbody_MAIN) $(vanderpol_MAIN) $(iemodelproblem_MAIN) $(ecke_MAIN)
+	rm -f *.o ecke eemodelproblem fem1d_linear fem1d_quadratic hodgkinhuxley iemodelproblem linearoscillator\
+       modelproblem modelproblem_ordertest modelproblem_runge_kutta nbody ordertest system_example vanderpol modelproblem_high_dim
+

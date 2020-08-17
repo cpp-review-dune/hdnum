@@ -8,7 +8,6 @@
 #include <math.h>
 #include <vector>
 #include <limits>
-#include <gmpxx.h>
 #include "hdnum.hh"
 
 #include "laplace.hh"
