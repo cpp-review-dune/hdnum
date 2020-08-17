@@ -2,10 +2,15 @@ include ../../make.def
 HDNUMPATH  = ../..
 
 # rule to build all programs without GMP support. That is the default
-nogmp: eingabe funktion hallohdnum mehrzahlen pendel pendelmitfunktion pendelmitfunktionstemplate pendelmittimer \
-       pendelnumerisch pendelwhile string whitespace zahlen
+nogmp: ausgabe classes eingabe funktion gaussseidel hallohdnum matrizen mehrzahlen operationen pendel pendelmitfunktion pendelmitfunktionstemplate pendelmittimer pendelnumerisch pendelwhile string vektoren whitespace zahlen
 
 all: nogmp
+
+ausgabe: ausgabe.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
+
+classes: classes.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
 eingabe: eingabe.cc
 	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
@@ -13,10 +18,19 @@ eingabe: eingabe.cc
 funktion: funktion.cc
 	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
+gaussseidel: gaussseidel.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
+
 hallohdnum: hallohdnum.cc
 	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
+matrizen: matrizen.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
+
 mehrzahlen: mehrzahlen.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
+
+operationen: operationen.cc
 	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
 pendel: pendel.cc
@@ -43,10 +57,12 @@ string: string.cc
 whitespace: whitespace.cc
 	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
+vektoren: vektoren.cc
+	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
+
 zahlen: zahlen.cc
 	$(CC) $(CCFLAGS) -o $@ $^ $(LFLAGS)
 
 # clean up directory
 clean:
-	rm -f *.o eingabe funktion hallohdnum mehrzahlen pendel pendelmitfunktion pendelmitfunktionstemplate pendelmittimer \
-       pendelnumerisch pendelwhile string whitespace zahlen
+	rm -f *.o ausgabe classes eingabe funktion gaussseidel hallohdnum matrizen mehrzahlen operationen pendel pendelmitfunktion pendelmitfunktionstemplate pendelmittimer pendelnumerisch pendelwhile string vektoren whitespace zahlen

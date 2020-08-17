@@ -2,6 +2,7 @@
 #include <iostream> // header für Ein-/Ausgabe
 #include <iomanip>  // für setprecision
 #include <cmath>    // für sqrt
+
 int main ()
 {
   double x(0.0);
@@ -11,4 +12,6 @@ int main ()
             << std::scientific << std::showpoint
             << std::setprecision(15)
             << sqrt(x) << std::endl;
+
+  return 0;
 }

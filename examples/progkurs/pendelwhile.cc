@@ -16,4 +16,6 @@ int main ()
               << std::endl;
     t = t + dt;
   }
+
+  return 0;
 }

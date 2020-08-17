@@ -1,0 +1,236 @@
+
+
+\begin{frame}[fragile]
+\frametitle{Numerische Lösung des Pendels}
+\begin{itemize}
+\item Volles Modell für das Pendel aus der Einführung:
+  \begin{gather*}
+    \frac{d^2\phi(t)}{d t^2} = - \frac{g}{l} \sin(\phi(t)) \qquad \forall t>0,\\
+    \phi(0) = \phi_0, \qquad \frac{d \phi}{d t}(0) = u_0.
+  \end{gather*}
+\item Umschreiben in System erster Ordnung:
+  \begin{align*}
+    \frac{d\phi(t)}{d t} &= u(t), & \frac{d^2\phi(t)}{d t^2} &=
+    \frac{d u(t)}{d t} = - \frac{g}{l} \sin(\phi(t)).
+  \end{align*}
+\item Eulerverfahren für $\phi^n = \phi(n\Delta t)$, $u^n = u(n\Delta t)$:
+  \begin{align*}
+    \phi^{n+1} &= \phi^n + \Delta t \, u^n & \phi^0 &= \phi_0\\
+    u^{n+1} &= u^n -\Delta t \, (g/l) \, \sin(\phi^n) & u^0 &= u_0
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Pendel (expliziter Euler)}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/pendelnumerisch.cc}
+\end{frame}
+
+\subsection{Funktionen}
+
+\begin{frame}[fragile]
+\frametitle{Funktionsaufruf und Funktionsdefinition}
+\begin{itemize}
+\item In der Mathematik gibt es das Konzept der \textsl{Funktion}.
+\item In C++ auch.
+\item Sei $f : \mathbb{R} \to \mathbb{R}$, z.B. $f(x) = x^2$.
+\item Wir unterscheiden den \textsl{Funktionsaufruf}
+{\scriptsize\begin{lstlisting}{}
+double x,y;
+y = f(x);
+\end{lstlisting}}
+\item und die \textsl{Funktionsdefinition}. Diese sieht so aus:
+
+\medskip
+\textsl{Ergebnistyp} \textsl{Funktionsname} \lstinline{(} \textsl{Argumente} \lstinline{)}
+
+\lstinline!{! \textsl{Funktionsrumpf} \lstinline!}!
+
+\medskip
+\item Beispiel:
+{\scriptsize\begin{lstlisting}{}
+double f (double x)
+{
+  return x*x;
+}
+\end{lstlisting}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Komplettbeispiel zur Funktion}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/funktion.cc}
+\begin{itemize}
+\item Funktionsdefinition muss vor Funktionsaufruf stehen.
+\item Formales Argument in der Funktionsdefinition entspricht einer Variablendefinition.
+\item Beim Funktionsaufruf wird das Argument (hier) \textsl{kopiert}.
+\item \lstinline{main} ist auch nur eine Funktion.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Weiteres zum Verständnis der Funktion}
+\begin{itemize}
+\item Der Name des formalen Arguments in der Funktionsdefinition
+  ändert nichts an der Semantik der Funktion (Sofern es überall
+  geändert wird):
+
+{\scriptsize\begin{lstlisting}{}
+double f (double y)
+{
+  return y*y;
+}
+\end{lstlisting}}
+
+\item Das Argument wird hier kopiert, d.h.:
+{\scriptsize\begin{lstlisting}{}
+double f (double y)
+{
+  y = 3*y*y;
+  return y;
+}
+
+int main ()
+{
+  double x(3.0),y;
+  y = f(x); // ändert nichts an x !
+}
+\end{lstlisting}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Weiteres zum Verständnis der Funktion}
+\begin{itemize}
+\item Argumentliste kann leer sein (wie in der Funktion
+  \lstinline{main}):
+{\scriptsize\begin{lstlisting}{}
+double pi ()
+{
+  return 3.14;
+}
+
+y = pi(); // Klammern sind erforderlich!
+\end{lstlisting}}
+
+\item Der Rückgabetyp \lstinline{void} bedeutet \glqq{}keine
+  Rückgabe\grqq{}
+
+{\scriptsize\begin{lstlisting}{}
+void hello ()
+{
+  std::cout << "hello" << std::endl;
+}
+
+hello();
+\end{lstlisting}}
+\item Mehrere Argument werden durch Kommata getrennt:
+
+{\scriptsize\begin{lstlisting}{}
+double g (int i, double x)
+{
+  return i*x;
+}
+std::cout << g(2,3.14) << std::endl;
+\end{lstlisting}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Pendelsimulation als Funktion}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/pendelmitfunktion.cc}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Aufgabe 4}
+\begin{enumerate}
+\item Schreibt eine Funktion, die die Fakultät einer (natürlichen) Zahl berechnet und ausgibt.
+\item Plottet die Funktion mit Gnuplot im Bereich [1,10]. 
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Funktionsschablonen}
+\begin{itemize}
+\item Oft macht eine Funktion mit Argumenten verschiedenen Typs einen Sinn.
+\item \lstinline!double f (double x) {return x*x;}! macht auch mit
+  \lstinline{float}, \lstinline{int} oder \lstinline{mpf_class} Sinn.
+\item Man könnte die Funktion für jeden Typ definieren. Das ist
+  natürlich sehr umständlich. (Es darf mehrere Funktionen gleichen
+  Namens geben, sog. \textsl{overloading}).
+\item In C++ gibt es mit Funktionsschablonen (engl.: \textsl{function
+  templates}) eine Möglichkeit den Typ variabel zu lassen:
+{\scriptsize\begin{lstlisting}{}
+template<typename T>
+T f (T y)
+{
+  return y*y;
+}
+\end{lstlisting}}
+\item \lstinline{T} steht hier für einen beliebigen Typ.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]
+\frametitle{Pendelsimulation mit Templates}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/pendelmitfunktionstemplate.cc}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Headerdateien}
+\begin{itemize}
+\item Das tolle an Funktionen ist, dass man sie wiederverwenden kann.
+\item Es gibt ganze Sammlungen an Funktionen, sogenannte Funktionsbibliotheken
+\item Werden in separaten Headerdateien gespeichert. (Dateiendung .h,.hh, o."a.)
+\item Um Funktionen (und anderes) aus einer Headerdatei zu verwenden:
+\item \#include "Dateiname"
+\item Es gibt eine Standardbibliothek von Headerdateien (z.b. cmath,string,iostream)
+
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Headerdateien}
+{\scriptsize\begin{lstlisting}{}
+#include <iostream> // Standardbibliothek (Name in <>)
+#include <cmath>
+#include "hdnum.hh" // Eigene Headerdatei (Dateiname in " \ ")
+
+int main()
+{
+	float zahl = 5.0;
+	zahl = sqrt(zahl); //sqrt aus cmath 
+	std::cout << zahl << std::endl; 
+	// std::cout, std::endl aus iostream
+	hdnum::vector(2,1.0); // Aus hdnum.hh
+}
+\end{lstlisting}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Headerdateien}
+\begin{itemize}
+\item Nur \#include in die Datei zu schreiben reicht nicht!
+\item Beim kompilieren muss noch der Ort der Headerdatei angegeben werden
+\item bei dem kompilierbefehl -I<Verzeichnis> einfügen
+\item z.b. g++ -o hallohdnum -I../../ hallohdnum.cc
+\item ../../ bedeutet Oberverzeichnis des Oberverzeichnisses (2x ../)
+
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Aufgabe 5}
+\begin{enumerate}
+\item Erstellt eine Headerdatei für eure Fakultätsfunktion aus Aufgabe 3. (z.b. fakultaet.hh)
+\item Schreibt eure Funktionsdefinition in die Headerdatei, und kommentiert sie in der Hauptdatei aus.
+\item Bindet eure headerdatei mit \#include ein und führt eure Funktion in der Datei aus.
+\end{enumerate}
+\end{frame}

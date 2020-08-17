@@ -1,0 +1,153 @@
+
+\begin{frame}[fragile]
+\frametitle{Klassen}
+\begin{itemize}
+\item Sehr grobe Darstellung von Klassen für die Praktische Verwendung.
+\item Klassen erlauben einem C++ Programmierer eigene Datentypen zu definieren.
+\item Es gibt unter anderem Klassenvariablen und Klassenmethoden.
+\item Klassenvariablen sind die Variablen aus denen der neue Datentyp zusammengesetzt ist.
+\item Können elementare Datentypen wie int sein oder aber auch andere Klassen.
+\item Klassenmethoden sind Funktionen mit denen Klassenvariablen manipuliert werden können.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile,allowframebreaks]
+\frametitle{Klassen}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/classes.cc}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Klassen III}
+\begin{itemize}
+\item Klassenvariablen können grundsätzlich nur durch Klassenmethoden modifiziert oder gelesen werden!
+\item Ausnahme: Variablen die als "public" deklariert wurden.
+\item Verschiedene Variablen einer Klasse (wie eben V und W) teilen sich ihre Untervariablen nicht.
+\item Zugriff auf Klassenelemente erfolgt über den . Operator: Also wie eben V.getNorm(), V.x, W.x
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Klassenbibliotheken}
+\begin{itemize}
+\item Klassen muss man (zum Glück) oft nicht selbst programmieren.
+\item Es gibt bereits fertige Klassenbibliotheken.
+\item Im folgenden beschäftigen wir uns mit der HDNum-Bibiliothek für den Numerik-Kurs
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{HDNUM}
+\begin{itemize}
+\item C++ kennt keine Matrizen, Vektoren, Polynome, \ldots
+\item Wir haben C++ erweitert um die \textbf{Heidelberg Educational
+  Numerics Library}, kurz \textbf{HDNum}.
+\item Alle in der Vorlesung behandelten Beispiele sind dort
+  enthalten.
+\item Dieser Programmierkurs ist auch Teil von HDNUM
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{HDNUM}
+\begin{itemize}
+\item HDNum realisiert Vektoren, Matrizen usw. als Klassen-Templates
+\item Klassen-Templates analog zu Funktions-Templates
+\item d.h. Vektoren, Matrizen mit Elementen verschiedener Datentypen
+\item Klassenmethoden für Lineare Algebra, z.b. Matrizenmultiplikation, Skalarprodukte
+\item Einbinden über \#include "hdnum.hh"
+\item + Angabe des Verzeichnisses der Datei hdnum.hh über -I<Verzeichnis> beim kompilieren
+\item Detaillierte Anleitung im repository unter hdnum/tutorial
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{HDNUM Vektoren}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/vektoren.cc}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{HDNUM Matrizen}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/matrizen.cc}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{HDNUM Ausgabe}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/ausgabe.cc}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Beispiel: Gram-Schmidt-Orthogonalisierung mit HDNUM}
+\begin{itemize}
+\item Gegeben: n (linear unabhängige) Vektoren
+\item Gesucht: n orthogonale Vektoren, die den selben Unterraum aufspannen
+\item Projektionen der anderen Vektoren werden raussubtrahiert
+\item Entsprechend der Formel:
+
+
+\end{itemize}
+\large
+\centering
+\vspace{0.5cm}
+\hspace{2cm}
+$ w_{j}=v_{j}-\sum_{i=1}^{j-1} \frac{\left\langle w_{i}, v_{j}\right\rangle}{\left\langle w_{i}, w_{i}\right\rangle} w_{i}$
+\end{frame}
+
+
+\begin{frame}[fragile,allowframebreaks]
+\frametitle{Gram-Schmidt Orthogonalisierung}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/gs.cc}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Debugging}
+\begin{itemize}
+\item Was mache ich wenn mein Programm nicht läuft?
+\item Grundsätzliches:
+\begin{enumerate}
+\item Fehlermeldung lesen!
+\item Fehlermeldung bei google eingeben (Copy-Paste) falls unklar.
+\item Falls ihr gar nicht weiter kommt: Kommilitonen/Tutoren um Hilfe bitten.
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Debugging II}
+\begin{itemize}
+\item Was mache ich wenn mein Programm läuft, aber nicht das macht was ich erwarte?
+\begin{enumerate}
+\item Geht das Programm nochmal Zeile für Zeile durch.
+\item Schaut euch den Wert eurer Variablen mit std::cout an.
+\item Insbesondere Variablen in If-Statements oder Schleifen.
+\item Falls möglich, Ergebnis plotten. (grundsätzlich sinnvoll)
+\item Falls ihr gar nicht weiter kommt: Kommilitonen/Tutoren um Hilfe bitten.
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Debugging III}
+\begin{itemize}
+\item Typische Fehler
+\begin{enumerate}
+\item Semikolon vergessen
+\item Klammer vergessen
+\item Gro\ss- und Kleinschreibung
+\item Sonstige Tippfehler
+\item Variable nicht deklariert/initialisiert
+\item Falscher Datentyp in Funktion eingesetzt
+\item und vieles mehr...
+\end{enumerate}
+\end{itemize}
+\end{frame}
+

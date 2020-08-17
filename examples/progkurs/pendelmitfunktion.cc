@@ -22,4 +22,6 @@ void simuliere_pendel (double l, double phi, double u)
 int main ()
 {
   simuliere_pendel(1.34,3.0,0.0);
+
+  return 0;
 }

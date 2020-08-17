@@ -1,0 +1,230 @@
+
+\begin{frame}[fragile]
+\frametitle{Was ist Programmierung?}
+\begin{itemize}
+\item Ein Programm ist im praktischen Sinne eine Aneinanderreihung von Befehlen,
+die ein Computer (in Reihenfolge) auszuführen hat.
+\item Es gibt verschiedene Programmiersprachen in denen die Befehle geschrieben werden können.
+\item Wir verwenden C++.
+\item In der Regel (auch in C++) ist Gro\ss - und Kleinschreibung zu beachten.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Workflow}
+C++ ist eine \glqq{}kompilierte\grqq{} Sprache. Um ein Programm zur
+Ausführung zu bringen sind folgende Schritte notwendig:
+\begin{enumerate}
+\item Erstelle/Ändere den Programmtext mit einem \textbf{Editor}.
+\item Übersetze den Programmtext mit dem \textbf{C++-Übersetzer}
+  (auch C++-Compiler) in ein Maschinenprogramm.
+\item Führe das Programm aus. Das Programm gibt sein Ergebnis auf dem
+  Bildschirm oder in eine Datei aus.
+\item Falls Ergebnis nicht korrekt, gehe nach 1!
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Hallo Welt !}
+Öffne die Datei \lstinline{hallohdnum.cc} mit einem Editor:
+\\ \lstinline{$ gedit hallohdnum.cc} %$
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/hallohdnum.cc}
+\begin{itemize}
+\item \lstinline{iostream} ist eine sog. \glqq{}Headerdatei\grqq{}
+\item \lstinline!#include! erweitert die \glqq{}Basissprache\grqq{}.
+\item \lstinline!int main ()! braucht man immer: \glqq{}Hier geht's los\grqq{}.
+\item \lstinline!{ ... }! klammert Folge von Anweisungen.
+\item Anweisungen werden durch Semikolon abgeschlossen.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Hallo Welt laufen lassen}
+\begin{itemize}
+\item Gebe folgende Befehle ein:
+\begin{itemize}
+\item Zum Kompilieren des Programms:
+{\footnotesize\begin{lstlisting}{}
+$ g++ -o hallohdnum -I../../  hallohdnum.cc
+\end{lstlisting}}
+\item g++ ist unser C++-Compiler
+\item -o hallohdnum spezifiziert die dabei entstehende Datei
+\item -I../../ spezifiziert das Verzeichnis der Headerdateien
+\item hallohdnum.cc ist die Datei, die wir kompilieren wollen
+\item Zum Ausführen des Programms:
+{\small\begin{lstlisting}{}
+$ ./hallohdnum
+\end{lstlisting}}
+\end{itemize}
+\item Dies sollte dann die folgende Ausgabe liefern:
+{\small\begin{lstlisting}{}
+Numerik 0 ist ganz leicht!
+1+1=2
+\end{lstlisting}}
+\end{itemize}
+\end{frame}
+
+\note{Demonstration: Hallo Welt ausführen einmal vormachen.}
+
+\subsection{Variablen und Typen}
+
+\begin{frame}[fragile]
+\frametitle{(Zahl-) Variablen}
+\begin{itemize}
+\item Aus der Mathematik: \glqq{}$x\in M$\grqq{}. Variable $x$ nimmt einen
+  beliebigen Wert aus der Menge $M$ an.
+\item Geht in C++ mit: \lstinline{    M x;}
+\item \textbf{Variablendefinition}:
+\lstinline{x} ist eine Variable vom \textbf{Typ} \lstinline{M}.
+\item Mit \textbf{Initialisierung}: \lstinline{    M x(0);}
+\item Wert von Variablen der \glqq{}eingebauten\grqq{} Typen ist sonst
+  nicht definiert.
+\end{itemize}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/zahlen.cc}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Datentypen}
+Datentypen sind sozusagen Wertebereiche der Variablen, bestimmen also welche Werte eine Variable annehmen kann. \\
+Die wichtigsten Datentypen:
+\begin{itemize}
+\item int: Ganze Zahl im Wertebereich [$-2^{31}$,$2^{31}-1$]
+\item unsigned int: Natürliche Zahl im Wertebereich [0,$2^{32}-1$]
+\item float: Gleitkommazahl mit einfacher Präzision \\ im Bereich [-3.4e38, 3.4e38]
+\item double: float mit doppelter Präzision\\ im Bereich [-1.80e+308, 1.80e+308]
+\item char: (einzelne) ASCII-Zeichen ("Buchstaben"), \\ z.b. "b","f","C","\%",
+\item string: Zeichenketten, z.b. "Hallo","fjofj"
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Zuweisung}
+\begin{itemize}
+\item Den Wert von Variablen kann man ändern. Sonst wäre es langweilig
+  :-)
+\item Dies geht mittels Zuweisung:
+{\scriptsize\begin{lstlisting}{}
+double x(3.14); // Variablendefinition mit Initialisierung
+double y;       // uninitialisierte Variable
+y = x;          // Weise y den Wert von x zu
+x = 2.71;       // Weise x den Wert 2.71, y unverändert
+y = (y*3)+4;    // Werte Ausdruck rechts von = aus
+                // und weise das Resultat y zu!
+\end{lstlisting}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Blöcke}
+\begin{itemize}
+\item Block: Sequenz von Variablendefinitionen und Zuweisungen in
+  geschweiften Klammern.
+{\scriptsize\begin{lstlisting}{}
+{
+  double x(3.14);
+  double y;
+  y = x;
+}
+\end{lstlisting}}
+\item Blöcke können rekursiv geschachtelt werden.
+\item Eine Variable ist nur in dem Block \textsl{sichtbar} in dem sie
+  definiert ist sowie in allen darin enthaltenen Blöcken:
+{\scriptsize\begin{lstlisting}{}
+{
+  double x(3.14);
+  {
+    double y;
+    y = x;
+  }
+  y = (y*3)+4; // geht nicht, y nicht mehr sichtbar.
+}
+\end{lstlisting}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Whitespace}
+\begin{itemize}
+\item Das Einrücken von Zeilen dient der besseren Lesbarkeit,
+  notwendig ist es (fast) nicht.
+\item \lstinline{#include}-Direktiven müssen \textsl{immer} einzeln
+  auf einer Zeile stehen.
+\item Ist das folgende Programm lesbar?
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/whitespace.cc}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Arithmetik}
+Mit Variablen lassen sich sogenannte Operationen durchführen, z.b. auch Arithmetik:
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left,
+numberstyle=\tiny, numbersep=5pt]{../examples/progkurs/operationen.cc}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Arrays}
+Eine Variable kann auch mehrere Werte speichern,
+wenn man es als Array definiert:
+\begin{itemize}
+\item Ein Array ist eine Liste von Variablen.
+\item Wird definiert durch Typ Variable[Grö\ss e];
+\item z.b. int a[10];
+\item Der Zugriff erfolgt über Variable[index];
+\item Der erste index ist 0, daher ist der letzte index Grö\ss e-1!
+\item Beispiel: a[0], a[4], a[8], a[9]
+\item a[10] ist au\ss erhalb des Arrays und produziert einen Fehler!
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Beispiel: Fibonacci-Zahlen}
+{\scriptsize\begin{lstlisting}{}
+
+int main()
+{
+int x[10]; // Definition eines double Arrays mit 10 Werten
+
+x[0] = 1; // Initialisierung!
+x[1] = 1;
+x[2] = x[1] + x[0];
+x[3] = x[2] + x[1];
+
+// usw....
+
+}
+\end{lstlisting}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ein- und Ausgabe}
+Manchmal möchte man bei der Ausführung wissen welche Werte Variablen haben,
+oder auch Variablen durch Eingabe festlegen.
+\\
+\begin{itemize}
+\item C++ benutzt zur Ein- und Ausgabe sogenannte streams
+\item Findet man im Headerfile " \ iostream "
+\item std::cout << Variable << std::endl;  zur Ausgabe der Variable
+\item std::cin >> Variable; zur Eingabe in die Variable (auf Datentyp achten!)
+\item Das std::endl dient dem Zeilenumbruch
+\item Eigentlich optional aber oft empfehlenswert
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Aufgabe 2}
+\begin{enumerate}
+\item Öffnet operationen.cc im Verzeichnis examples/progkurs mit einem Editor. (z.b. mit Befehl vi operationen.cc)
+\item Gebt nach jeder Zuweisung an c den Wert von c im Format "c = (Wert von c)" \ aus.
+\item Kompiliert operationen.cc so wie oben hallohdnum.cc.
+\item Überlegt euch ob die Werte euren Erwartungen entsprechen.
+\end{enumerate}
+\end{frame}
+
+\note{Demonstration: Benutzung von vim einmal vormachen.}

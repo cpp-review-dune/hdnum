@@ -2,6 +2,7 @@
 #include <iostream> // header für Ein-/Ausgabe
 #include <cmath>    // mathematische Funktionen
 #include "hdnum.hh" // Zeitmessung
+
 int main ()
 {
   double l(1.34);   // Pendellänge in Meter
@@ -21,4 +22,6 @@ int main ()
   }
   std::cout << "Die Ausgabe aller Werte brauchte " << zeit.elapsed()
             << " Sekunden" << std::endl;
+
+  return 0;
 }
