@@ -21,4 +21,6 @@ int main ()
     u = ualt - dt*(9.81/l)*sin(phialt);// neues u
     std::cout << t << " " << phi << std::endl;
   }
+
+  return 0;
 }

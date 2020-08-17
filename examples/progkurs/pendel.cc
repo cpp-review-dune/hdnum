@@ -1,6 +1,7 @@
 // pendel.cc
 #include <iostream> // header für Ein-/Ausgabe
 #include <cmath>    // mathematische Funktionen
+
 int main ()
 {
   double l(1.34);   // Pendellänge in Meter
@@ -13,4 +14,6 @@ int main ()
               << phi0*cos(sqrt(9.81/l)*t)
               << std::endl;
   }
+
+  return 0;
 }

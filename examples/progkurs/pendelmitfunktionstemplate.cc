@@ -32,4 +32,6 @@ int main ()
   double phi2(3.0); // Anfangsamplitude in Bogenmaß
   double u2(0.0);   // Anfangsgeschwindigkeit
   simuliere_pendel(l2,phi2,u2);
+
+  return 0;
 }

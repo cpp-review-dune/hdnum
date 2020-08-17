@@ -10,4 +10,6 @@ int main ()
 {
   double x(2.0);
   std::cout << "f(" << x << ")=" << f(x) << std::endl;
+
+  return 0;
 }
