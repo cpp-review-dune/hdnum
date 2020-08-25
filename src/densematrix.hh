@@ -1581,8 +1581,6 @@ namespace hdnum {
     }
   }
 
-}
-
 }  // namespace hdnum
 
 #endif  // DENSEMATRIX_HH
