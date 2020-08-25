@@ -5,25 +5,26 @@
 #define HDNUM_DEVEL_MODE 1
 
 #include <math.h>
+
 #include <complex>
+
 #if HDNUM_HAS_GMP
 #include <gmpxx.h>
 #endif
 
-
-#include "src/exceptions.hh"
-#include "src/vector.hh"
 #include "src/densematrix.hh"
-#include "src/timer.hh"
-#include "src/opcounter.hh"
-#include "src/precision.hh"
+#include "src/exceptions.hh"
 #include "src/lr.hh"
-#include "src/ode.hh"
-#include "src/pde.hh"
-#include "src/sgrid.hh"
 #include "src/newton.hh"
-#include "src/rungekutta.hh"
+#include "src/ode.hh"
+#include "src/opcounter.hh"
+#include "src/pde.hh"
+#include "src/precision.hh"
 #include "src/qr.hh"
-
+#include "src/rungekutta.hh"
+#include "src/sgrid.hh"
+#include "src/sparsematrix.hh"
+#include "src/timer.hh"
+#include "src/vector.hh"
 
 #endif

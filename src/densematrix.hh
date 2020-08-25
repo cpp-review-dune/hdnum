@@ -7,16 +7,17 @@
  */
 
 #ifndef DENSEMATRIX_HH
-#define	DENSEMATRIX_HH
+#define DENSEMATRIX_HH
 
-#include <iostream>
+#include <cstdlib>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <string>
-#include <iomanip>
-#include <cstdlib>
-#include "vector.hh"
 
+#include "exceptions.hh"
+#include "vector.hh"
 
 namespace hdnum {
 
@@ -1582,4 +1583,6 @@ namespace hdnum {
 
 }
 
-#endif	// DENSEMATRIX_HH
+}  // namespace hdnum
+
+#endif  // DENSEMATRIX_HH
