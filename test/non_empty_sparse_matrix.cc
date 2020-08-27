@@ -15,6 +15,9 @@ public:
     const SparseMatrix<T> sizedConstructedZero;
     const SparseMatrix<T> sizedConstructedValue;
 
+    const SparseMatrix<T> initializerListQuad;
+    const SparseMatrix<T> initializerList;
+
     using size_type = typename SparseMatrix<T>::size_type;
 
     constexpr static inline const size_type dimN = 5;
@@ -23,7 +26,14 @@ public:
 
     TestSparseMatrix()
         : sizedConstructed(dimM, dimN), sizedConstructedZero(dimM, dimN, T(0)),
-          sizedConstructedValue(dimM, dimN, T(value)) {}
+          sizedConstructedValue(dimM, dimN, T(value)),
+          initializerListQuad({{0, 1, 2, 3, 4, 5},
+                               {6, 7, 8, 9, 10, 11},
+                               {12, 13, 14, 15, 16, 17},
+                               {18, 19, 20, 21, 22, 23},
+                               {24, 25, 26, 27, 28, 29},
+                               {30, 31, 32, 33, 34, 35}}),
+          initializerList({{0, 1, 2, 3}}) {}
 };
 
 using TestTypes = ::testing::Types<int, double, float, std::complex<int>,
@@ -32,6 +42,7 @@ TYPED_TEST_SUITE(TestSparseMatrix, TestTypes);
 
 TYPED_TEST(TestSparseMatrix, SizeTest) {
     using T = TestSparseMatrix<TypeParam>;
+    using size_type = typename T::size_type;
 
     EXPECT_EQ(T::dimM, this->sizedConstructed.rowsize());
     EXPECT_EQ(T::dimN, this->sizedConstructed.colsize());
@@ -41,6 +52,12 @@ TYPED_TEST(TestSparseMatrix, SizeTest) {
 
     EXPECT_EQ(T::dimM, this->sizedConstructedValue.rowsize());
     EXPECT_EQ(T::dimN, this->sizedConstructedValue.colsize());
+
+    EXPECT_EQ(size_type(4), this->initializerListQuad.rowsize());
+    EXPECT_EQ(size_type(4), this->initializerListQuad.colsize());
+
+    EXPECT_EQ(size_type(4), this->initializerList.rowsize());
+    EXPECT_EQ(size_type(1), this->initializerList.colsize());
 }
 
 TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
@@ -58,6 +75,16 @@ TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
     for (auto i = size_type(0); this->sizedConstructedValue.rowsize(); i++)
         for (auto j = size_type(0); this->sizedConstructedValue.colsize(); j++)
             EXPECT_EQ(TypeParam(T::value), this->sizedConstructedValue(i, j));
+
+    for (auto i = size_type(0); this->initializerList.rowsize(); i++)
+        for (auto j = size_type(0); this->initializerList.colsize(); j++)
+            EXPECT_EQ(TypeParam(i * this->initializerList.rowsize() + j),
+                      this->initializerList(i, j));
+
+    for (auto i = size_type(0); this->initializerListQuad.rowsize(); i++)
+        for (auto j = size_type(0); this->initializerListQuad.colsize(); j++)
+            EXPECT_EQ(TypeParam(i * this->initializerListQuad.rowsize() + j),
+                      this->initializerListQuad(i, j));
 }
 
 /* TYPED_TEST(TestSparseMatrix, ValueConstIteratorTest) { */
