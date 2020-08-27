@@ -23,10 +23,10 @@ template <typename REAL>
 class SparseMatrix {
 public:
     /** \brief Types used for array indices */
-    typedef std::size_t size_type;
-    typedef typename std::vector<REAL> VType;
-    typedef typename VType::const_iterator ConstVectorIterator;
-    typedef typename VType::iterator VectorIterator;
+    using size_type = std::size_t;
+    using VType = typename std::vector<REAL>;
+    using VectorIterator = typename VType::iterator;
+    using ConstVectorIterator = typename VType::const_iterator;
 
 private:
     VType m_data;      // Matrix data is stored in an STL vector!
@@ -60,8 +60,8 @@ public:
 
     void addNewRow(const hdnum::Vector<REAL>& rowvector) {}
 
-    size_t rowsize() const { return m_rows; }
-    size_t colsize() const { return m_cols; }
+    size_type rowsize() const { return m_rows; }
+    size_type colsize() const { return m_cols; }
 
     // pretty-print output properties
     bool scientific() const { return bScientific; }
