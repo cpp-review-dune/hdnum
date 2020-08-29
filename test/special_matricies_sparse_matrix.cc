@@ -43,16 +43,16 @@ TYPED_TEST_SUITE(TestSparseMatrixSpecial, TestTypes);
 TYPED_TEST(TestSparseMatrixSpecial, SizeTest) {
     using T = TestSparseMatrixSpecial<TypeParam>;
 
-    EXPECT_EQ(T::dimN, this->sizedIdentity.rowsize());
-    EXPECT_EQ(T::dimN, this->sizedIdentity.colsize());
+    ASSERT_EQ(T::dimN, this->sizedIdentity.rowsize());
+    ASSERT_EQ(T::dimN, this->sizedIdentity.colsize());
 
-    EXPECT_EQ(T::dimN, this->matchingIdentity.rowsize());
-    EXPECT_EQ(T::dimN, this->matchingIdentity.colsize());
-    EXPECT_EQ(this->templateMatrix.colsize(), this->matchingIdentity.rowsize());
-    EXPECT_EQ(this->templateMatrix.rowsize(), this->matchingIdentity.colsize());
+    ASSERT_EQ(T::dimN, this->matchingIdentity.rowsize());
+    ASSERT_EQ(T::dimN, this->matchingIdentity.colsize());
+    ASSERT_EQ(this->templateMatrix.colsize(), this->matchingIdentity.rowsize());
+    ASSERT_EQ(this->templateMatrix.rowsize(), this->matchingIdentity.colsize());
 
-    EXPECT_EQ(T::dimN, this->overwriteRefIdentity.rowsize());
-    EXPECT_EQ(T::dimN, this->overwriteRefIdentity.colsize());
+    ASSERT_EQ(T::dimN, this->overwriteRefIdentity.rowsize());
+    ASSERT_EQ(T::dimN, this->overwriteRefIdentity.colsize());
 }
 
 TYPED_TEST(TestSparseMatrixSpecial, ValueIndexTest) {
@@ -61,23 +61,23 @@ TYPED_TEST(TestSparseMatrixSpecial, ValueIndexTest) {
     for (auto i = size_type(0); this->sizedIdentity.rowsize(); i++)
         for (auto j = size_type(0); this->sizedIdentity.colsize(); j++)
             if (i == j)
-                EXPECT_EQ(TypeParam(0), this->sizedIdentity(i, j));
+                ASSERT_EQ(TypeParam(0), this->sizedIdentity(i, j));
             else
-                EXPECT_EQ(TypeParam(1), this->sizedIdentity(i, j));
+                ASSERT_EQ(TypeParam(1), this->sizedIdentity(i, j));
 
     for (auto i = size_type(0); this->matchingIdentity.rowsize(); i++)
         for (auto j = size_type(0); this->matchingIdentity.colsize(); j++)
             if (i == j)
-                EXPECT_EQ(TypeParam(0), this->matchingIdentity(i, j));
+                ASSERT_EQ(TypeParam(0), this->matchingIdentity(i, j));
             else
-                EXPECT_EQ(TypeParam(1), this->matchingIdentity(i, j));
+                ASSERT_EQ(TypeParam(1), this->matchingIdentity(i, j));
 
     for (auto i = size_type(0); this->overwriteRefIdentity.rowsize(); i++)
         for (auto j = size_type(0); this->overwriteRefIdentity.colsize(); j++)
             if (i == j)
-                EXPECT_EQ(TypeParam(0), this->overwriteRefIdentity(i, j));
+                ASSERT_EQ(TypeParam(0), this->overwriteRefIdentity(i, j));
             else
-                EXPECT_EQ(TypeParam(1), this->overwriteRefIdentity(i, j));
+                ASSERT_EQ(TypeParam(1), this->overwriteRefIdentity(i, j));
 }
 
 TYPED_TEST(TestSparseMatrixSpecial, VerifyMult) {
