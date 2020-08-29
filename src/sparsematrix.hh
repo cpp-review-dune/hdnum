@@ -60,7 +60,7 @@ public:
     SparseMatrix(const std::initializer_list<std::initializer_list<REAL>>& v) {}
 
     //! constructor from hdnum::DenseMatrix
-    SparseMatrix(const DenseMatrix<REAL>& A) {}
+    SparseMatrix(const hdnum::DenseMatrix<REAL>& other) {}
 
     void addNewRow(const hdnum::Vector<REAL>& rowvector) {}
 
@@ -134,11 +134,22 @@ public:
     SparseMatrix operator=(const SparseMatrix& A) {}
     SparseMatrix operator=(const REAL value) {}
 
-    SparseMatrix transpose() {
+    bool operator==(const SparseMatrix& other) const {}
+    bool operator!=(const SparseMatrix& other) const {}
+    bool operator==(const hdnum::DenseMatrix<REAL>& other) const {}
+    bool operator!=(const hdnum::DenseMatrix<REAL>& other) const {}
+
+    // delete all the invalid comparisons
+    bool operator<(const SparseMatrix& other) = delete;
+    bool operator>(const SparseMatrix& other) = delete;
+    bool operator<=(const SparseMatrix& other) = delete;
+    bool operator>=(const SparseMatrix& other) = delete;
+
+    SparseMatrix transpose() const {
         SparseMatrix A(m_cols, m_rows);
-        SparseMatrix& self = *this;
         for (size_type i = 0; i < m_rows; i++)
-            for (size_type j = 0; j < m_cols; j++) A[j][i] = self[i][j];
+            for (size_type j = 0; j < m_cols; j++)
+                A[j][i] = this->operator()(i, j);
         return A;
     }
 
@@ -185,11 +196,11 @@ public:
         return norm;
     }
 
-    Vector<REAL> operator*(const Vector<REAL>& x) const {}
+    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL>& x) const {}
 
-    SparseMatrix operator*(const SparseMatrix& x) const {}
-    SparseMatrix operator+(const SparseMatrix& x) const {}
-    SparseMatrix operator-(const SparseMatrix& x) const {}
+    [[nodiscard]] SparseMatrix operator*(const SparseMatrix& x) const {}
+    [[nodiscard]] SparseMatrix operator+(const SparseMatrix& x) const {}
+    [[nodiscard]] SparseMatrix operator-(const SparseMatrix& x) const {}
 
     SparseMatrix<REAL> matchingIdentity() const {}
     static SparseMatrix identity(const size_type dimN) {}
