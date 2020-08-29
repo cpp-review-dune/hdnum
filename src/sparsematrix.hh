@@ -13,11 +13,12 @@
 #include <iostream>
 #include <vector>
 
+#include "densematrix.hh"
 #include "vector.hh"
 
 namespace hdnum {
 
-/*! \brief Class with mathematical matrix operations
+/*! \brief Sparse matrix Class with mathematical matrix operations
  */
 template <typename REAL>
 class SparseMatrix {
@@ -57,6 +58,9 @@ public:
 
     //! constructor from initializer list
     SparseMatrix(const std::initializer_list<std::initializer_list<REAL>>& v) {}
+
+    //! constructor from hdnum::DenseMatrix
+    SparseMatrix(const DenseMatrix<REAL>& A) {}
 
     void addNewRow(const hdnum::Vector<REAL>& rowvector) {}
 
