@@ -32,7 +32,7 @@ namespace hdnum
                 sum_nom += A[i][k]*Q[i][j];
                 sum_denom += Q[i][j]*Q[i][j];
               }
-            // modify 
+            // modify
             T alpha = sum_nom/sum_denom;
             for (int i=0; i<Q.rowsize(); i++)
               Q[i][k] -= alpha*Q[i][j];
@@ -50,7 +50,7 @@ namespace hdnum
     return Q;
   }
 
-  //! computes orthonormal basis of Im(A) using modified Gram-Schmidt 
+  //! computes orthonormal basis of Im(A) using modified Gram-Schmidt
   template<class T>
   DenseMatrix<T> modified_gram_schmidt (const DenseMatrix<T>& A)
   {
@@ -69,10 +69,10 @@ namespace hdnum
                 sum_nom += Q[i][j]*Q[i][k];
                 sum_denom += Q[i][k]*Q[i][k];
               }
-            // modify 
+            // modify
             T alpha = sum_nom/sum_denom;
             for (int i=0; i<Q.rowsize(); i++)
-              Q[i][j] -= alpha*Q[i][k]; 
+              Q[i][j] -= alpha*Q[i][k];
           }
       }
     for (int j=0; j<Q.colsize(); j++)
@@ -83,9 +83,63 @@ namespace hdnum
         sum = sqrt(sum);
         //scale
         for (int i=0; i<Q.rowsize(); i++) Q[i][j] = Q[i][j]/sum;
-      }    
+      }
     return Q;
   }
 
+  //! computes qr decomposition using modified Gram-Schmidt
+  template<class T>
+  void qr_decomposition_gram_schmidt (const DenseMatrix<T>& A, DenseMatrix<T>& Q, DenseMatrix<T>& R)
+  {
+    // check preconditions
+    if (R.colsize() != R.rowsize() || R.colsize() == 0)
+      {
+        HDNUM_ERROR("R must be a square and nonempty matrix");
+      }
+
+    Q = A;
+    for (int k=0; k<Q.colsize(); k++)
+      {
+        // modify all later columns with column k
+        for (int j=k+1; j<Q.rowsize(); j++)
+          {
+            // compute factor
+            T sum_nom(0.0);
+            T sum_denom(0.0);
+            for (int i=0; i<Q.rowsize(); i++)
+              {
+                sum_nom += Q[i][j]*Q[i][k];
+                sum_denom += Q[i][k]*Q[i][k];
+              }
+
+            // modify R
+            R[k][j] = sum_nom;
+            // modify Q
+            T alpha = sum_nom/sum_denom;
+            for (int i=0; i<Q.rowsize(); i++)
+              Q[i][j] -= alpha*Q[i][k];
+          }
+      }
+    for (int j=0; j<Q.colsize(); j++)
+      {
+        // compute norm of column j
+        T sum(0.0);
+        for (int i=0; i<Q.rowsize(); i++) sum += Q[i][j]*Q[i][j];
+        sum = sqrt(sum);
+        // add main diagonal to R
+        R[j][j] = sum;
+        // scale Q
+        for (int i=0; i<Q.rowsize(); i++) Q[i][j] = Q[i][j]/sum;
+      }
+    for (int j=0; j < R.rowsize(); j++)
+      {
+        // scale R
+        for (int i=j+1; i < R.colsize(); i++)
+          {
+            R[j][i] /= R[j][j];
+          }
+      }
+  }
+  
 }
 #endif
