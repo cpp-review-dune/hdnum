@@ -24,12 +24,12 @@ TYPED_TEST(TestSparseMatrix, SizeTest) {
     using size_type = typename SparseMatrix<TypeParam>::size_type;
 
     // default-constructed matrix should have 0x0
-    ASSERT_EQ(size_type(0), this->s1.rowsize());
-    ASSERT_EQ(size_type(0), this->s1.colsize());
+    EXPECT_EQ(size_type(0), this->s1.rowsize());
+    EXPECT_EQ(size_type(0), this->s1.colsize());
 
     // copy-constructed matrix should also have same dimensions
-    ASSERT_EQ(size_type(0), this->s2.rowsize());
-    ASSERT_EQ(size_type(0), this->s2.colsize());
+    EXPECT_EQ(size_type(0), this->s2.rowsize());
+    EXPECT_EQ(size_type(0), this->s2.colsize());
 }
 
 }  // namespace

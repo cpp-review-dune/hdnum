@@ -54,23 +54,23 @@ TYPED_TEST(TestSparseMatrix, SizeTest) {
     using T = TestSparseMatrix<TypeParam>;
     using size_type = typename T::size_type;
 
-    ASSERT_EQ(T::dimM, this->sizedConstructed.rowsize());
-    ASSERT_EQ(T::dimN, this->sizedConstructed.colsize());
+    EXPECT_EQ(T::dimM, this->sizedConstructed.rowsize());
+    EXPECT_EQ(T::dimN, this->sizedConstructed.colsize());
 
-    ASSERT_EQ(T::dimM, this->sizedConstructedZero.rowsize());
-    ASSERT_EQ(T::dimN, this->sizedConstructedZero.colsize());
+    EXPECT_EQ(T::dimM, this->sizedConstructedZero.rowsize());
+    EXPECT_EQ(T::dimN, this->sizedConstructedZero.colsize());
 
-    ASSERT_EQ(T::dimM, this->sizedConstructedValue.rowsize());
-    ASSERT_EQ(T::dimN, this->sizedConstructedValue.colsize());
+    EXPECT_EQ(T::dimM, this->sizedConstructedValue.rowsize());
+    EXPECT_EQ(T::dimN, this->sizedConstructedValue.colsize());
 
-    ASSERT_EQ(size_type(4), this->fromInitializerListQuad.rowsize());
-    ASSERT_EQ(size_type(4), this->fromInitializerListQuad.colsize());
+    EXPECT_EQ(size_type(4), this->fromInitializerListQuad.rowsize());
+    EXPECT_EQ(size_type(4), this->fromInitializerListQuad.colsize());
 
-    ASSERT_EQ(size_type(4), this->fromInitializerList.rowsize());
-    ASSERT_EQ(size_type(1), this->fromInitializerList.colsize());
+    EXPECT_EQ(size_type(4), this->fromInitializerList.rowsize());
+    EXPECT_EQ(size_type(1), this->fromInitializerList.colsize());
 
-    ASSERT_EQ(T::someDenseMatrix.rowsize(), this->fromDenseMatrix.rowsize());
-    ASSERT_EQ(T::someDenseMatrix.colsize(), this->fromDenseMatrix.colsize());
+    EXPECT_EQ(T::someDenseMatrix.rowsize(), this->fromDenseMatrix.rowsize());
+    EXPECT_EQ(T::someDenseMatrix.colsize(), this->fromDenseMatrix.colsize());
 }
 
 TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
@@ -79,54 +79,54 @@ TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
 
     for (auto i = size_type(0); this->sizedConstructed.rowsize(); i++)
         for (auto j = size_type(0); this->sizedConstructed.colsize(); j++)
-            ASSERT_EQ(TypeParam(0), this->sizedConstructed(i, j));
+            EXPECT_EQ(TypeParam(0), this->sizedConstructed(i, j));
 
     for (auto i = size_type(0); this->sizedConstructedZero.rowsize(); i++)
         for (auto j = size_type(0); this->sizedConstructedZero.colsize(); j++)
-            ASSERT_EQ(TypeParam(0), this->sizedConstructedZero(i, j));
+            EXPECT_EQ(TypeParam(0), this->sizedConstructedZero(i, j));
 
     for (auto i = size_type(0); this->sizedConstructedValue.rowsize(); i++)
         for (auto j = size_type(0); this->sizedConstructedValue.colsize(); j++)
-            ASSERT_EQ(TypeParam(T::value), this->sizedConstructedValue(i, j));
+            EXPECT_EQ(TypeParam(T::value), this->sizedConstructedValue(i, j));
 
     for (auto i = size_type(0); this->fromInitializerList.rowsize(); i++)
         for (auto j = size_type(0); this->fromInitializerList.colsize(); j++)
-            ASSERT_EQ(TypeParam(i * this->fromInitializerList.rowsize() + j),
+            EXPECT_EQ(TypeParam(i * this->fromInitializerList.rowsize() + j),
                       this->fromInitializerList(i, j));
 
     for (auto i = size_type(0); this->fromInitializerListQuad.rowsize(); i++)
         for (auto j = size_type(0); this->fromInitializerListQuad.colsize();
              j++)
-            ASSERT_EQ(
+            EXPECT_EQ(
                 TypeParam(i * this->fromInitializerListQuad.rowsize() + j),
                 this->fromInitializerListQuad(i, j));
 
     for (auto i = size_type(0); this->fromDenseMatrix.rowsize(); i++)
         for (auto j = size_type(0); this->fromDenseMatrix.colsize(); j++)
-            ASSERT_EQ(T::someDenseMatrix(i, j), this->fromDenseMatrix(i, j));
+            EXPECT_EQ(T::someDenseMatrix(i, j), this->fromDenseMatrix(i, j));
 }
 
 /* TYPED_TEST(TestSparseMatrix, ValueConstIteratorTest) { */
 /*     for (const auto& row : this->sizedConstructed) */
-/*         for (const auto& element : row) ASSERT_EQ(TypeParam(0), element); */
+/*         for (const auto& element : row) EXPECT_EQ(TypeParam(0), element); */
 
 /*     for (const auto& row : this->sizedConstructedZero) */
-/*         for (const auto& element : row) ASSERT_EQ(TypeParam(0), element); */
+/*         for (const auto& element : row) EXPECT_EQ(TypeParam(0), element); */
 
 /*     for (const auto& row : this->sizedConstructedValue) */
 /*         for (const auto& element : row) */
-/*             ASSERT_EQ(TypeParam(this->value), element); */
+/*             EXPECT_EQ(TypeParam(this->value), element); */
 /* } */
 
 /* TYPED_TEST(TestSparseMatrix, ValueIteratorTest) { */
 /*     for (auto& row : this->sizedConstructed) */
-/*         for (auto& element : row) ASSERT_EQ(TypeParam(0), element); */
+/*         for (auto& element : row) EXPECT_EQ(TypeParam(0), element); */
 
 /*     for (auto& row : this->sizedConstructedZero) */
-/*         for (auto& element : row) ASSERT_EQ(TypeParam(0), element); */
+/*         for (auto& element : row) EXPECT_EQ(TypeParam(0), element); */
 
 /*     for (auto& row : this->sizedConstructedValue) */
-/*         for (auto& element : row) ASSERT_EQ(TypeParam(this->value), element);
+/*         for (auto& element : row) EXPECT_EQ(TypeParam(this->value), element);
  */
 /* } */
 
