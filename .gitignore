@@ -30,3 +30,4 @@ doc
 /**/*.vrb
 /**/*.fdb_latexmk
 /**/*.fls
+/**/*Session.vim

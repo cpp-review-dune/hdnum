@@ -70,13 +70,15 @@ public:
     // pretty-print output properties
     bool scientific() const { return bScientific; }
 
+    // regular (possibly modifying) Iterators
     VectorIterator begin() {}
     VectorIterator end() {}
 
+    // const Iterators
     ConstVectorIterator cbegin() const {}
     ConstVectorIterator cend() const {}
-    auto begin() const { return this->cbegin(); }
-    auto end() const { return this->cend(); }
+    ConstVectorIterator begin() const { return this->cbegin(); }
+    ConstVectorIterator end() const { return this->cend(); }
 
     /*!
       \brief   Switch between floating point (default=true) and fixed point
@@ -172,6 +174,13 @@ public:
 
     void mm(const SparseMatrix<REAL>& A, const SparseMatrix<REAL>& B) {}
 
+    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL>& x) const {}
+
+    [[nodiscard]] SparseMatrix operator+(const SparseMatrix& x) const {}
+    [[nodiscard]] SparseMatrix operator-(const SparseMatrix& x) const {}
+    [[nodiscard]] SparseMatrix operator*(const SparseMatrix& x) const {}
+    [[nodiscard]] SparseMatrix operator/(const SparseMatrix& x) const {}
+
     //! compute row sum norm
     REAL norm_infty() const {
         REAL norm(0.0);
@@ -195,12 +204,6 @@ public:
         }
         return norm;
     }
-
-    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL>& x) const {}
-
-    [[nodiscard]] SparseMatrix operator*(const SparseMatrix& x) const {}
-    [[nodiscard]] SparseMatrix operator+(const SparseMatrix& x) const {}
-    [[nodiscard]] SparseMatrix operator-(const SparseMatrix& x) const {}
 
     SparseMatrix<REAL> matchingIdentity() const {}
     static SparseMatrix identity(const size_type dimN) {}
