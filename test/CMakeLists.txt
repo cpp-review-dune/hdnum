@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(PkgConfig)
 pkg_search_module(GTEST REQUIRED gtest_main)
 
-include_directories(/home/chris/Documents/shared_projects/hdnum)
+include_directories(../)
 
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
