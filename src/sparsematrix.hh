@@ -156,10 +156,10 @@ public:
     }
 
     // Basic Matrix Operations
-    SparseMatrix operator+=(const SparseMatrix& B) {}
-    SparseMatrix operator-=(const SparseMatrix& B) {}
-    SparseMatrix operator*=(const REAL s) {}
-    SparseMatrix operator/=(const REAL s) {}
+    [[nodiscard]] SparseMatrix operator+=(const SparseMatrix& B) {}
+    [[nodiscard]] SparseMatrix operator-=(const SparseMatrix& B) {}
+    [[nodiscard]] SparseMatrix operator*=(const REAL s) {}
+    [[nodiscard]] SparseMatrix operator/=(const REAL s) {}
 
     void update(const REAL s, const SparseMatrix& B) {}
 
