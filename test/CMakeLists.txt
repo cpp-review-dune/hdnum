@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(PkgConfig)
 pkg_search_module(GTEST REQUIRED gtest_main)
 
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
+
 include_directories(../)
 
 macro(package_add_test TESTNAME)

@@ -30,7 +30,15 @@ public:
     using ConstVectorIterator = typename VType::const_iterator;
 
 private:
-    VType m_data;      // Matrix data is stored in an STL vector!
+    // Matrix data is stored in an STL vector!
+    VType _data;
+
+    // The non-null indices are stored in STL vectors with the size_type!
+    // Explanation on how the mapping works can be found here:
+    // https://de.wikipedia.org/wiki/Compressed_Row_Storage
+    std::vector<size_type> _columnIndices;
+    std::vector<size_type> _rowPtr;
+
     size_type m_rows;  // Number of Matrix rows
     size_type m_cols;  // Number of Matrix columns
 
@@ -44,25 +52,42 @@ private:
 
     //! get matrix element for read-only access:
     const REAL at(const size_type row, const size_type col) const {
-        return m_data[row * m_cols + col];
+        return _data[row * m_cols + col];
     }
 
 public:
     //! default constructor (empty Matrix)
-    SparseMatrix() : m_data(0, 0), m_rows(0), m_cols(0) {}
+    SparseMatrix() noexcept
+        : _data(), _columnIndices(), _rowPtr(), m_rows(0), m_cols(0) {}
 
     //! constructor
-    SparseMatrix(const size_type _rows, const size_type _cols,
-                 const REAL def_val = 0)
-        : m_data(_rows * _cols, def_val), m_rows(_rows), m_cols(_cols) {}
+    SparseMatrix(const size_type _rows, const size_type _cols)
+        : _data(), _columnIndices(), _rowPtr(2), m_rows(_rows), m_cols(_cols) {}
 
     //! constructor from initializer list
-    SparseMatrix(const std::initializer_list<std::initializer_list<REAL>>& v) {}
+    SparseMatrix(const std::initializer_list<std::initializer_list<REAL>> &v) {}
 
     //! constructor from hdnum::DenseMatrix
-    SparseMatrix(const hdnum::DenseMatrix<REAL>& other) {}
-
-    void addNewRow(const hdnum::Vector<REAL>& rowvector) {}
+    SparseMatrix(const hdnum::DenseMatrix<REAL> &other)
+        : _data(), _columnIndices(), _rowPtr(), m_rows(other.rowsize()),
+          m_cols(other.colsize()) {
+        for (size_type i {}; i < other.rowsize(); i++) {
+            for (size_type j {}; j < other.rowsize(); j++) {
+                if constexpr (std::is_integral_v<REAL>) {
+                    if (other(i, j) == REAL {}) {
+                        this->operator()(i, j) = other(i, j);
+                    }
+                } else {
+                    // TODO:
+                    // this limit should probably be specific for each
+                    // floatingpoint data type
+                    if (std::fabs(other(i, j)) <= 1e-50) {
+                        this->operator()(i, j) = other(i, j);
+                    }
+                }
+            }
+        }
+    }
 
     size_type rowsize() const { return m_rows; }
     size_type colsize() const { return m_cols; }
@@ -122,10 +147,38 @@ public:
     void precision(size_type i) const { nValuePrecision = i; }
 
     // write access on matrix element A_ij using A(i,j)
-    REAL& operator()(const size_type row, const size_type col) {}
+    REAL &operator()(const size_type row, const size_type col) {
+        _data.push_back(REAL {});
+        _columnIndices.push_back(col);
+        if (row < _rowPtr[col]) {
+            _rowPtr[col] = row;
+        }
+        return _data[_data.size() - 1];
+    }
 
     //! read-access on matrix element A_ij using A(i,j)
-    const REAL& operator()(const size_type row, const size_type col) const {}
+    const REAL &operator()(const size_type row, const size_type col) const {
+        if (m_cols - 1 <= col) {
+            HDNUM_ERROR("Out of bounds access: column too big!");
+        } else if (m_rows - 1 <= row) {
+            HDNUM_ERROR("Out of bounds access: row too big!");
+        }
+
+        // Handle the zero matrix case
+        if (_rowPtr[col] == 0 and _rowPtr[col + 1] == 0 or
+            _rowPtr.size() == 1) {
+            return REAL {};
+        }
+
+        // look for the entry
+        for (auto i = _rowPtr[col]; i < _rowPtr[col + 1]; ++i) {
+            if (_columnIndices[i] == col) {
+                return _data[i];
+            }
+        }
+        // look for the entry
+        return REAL {};
+    }
 
     //! read-access on matrix element A_ij using A[i][j]
     const ConstVectorIterator operator[](const size_type row) const {}
@@ -133,19 +186,19 @@ public:
     //! write-access on matrix element A_ij using A[i][j]
     VectorIterator operator[](const size_type row) {}
 
-    SparseMatrix operator=(const SparseMatrix& A) {}
+    SparseMatrix operator=(const SparseMatrix &A) {}
     SparseMatrix operator=(const REAL value) {}
 
-    bool operator==(const SparseMatrix& other) const {}
-    bool operator!=(const SparseMatrix& other) const {}
-    bool operator==(const hdnum::DenseMatrix<REAL>& other) const {}
-    bool operator!=(const hdnum::DenseMatrix<REAL>& other) const {}
+    bool operator==(const SparseMatrix &other) const {}
+    bool operator!=(const SparseMatrix &other) const {}
+    bool operator==(const hdnum::DenseMatrix<REAL> &other) const {}
+    bool operator!=(const hdnum::DenseMatrix<REAL> &other) const {}
 
     // delete all the invalid comparisons
-    bool operator<(const SparseMatrix& other) = delete;
-    bool operator>(const SparseMatrix& other) = delete;
-    bool operator<=(const SparseMatrix& other) = delete;
-    bool operator>=(const SparseMatrix& other) = delete;
+    bool operator<(const SparseMatrix &other) = delete;
+    bool operator>(const SparseMatrix &other) = delete;
+    bool operator<=(const SparseMatrix &other) = delete;
+    bool operator>=(const SparseMatrix &other) = delete;
 
     SparseMatrix transpose() const {
         SparseMatrix A(m_cols, m_rows);
@@ -156,30 +209,30 @@ public:
     }
 
     // Basic Matrix Operations
-    [[nodiscard]] SparseMatrix operator+=(const SparseMatrix& B) {}
-    [[nodiscard]] SparseMatrix operator-=(const SparseMatrix& B) {}
+    [[nodiscard]] SparseMatrix operator+=(const SparseMatrix &B) {}
+    [[nodiscard]] SparseMatrix operator-=(const SparseMatrix &B) {}
     [[nodiscard]] SparseMatrix operator*=(const REAL s) {}
     [[nodiscard]] SparseMatrix operator/=(const REAL s) {}
 
-    void update(const REAL s, const SparseMatrix& B) {}
+    void update(const REAL s, const SparseMatrix &B) {}
 
     template <class V>
-    void mv(Vector<V>& y, const Vector<V>& x) const {}
+    void mv(Vector<V> &y, const Vector<V> &x) const {}
 
     template <class V>
-    void umv(Vector<V>& y, const Vector<V>& x) const {}
+    void umv(Vector<V> &y, const Vector<V> &x) const {}
 
     template <class V>
-    void umv(Vector<V>& y, const V& s, const Vector<V>& x) const {}
+    void umv(Vector<V> &y, const V &s, const Vector<V> &x) const {}
 
-    void mm(const SparseMatrix<REAL>& A, const SparseMatrix<REAL>& B) {}
+    void mm(const SparseMatrix<REAL> &A, const SparseMatrix<REAL> &B) {}
 
-    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL>& x) const {}
+    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL> &x) const {}
 
-    [[nodiscard]] SparseMatrix operator+(const SparseMatrix& x) const {}
-    [[nodiscard]] SparseMatrix operator-(const SparseMatrix& x) const {}
-    [[nodiscard]] SparseMatrix operator*(const SparseMatrix& x) const {}
-    [[nodiscard]] SparseMatrix operator/(const SparseMatrix& x) const {}
+    [[nodiscard]] SparseMatrix operator+(const SparseMatrix &x) const {}
+    [[nodiscard]] SparseMatrix operator-(const SparseMatrix &x) const {}
+    [[nodiscard]] SparseMatrix operator*(const SparseMatrix &x) const {}
+    [[nodiscard]] SparseMatrix operator/(const SparseMatrix &x) const {}
 
     //! compute row sum norm
     REAL norm_infty() const {
@@ -219,13 +272,13 @@ template <typename REAL>
 std::size_t SparseMatrix<REAL>::nValuePrecision = 3;
 
 template <typename REAL>
-std::ostream& operator<<(std::ostream& out, const SparseMatrix<REAL>& A) {
+std::ostream &operator<<(std::ostream &out, const SparseMatrix<REAL> &A) {
     return out;
 }
 
 //! make a zero matrix
 template <typename REAL>
-inline void zero(SparseMatrix<REAL>& A) {}
+inline void zero(SparseMatrix<REAL> &A) {}
 
 /*!
   \relates SparseMatrix
@@ -261,7 +314,7 @@ inline void zero(SparseMatrix<REAL>& A) {}
 
 */
 template <class T>
-inline void identity(SparseMatrix<T>& A) {}
+inline void identity(SparseMatrix<T> &A) {}
 
 }  // namespace hdnum
 

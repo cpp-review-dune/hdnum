@@ -13,8 +13,6 @@ template <typename T>
 class TestSparseMatrix : public ::testing::Test {
 public:
     const SparseMatrix<T> sizedConstructed;
-    const SparseMatrix<T> sizedConstructedZero;
-    const SparseMatrix<T> sizedConstructedValue;
 
     const SparseMatrix<T> fromInitializerListQuad;
     const SparseMatrix<T> fromInitializerList;
@@ -39,8 +37,7 @@ public:
         hdnum::DenseMatrix<T>(initializerListQuad);
 
     TestSparseMatrix()
-        : sizedConstructed(dimM, dimN), sizedConstructedZero(dimM, dimN, T(0)),
-          sizedConstructedValue(dimM, dimN, T(value)),
+        : sizedConstructed(dimM, dimN),
           fromInitializerListQuad(initializerListQuad),
           fromInitializerList(initializerList),
           fromDenseMatrix(someDenseMatrix) {}
@@ -56,12 +53,6 @@ TYPED_TEST(TestSparseMatrix, SizeTest) {
 
     EXPECT_EQ(T::dimM, this->sizedConstructed.rowsize());
     EXPECT_EQ(T::dimN, this->sizedConstructed.colsize());
-
-    EXPECT_EQ(T::dimM, this->sizedConstructedZero.rowsize());
-    EXPECT_EQ(T::dimN, this->sizedConstructedZero.colsize());
-
-    EXPECT_EQ(T::dimM, this->sizedConstructedValue.rowsize());
-    EXPECT_EQ(T::dimN, this->sizedConstructedValue.colsize());
 
     EXPECT_EQ(size_type(4), this->fromInitializerListQuad.rowsize());
     EXPECT_EQ(size_type(4), this->fromInitializerListQuad.colsize());
@@ -80,14 +71,6 @@ TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
     for (auto i = size_type(0); this->sizedConstructed.rowsize(); i++)
         for (auto j = size_type(0); this->sizedConstructed.colsize(); j++)
             EXPECT_EQ(TypeParam(0), this->sizedConstructed(i, j));
-
-    for (auto i = size_type(0); this->sizedConstructedZero.rowsize(); i++)
-        for (auto j = size_type(0); this->sizedConstructedZero.colsize(); j++)
-            EXPECT_EQ(TypeParam(0), this->sizedConstructedZero(i, j));
-
-    for (auto i = size_type(0); this->sizedConstructedValue.rowsize(); i++)
-        for (auto j = size_type(0); this->sizedConstructedValue.colsize(); j++)
-            EXPECT_EQ(TypeParam(T::value), this->sizedConstructedValue(i, j));
 
     for (auto i = size_type(0); this->fromInitializerList.rowsize(); i++)
         for (auto j = size_type(0); this->fromInitializerList.colsize(); j++)
