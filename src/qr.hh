@@ -59,7 +59,7 @@ namespace hdnum
     for (int k=0; k<Q.colsize(); k++)
       {
         // modify all later columns with column k
-        for (int j=k+1; j<Q.rowsize(); j++)
+        for (int j=k+1; j<Q.colsize(); j++)
           {
             // compute factor
             T sum_nom(0.0);
@@ -89,57 +89,79 @@ namespace hdnum
 
   //! computes qr decomposition using modified Gram-Schmidt
   template<class T>
-  void qr_decomposition_gram_schmidt (const DenseMatrix<T>& A, DenseMatrix<T>& Q, DenseMatrix<T>& R)
+  DenseMatrix<T> qr_decomposition_gram_schmidt (DenseMatrix<T>& Q)
   {
-    // check preconditions
-    if (R.colsize() != R.rowsize() || R.colsize() == 0)
-      {
-        HDNUM_ERROR("R must be a square and nonempty matrix");
-      }
+    // save matrix A, before it's replaced with Q
+    DenseMatrix<T> A(Q);
 
-    Q = A;
+    // create matrix R
+    DenseMatrix<T> R(Q.colsize(), Q.colsize());
+
     for (int k=0; k<Q.colsize(); k++)
       {
         // modify all later columns with column k
-        for (int j=k+1; j<Q.rowsize(); j++)
+        for (int j=k+1; j<Q.colsize(); j++)
           {
             // compute factor
             T sum_nom(0.0);
             T sum_denom(0.0);
             for (int i=0; i<Q.rowsize(); i++)
               {
-                sum_nom += Q[i][j]*Q[i][k];
-                sum_denom += Q[i][k]*Q[i][k];
+                sum_nom += Q(i, j)*Q(i, k);
+                sum_denom += Q(i, k)*Q(i, k);
               }
 
-            // modify R
-            R[k][j] = sum_nom;
-            // modify Q
             T alpha = sum_nom/sum_denom;
             for (int i=0; i<Q.rowsize(); i++)
-              Q[i][j] -= alpha*Q[i][k];
+              Q(i, j) -= alpha*Q(i, k);
           }
       }
+
+    // add first value (1,1) to R
+    T sum(0.0);
+    for (int i=0; i<A.rowsize(); i++) sum += A(i, 0)*A(i, 0);
+    sum = sqrt(sum);
+    R(0, 0) = sum;
+
+    // add main diagonal to R, except (1, 1)
+    for (int i=1; i<R.colsize(); i++)
+      {
+        T sum(0.0);
+        for (int j=0; j<Q.rowsize(); j++) sum += Q(j, i)*Q(j, i);
+        sum = sqrt(sum);
+        R(i, i) = sum;
+      }
+
+    // add missing values to R
+    for (int i=1; i<R.colsize(); i++)
+      {
+        for (int j=0; j<i; j++)
+          {
+            T sum_nom(0.0);
+            T sum_l2nom(0.0);
+            for (int k=0; k<Q.rowsize(); k++)
+              {
+                sum_nom += A(k, i)*Q(k, j);
+                sum_l2nom += Q(k, j)*Q(k, j);
+              }
+            sum_l2nom = sqrt(sum_l2nom);
+            // add element
+            R(j, i) = sum_nom/sum_l2nom;
+          }
+      }
+
     for (int j=0; j<Q.colsize(); j++)
       {
         // compute norm of column j
         T sum(0.0);
-        for (int i=0; i<Q.rowsize(); i++) sum += Q[i][j]*Q[i][j];
+        for (int i=0; i<Q.rowsize(); i++) sum += Q(i, j)*Q(i, j);
         sum = sqrt(sum);
-        // add main diagonal to R
-        R[j][j] = sum;
         // scale Q
-        for (int i=0; i<Q.rowsize(); i++) Q[i][j] = Q[i][j]/sum;
+        for (int i=0; i<Q.rowsize(); i++) Q(i, j) = Q(i, j)/sum;
       }
-    for (int j=0; j < R.rowsize(); j++)
-      {
-        // scale R
-        for (int i=j+1; i < R.colsize(); i++)
-          {
-            R[j][i] /= R[j][j];
-          }
-      }
+
+    return R;
   }
-  
 }
+
 #endif
