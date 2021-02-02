@@ -42,10 +42,11 @@ private:
     size_type m_rows;  // Number of Matrix rows
     size_type m_cols;  // Number of Matrix columns
 
-    static bool bScientific;
-    static size_type nIndexWidth;
-    static size_type nValueWidth;
-    static size_type nValuePrecision;
+    static constexpr bool bScientific = true;
+    static constexpr size_type nIndexWidth = 10;
+    static constexpr size_type nValueWidth = 10;
+    static constexpr size_type nValuePrecision = 3;
+    static constexpr REAL zero {};
 
     //! get matrix element for write access:
     REAL at(const size_type row, const size_type col) {}
@@ -261,15 +262,6 @@ public:
     SparseMatrix<REAL> matchingIdentity() const {}
     static SparseMatrix identity(const size_type dimN) {}
 };
-
-template <typename REAL>
-bool SparseMatrix<REAL>::bScientific = true;
-template <typename REAL>
-std::size_t SparseMatrix<REAL>::nIndexWidth = 10;
-template <typename REAL>
-std::size_t SparseMatrix<REAL>::nValueWidth = 10;
-template <typename REAL>
-std::size_t SparseMatrix<REAL>::nValuePrecision = 3;
 
 template <typename REAL>
 std::ostream &operator<<(std::ostream &out, const SparseMatrix<REAL> &A) {
