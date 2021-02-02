@@ -67,28 +67,6 @@ public:
     //! constructor from initializer list
     SparseMatrix(const std::initializer_list<std::initializer_list<REAL>> &v) {}
 
-    //! constructor from hdnum::DenseMatrix
-    SparseMatrix(const hdnum::DenseMatrix<REAL> &other)
-        : _data(), _columnIndices(), _rowPtr(), m_rows(other.rowsize()),
-          m_cols(other.colsize()) {
-        for (size_type i {}; i < other.rowsize(); i++) {
-            for (size_type j {}; j < other.rowsize(); j++) {
-                if constexpr (std::is_integral_v<REAL>) {
-                    if (other(i, j) == REAL {}) {
-                        this->operator()(i, j) = other(i, j);
-                    }
-                } else {
-                    // TODO:
-                    // this limit should probably be specific for each
-                    // floatingpoint data type
-                    if (std::fabs(other(i, j)) <= 1e-50) {
-                        this->operator()(i, j) = other(i, j);
-                    }
-                }
-            }
-        }
-    }
-
     size_type rowsize() const { return m_rows; }
     size_type colsize() const { return m_cols; }
 

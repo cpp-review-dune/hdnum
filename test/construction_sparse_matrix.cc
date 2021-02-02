@@ -88,29 +88,4 @@ TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
         for (auto j = size_type(0); this->fromDenseMatrix.colsize(); j++)
             EXPECT_EQ(T::someDenseMatrix(i, j), this->fromDenseMatrix(i, j));
 }
-
-/* TYPED_TEST(TestSparseMatrix, ValueConstIteratorTest) { */
-/*     for (const auto& row : this->sizedConstructed) */
-/*         for (const auto& element : row) EXPECT_EQ(TypeParam(0), element); */
-
-/*     for (const auto& row : this->sizedConstructedZero) */
-/*         for (const auto& element : row) EXPECT_EQ(TypeParam(0), element); */
-
-/*     for (const auto& row : this->sizedConstructedValue) */
-/*         for (const auto& element : row) */
-/*             EXPECT_EQ(TypeParam(this->value), element); */
-/* } */
-
-/* TYPED_TEST(TestSparseMatrix, ValueIteratorTest) { */
-/*     for (auto& row : this->sizedConstructed) */
-/*         for (auto& element : row) EXPECT_EQ(TypeParam(0), element); */
-
-/*     for (auto& row : this->sizedConstructedZero) */
-/*         for (auto& element : row) EXPECT_EQ(TypeParam(0), element); */
-
-/*     for (auto& row : this->sizedConstructedValue) */
-/*         for (auto& element : row) EXPECT_EQ(TypeParam(this->value), element);
- */
-/* } */
-
 }  // namespace
