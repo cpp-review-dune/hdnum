@@ -11,6 +11,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <vector>
 
 #include "densematrix.hh"
@@ -238,6 +239,33 @@ public:
 
     SparseMatrix<REAL> matchingIdentity() const {}
     static SparseMatrix identity(const size_type dimN) {}
+
+    class builder {
+        std::vector<std::map<size_type, REAL>> _rows;
+        size_type m_rows;  // Number of Matrix rows
+        size_type m_cols;  // Number of Matrix columns
+
+    public:
+        std::pair<typename std::map<size_type, REAL>::iterator, bool> addEntry(
+            size_type i, size_type j, REAL value) {
+            return _rows[i].emplace(j, value);
+        }
+
+        std::pair<typename std::map<size_type, REAL>::iterator, bool> addEntry(
+            size_type i, size_type j) {
+            return addEntry(i, j, 0);
+        };
+
+        void clear() noexcept {
+            for (auto &row : _rows) {
+                row.clear();
+            }
+        }
+
+
+
+        SparseMatrix build() {}
+    };
 };
 
 template <typename REAL>
