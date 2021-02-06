@@ -74,9 +74,81 @@ public:
     // pretty-print output properties
     bool scientific() const { return bScientific; }
 
+    /* class iterator { */
+    /* public: */
+    /*     using self_type = iterator; */
+
+    /*     // conform to the iterator traits */
+    /*     // https://en.cppreference.com/w/cpp/iterator/iterator_traits */
+    /*     using difference_type = std::ptrdiff_t; */
+    /*     using value_type = REAL; */
+    /*     using pointer = REAL *; */
+    /*     using reference = REAL &; */
+    /*     using iterator_category = std::forward_iterator_tag; */
+
+    /*     iterator(pointer ptr) : _ptr {ptr} {} */
+
+    /*     // prefix */
+    /*     self_type operator++() { */
+    /*         _ptr++; */
+    /*         return *this; */
+    /*     } */
+
+    /*     // postfix */
+    /*     self_type operator++(int junk) { */
+    /*         self_type cached = *this; */
+    /*         _ptr++; */
+    /*         return cached; */
+    /*     } */
+
+    /*     reference operator*() { return *_ptr; } */
+    /*     pointer operator->() { return _ptr; } */
+    /*     bool operator==(const self_type &rhs) { return _ptr == rhs._ptr; } */
+    /*     bool operator!=(const self_type &rhs) { return _ptr != rhs._ptr; } */
+
+    /* private: */
+    /*     pointer _ptr; */
+    /* }; */
+
+    /* class const_iterator { */
+    /* public: */
+    /*     using self_type = const_iterator; */
+
+    /*     // conform to the iterator traits */
+    /*     // https://en.cppreference.com/w/cpp/iterator/iterator_traits */
+    /*     using difference_type = std::ptrdiff_t; */
+    /*     using value_type = REAL; */
+    /*     using pointer = REAL *; */
+    /*     using reference = REAL &; */
+    /*     using iterator_category = std::forward_iterator_tag; */
+
+    /*     const_iterator(pointer ptr) : _ptr {ptr} {} */
+
+    /*     // prefix */
+    /*     self_type operator++() { */
+    /*         _ptr++; */
+    /*         return *this; */
+    /*     } */
+
+    /*     // postfix */
+    /*     self_type operator++(int junk) { */
+    /*         self_type cached = *this; */
+    /*         _ptr++; */
+    /*         return cached; */
+    /*     } */
+
+    /*     const value_type &operator*() { return *_ptr; } */
+    /*     const pointer operator->() { return _ptr; } */
+    /*     bool operator==(const self_type &rhs) { return _ptr == rhs._ptr; } */
+    /*     bool operator!=(const self_type &rhs) { return _ptr != rhs._ptr; } */
+
+    /* private: */
+    /*     pointer _ptr; */
+    /* }; */
+
     // regular (possibly modifying) Iterators
-    VectorIterator begin() {}
-    VectorIterator end() {}
+    /* iterator begin() {} */
+    /* iterator end() {} */
 
     // const Iterators
     ConstVectorIterator cbegin() const {}
