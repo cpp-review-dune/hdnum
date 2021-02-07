@@ -8,6 +8,8 @@ find_package(PkgConfig)
 pkg_search_module(GTEST REQUIRED gtest_main)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
+set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
+
 
 include_directories(../)
 
