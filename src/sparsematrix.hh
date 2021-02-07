@@ -328,13 +328,26 @@ public:
     //! write-access on matrix element A_ij using A[i][j]
     VectorIterator operator[](const size_type row) {}
 
-    SparseMatrix operator=(const SparseMatrix &A) {}
-    SparseMatrix operator=(const REAL value) {}
+    SparseMatrix &operator=(const SparseMatrix &other) {
+        _data = other._data;
+        _rowPtr = other._rowPtr;
+        _colIndices = other._colIndices;
 
-    bool operator==(const SparseMatrix &other) const {}
-    bool operator!=(const SparseMatrix &other) const {}
-    bool operator==(const hdnum::DenseMatrix<REAL> &other) const {}
-    bool operator!=(const hdnum::DenseMatrix<REAL> &other) const {}
+        m_cols = other.m_cols;
+        m_rows = other.m_rows;
+        return *this;
+    }
+
+    [[nodiscard]] bool operator==(const SparseMatrix &other) const {
+        return (_data == other._data) and              //
+               (_rowPtr == other._rowPtr) and          //
+               (_colIndices == other._colIndices) and  //
+               (m_cols == other.m_cols) and            //
+               (m_rows == other.m_rows);
+    }
+    [[nodiscard]] bool operator!=(const SparseMatrix &other) const {
+        return not (*this == other);
+    }
 
     // delete all the invalid comparisons
     bool operator<(const SparseMatrix &other) = delete;
@@ -446,8 +459,19 @@ public:
             return addEntry(i, j, REAL {});
         };
 
-        size_type colsize() noexcept { return m_cols; }
-        size_type rowsize() noexcept { return m_rows; }
+        [[nodiscard]] bool operator==(
+            const SparseMatrix::builder &other) const {
+            return (m_rows == other.m_rows) and (m_cols == other.m_cols) and
+                   (_rows == other._rows);
+        }
+
+        [[nodiscard]] bool operator!=(
+            const SparseMatrix::builder &other) const {
+            return not (*this == other);
+        }
+
+        [[nodiscard]] size_type colsize() noexcept { return m_cols; }
+        [[nodiscard]] size_type rowsize() noexcept { return m_rows; }
 
         size_type setNumCols(size_type new_m_cols) noexcept {
             m_cols = new_m_cols;
@@ -465,7 +489,7 @@ public:
             }
         }
 
-        std::string to_string() {
+        [[nodiscard]] std::string to_string() {
             std::string output;
             for (std::size_t i = 0; i < _rows.size(); i++) {
                 for (const auto &[index, value] : _rows[i]) {
@@ -477,7 +501,7 @@ public:
             return output;
         }
 
-        SparseMatrix build() {
+        [[nodiscard]] SparseMatrix build() {
             auto result = SparseMatrix<REAL>(m_rows, m_cols);
 
             for (std::size_t i = 0; i < _rows.size(); i++) {
