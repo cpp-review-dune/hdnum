@@ -312,6 +312,28 @@ public:
         return norm;
     }
 
+    std::string to_string() noexcept {
+        using std::to_string;
+
+        // lambda that converts container contents into
+        // { 1, 2, 3, 4 }
+        auto comma_fold = [](auto container) {
+            return "{ " +
+                   std::accumulate(
+                       std::next(container.begin()), container.end(),
+                       std::to_string(
+                           container[0]),  // start with first element
+                       [](std::string a, REAL b) {
+                           return a + ", " + std::to_string(b);
+                       }) +
+                   " }";
+        };
+
+        return "values = " + comma_fold(_data) +
+               "\ncolInd = " + comma_fold(_columnIndices) +
+               "\nrowPtr = " + comma_fold(_rowPtr) + "\n";
+    }
+
     SparseMatrix<REAL> matchingIdentity() const {}
     static SparseMatrix identity(const size_type dimN) {}
 
@@ -355,6 +377,17 @@ public:
             }
         }
 
+        std::string to_string() {
+            std::string output;
+            for (std::size_t i = 0; i < _rows.size(); i++) {
+                for (const auto &[index, value] : _rows[i]) {
+                    output += "i=" + std::to_string(i) +
+                              ", j=" + std::to_string(index) + " => " +
+                              std::to_string(value) + "\n";
+                }
+            }
+            return output;
+        }
 
         SparseMatrix build() {
             auto result = SparseMatrix<REAL>(m_rows, m_cols);
