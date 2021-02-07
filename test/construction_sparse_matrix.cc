@@ -33,14 +33,10 @@ public:
             {12, 13, 14, 15, 16, 17}, {18, 19, 20, 21, 22, 23},
             {24, 25, 26, 27, 28, 29}, {30, 31, 32, 33, 34, 35}};
 
-    static inline const auto someDenseMatrix =
-        hdnum::DenseMatrix<T>(initializerListQuad);
-
     TestSparseMatrix()
         : sizedConstructed(dimM, dimN),
           fromInitializerListQuad(initializerListQuad),
-          fromInitializerList(initializerList),
-          fromDenseMatrix(someDenseMatrix) {}
+          fromInitializerList(initializerList) {}
 };
 
 using TestTypes = ::testing::Types<int, double, float, std::complex<int>,
@@ -59,9 +55,6 @@ TYPED_TEST(TestSparseMatrix, SizeTest) {
 
     EXPECT_EQ(size_type(4), this->fromInitializerList.rowsize());
     EXPECT_EQ(size_type(1), this->fromInitializerList.colsize());
-
-    EXPECT_EQ(T::someDenseMatrix.rowsize(), this->fromDenseMatrix.rowsize());
-    EXPECT_EQ(T::someDenseMatrix.colsize(), this->fromDenseMatrix.colsize());
 }
 
 TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
@@ -83,9 +76,5 @@ TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
             EXPECT_EQ(
                 TypeParam(i * this->fromInitializerListQuad.rowsize() + j),
                 this->fromInitializerListQuad(i, j));
-
-    for (auto i = size_type(0); this->fromDenseMatrix.rowsize(); i++)
-        for (auto j = size_type(0); this->fromDenseMatrix.colsize(); j++)
-            EXPECT_EQ(T::someDenseMatrix(i, j), this->fromDenseMatrix(i, j));
 }
 }  // namespace
