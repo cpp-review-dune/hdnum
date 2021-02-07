@@ -12,6 +12,8 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <numeric>
+#include <string>
 #include <vector>
 
 #include "densematrix.hh"
@@ -63,7 +65,8 @@ public:
 
     //! constructor
     SparseMatrix(const size_type _rows, const size_type _cols)
-        : _data(), _columnIndices(), _rowPtr(2), m_rows(_rows), m_cols(_cols) {}
+        : _data(), _columnIndices(), _rowPtr(_rows + 1), m_rows(_rows),
+          m_cols(_cols) {}
 
     //! constructor from initializer list
     SparseMatrix(const std::initializer_list<std::initializer_list<REAL>> &v) {}
@@ -313,20 +316,38 @@ public:
     static SparseMatrix identity(const size_type dimN) {}
 
     class builder {
+        size_type m_rows {};  // Number of Matrix rows, 0 by default
+        size_type m_cols {};  // Number of Matrix columns, 0 by default
         std::vector<std::map<size_type, REAL>> _rows;
-        size_type m_rows;  // Number of Matrix rows
-        size_type m_cols;  // Number of Matrix columns
 
     public:
+        builder(size_type new_m_rows, size_type new_m_cols)
+            : m_rows {new_m_rows}, m_cols {new_m_cols}, _rows {m_rows} {}
+
+        builder() = default;
+
         std::pair<typename std::map<size_type, REAL>::iterator, bool> addEntry(
             size_type i, size_type j, REAL value) {
-            return _rows[i].emplace(j, value);
+            return _rows.at(i).emplace(j, value);
         }
 
         std::pair<typename std::map<size_type, REAL>::iterator, bool> addEntry(
             size_type i, size_type j) {
-            return addEntry(i, j, 0);
+            return addEntry(i, j, REAL {});
         };
+
+        size_type colsize() noexcept { return m_cols; }
+        size_type rowsize() noexcept { return m_rows; }
+
+        size_type setNumCols(size_type new_m_cols) noexcept {
+            m_cols = new_m_cols;
+            return m_cols;
+        }
+        size_type setNumRows(size_type new_m_rows) {
+            m_rows = new_m_rows;
+            _rows.resize(m_cols);
+            return m_rows;
+        }
 
         void clear() noexcept {
             for (auto &row : _rows) {
@@ -335,8 +356,19 @@ public:
         }
 
 
+        SparseMatrix build() {
+            auto result = SparseMatrix<REAL>(m_rows, m_cols);
 
-        SparseMatrix build() {}
+            for (std::size_t i = 0; i < _rows.size(); i++) {
+                result._rowPtr[i + 1] = result._rowPtr[i];
+                for (const auto &[index, value] : _rows[i]) {
+                    result._columnIndices.push_back(index);
+                    result._data.push_back(value);
+                    result._rowPtr[i + 1]++;
+                }
+            }
+            return result;
+        }
     };
 };
 
@@ -372,8 +404,8 @@ inline void zero(SparseMatrix<REAL> &A) {}
   \code
   hdnum::SparseMatrix<double> A(4,4);
   identity(A);
-
-  A.scientific(false); // fixed point representation for all DenseMatrix objects
+  // fixed point representation for all DenseMatrix objects
+  A.scientific(false);
   A.width(10);
   A.precision(5);
 
