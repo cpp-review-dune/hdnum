@@ -29,7 +29,7 @@ public:
     /** \brief Types used for array indices */
     using size_type = std::size_t;
     using VType = typename std::vector<REAL>;
-    using VectorIterator = typename VType::iterator;
+    using VectorIterator = typename std::vector<REAL>::iterator;
     using ConstVectorIterator = typename VType::const_iterator;
 
 private:
@@ -77,41 +77,123 @@ public:
     // pretty-print output properties
     bool scientific() const { return bScientific; }
 
-    /* class iterator { */
-    /* public: */
-    /*     using self_type = iterator; */
+    class column_iterator {
+    public:
+        using self_type = column_iterator;
 
-    /*     // conform to the iterator traits */
-    /*     // https://en.cppreference.com/w/cpp/iterator/iterator_traits */
-    /*     using difference_type = std::ptrdiff_t; */
-    /*     using value_type = REAL; */
-    /*     using pointer = REAL *; */
-    /*     using reference = REAL &; */
-    /*     using iterator_category = std::forward_iterator_tag; */
+        // conform to the iterator traits
+        // https://en.cppreference.com/w/cpp/iterator/iterator_traits
+        using difference_type = std::ptrdiff_t;
+        using value_type = std::pair<REAL, size_type>;
+        using pointer = value_type *;
+        using reference = value_type &;
+        using iterator_category = std::forward_iterator_tag;
 
-    /*     iterator(pointer ptr) : _ptr {ptr} {} */
+        column_iterator(VectorIterator valIter,
+                        std::vector<size_type>::iterator columnIndicesIter)
+            : _valIter(valIter), _columnIndicesIter(columnIndicesIter) {}
 
-    /*     // prefix */
-    /*     self_type operator++() { */
-    /*         _ptr++; */
-    /*         return *this; */
-    /*     } */
+        // prefix
+        self_type &operator++() {
+            _valIter++;
+            _columnIndicesIter++;
+            return *this;
+        }
 
-    /*     // postfix */
-    /*     self_type operator++(int junk) { */
-    /*         self_type cached = *this; */
-    /*         _ptr++; */
-    /*         return cached; */
-    /*     } */
+        // postfix
+        self_type &operator++(int junk) {
+            self_type cached = *this;
+            _valIter++;
+            _columnIndicesIter++;
+            return cached;
+        }
 
-    /*     reference operator*() { return *_ptr; } */
-    /*     pointer operator->() { return _ptr; } */
-    /*     bool operator==(const self_type &rhs) { return _ptr == rhs._ptr; } */
-    /*     bool operator!=(const self_type &rhs) { return _ptr != rhs._ptr; } */
+        value_type operator*() {
+            return std::make_pair(*_valIter, *_columnIndicesIter);
+        }
+        value_type operator->() {
+            return std::make_pair(*_valIter, *_columnIndicesIter);
+        }
+        /* value_type operator*() { return std::make_pair(1, 2); } */
+        /* value_type operator->() { return std::make_pair(3, 4); } */
 
-    /* private: */
-    /*     pointer _ptr; */
-    /* }; */
+        bool operator==(const self_type &other) {
+            return (_valIter == other._valIter) and
+                   (_columnIndicesIter == other._columnIndicesIter);
+        }
+        bool operator!=(const self_type &other) {
+            return (_valIter != other._valIter) and
+                   (_columnIndicesIter != other._columnIndicesIter);
+        }
+
+    private:
+        VectorIterator _valIter;
+        std::vector<size_type>::iterator _columnIndicesIter;
+    };
+
+    class row_iterator {
+    public:
+        using self_type = row_iterator;
+
+        // conform to the iterator traits
+        // https://en.cppreference.com/w/cpp/iterator/iterator_traits
+        using difference_type = std::ptrdiff_t;
+        using value_type = VectorIterator;
+        using pointer = VectorIterator *;
+        using reference = VectorIterator &;
+        using iterator_category = std::forward_iterator_tag;
+
+        row_iterator(std::vector<size_type>::iterator rowPtrIter,
+                     std::vector<size_type>::iterator columnIndicesIter,
+                     VectorIterator valIter)
+            : _rowPtrIter(rowPtrIter), _columnIndicesIter(columnIndicesIter),
+              _valIter(valIter) {}
+
+        /* [[nodiscard]] VectorIterator begin() { return _valIter +
+         * *_rowPtrIter; } */
+        /* [[nodiscard]] VectorIterator end() { */
+        /*     return _valIter + *(_rowPtrIter + 1); */
+        /* } */
+
+        [[nodiscard]] column_iterator begin() {
+            return column_iterator((_valIter + *_rowPtrIter),
+                                   (_columnIndicesIter + *_rowPtrIter));
+        }
+        [[nodiscard]] column_iterator end() {
+            return column_iterator((_valIter + *(_rowPtrIter + 1)),
+                                   (_columnIndicesIter + *(_rowPtrIter + 1)));
+        }
+
+        // prefix
+        self_type &operator++() {
+            _rowPtrIter++;
+            _currRow++;
+            return *this;
+        }
+
+        // postfix
+        self_type &operator++(int junk) {
+            self_type cached = *this;
+            _rowPtrIter++;
+            _currRow++;
+            return cached;
+        }
+
+        self_type operator*() { return *this; }
+        self_type operator->() { return *this; }
+        bool operator==(const self_type &rhs) {
+            return _rowPtrIter == rhs._rowPtrIter;
+        }
+        bool operator!=(const self_type &rhs) {
+            return _rowPtrIter != rhs._rowPtrIter;
+        }
+
+    private:
+        std::vector<size_type>::iterator _rowPtrIter;
+        size_type _currRow;
+        std::vector<size_type>::iterator _columnIndicesIter;
+        VectorIterator _valIter;
+    };
 
     /* class const_iterator { */
     /* public: */
@@ -150,8 +232,14 @@ public:
     /* }; */
 
     // regular (possibly modifying) Iterators
-    /* iterator begin() {} */
-    /* iterator end() {} */
+    [[nodiscard]] row_iterator begin() {
+        return SparseMatrix<REAL>::row_iterator(
+            _rowPtr.begin(), _columnIndices.begin(), _data.begin());
+    }
+    [[nodiscard]] row_iterator end() {
+        return row_iterator(_rowPtr.end() - 1, _columnIndices.begin(),
+                            _data.begin());
+    }
 
     // const Iterators
     ConstVectorIterator cbegin() const {}
