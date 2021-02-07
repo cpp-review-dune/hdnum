@@ -39,7 +39,7 @@ private:
     // The non-null indices are stored in STL vectors with the size_type!
     // Explanation on how the mapping works can be found here:
     // https://de.wikipedia.org/wiki/Compressed_Row_Storage
-    std::vector<size_type> _columnIndices;
+    std::vector<size_type> _colIndices;
     std::vector<size_type> _rowPtr;
 
     size_type m_rows;  // Number of Matrix rows
@@ -61,11 +61,11 @@ private:
 public:
     //! default constructor (empty Matrix)
     SparseMatrix() noexcept
-        : _data(), _columnIndices(), _rowPtr(), m_rows(0), m_cols(0) {}
+        : _data(), _colIndices(), _rowPtr(), m_rows(0), m_cols(0) {}
 
     //! constructor
     SparseMatrix(const size_type _rows, const size_type _cols)
-        : _data(), _columnIndices(), _rowPtr(_rows + 1), m_rows(_rows),
+        : _data(), _colIndices(), _rowPtr(_rows + 1), m_rows(_rows),
           m_cols(_cols) {}
 
     //! constructor from initializer list
@@ -90,13 +90,13 @@ public:
         using iterator_category = std::forward_iterator_tag;
 
         column_iterator(VectorIterator valIter,
-                        std::vector<size_type>::iterator columnIndicesIter)
-            : _valIter(valIter), _columnIndicesIter(columnIndicesIter) {}
+                        std::vector<size_type>::iterator colIndicesIter)
+            : _valIter(valIter), _colIndicesIter(colIndicesIter) {}
 
         // prefix
         self_type &operator++() {
             _valIter++;
-            _columnIndicesIter++;
+            _colIndicesIter++;
             return *this;
         }
 
@@ -104,31 +104,31 @@ public:
         self_type &operator++(int junk) {
             self_type cached = *this;
             _valIter++;
-            _columnIndicesIter++;
+            _colIndicesIter++;
             return cached;
         }
 
         value_type operator*() {
-            return std::make_pair(*_valIter, *_columnIndicesIter);
+            return std::make_pair(*_valIter, *_colIndicesIter);
         }
         value_type operator->() {
-            return std::make_pair(*_valIter, *_columnIndicesIter);
+            return std::make_pair(*_valIter, *_colIndicesIter);
         }
         /* value_type operator*() { return std::make_pair(1, 2); } */
         /* value_type operator->() { return std::make_pair(3, 4); } */
 
         bool operator==(const self_type &other) {
             return (_valIter == other._valIter) and
-                   (_columnIndicesIter == other._columnIndicesIter);
+                   (_colIndicesIter == other._colIndicesIter);
         }
         bool operator!=(const self_type &other) {
             return (_valIter != other._valIter) and
-                   (_columnIndicesIter != other._columnIndicesIter);
+                   (_colIndicesIter != other._colIndicesIter);
         }
 
     private:
         VectorIterator _valIter;
-        std::vector<size_type>::iterator _columnIndicesIter;
+        std::vector<size_type>::iterator _colIndicesIter;
     };
 
     class row_iterator {
@@ -144,9 +144,9 @@ public:
         using iterator_category = std::forward_iterator_tag;
 
         row_iterator(std::vector<size_type>::iterator rowPtrIter,
-                     std::vector<size_type>::iterator columnIndicesIter,
+                     std::vector<size_type>::iterator colIndicesIter,
                      VectorIterator valIter)
-            : _rowPtrIter(rowPtrIter), _columnIndicesIter(columnIndicesIter),
+            : _rowPtrIter(rowPtrIter), _colIndicesIter(colIndicesIter),
               _valIter(valIter) {}
 
         /* [[nodiscard]] VectorIterator begin() { return _valIter +
@@ -157,11 +157,11 @@ public:
 
         [[nodiscard]] column_iterator begin() {
             return column_iterator((_valIter + *_rowPtrIter),
-                                   (_columnIndicesIter + *_rowPtrIter));
+                                   (_colIndicesIter + *_rowPtrIter));
         }
         [[nodiscard]] column_iterator end() {
             return column_iterator((_valIter + *(_rowPtrIter + 1)),
-                                   (_columnIndicesIter + *(_rowPtrIter + 1)));
+                                   (_colIndicesIter + *(_rowPtrIter + 1)));
         }
 
         // prefix
@@ -191,7 +191,7 @@ public:
     private:
         std::vector<size_type>::iterator _rowPtrIter;
         size_type _currRow;
-        std::vector<size_type>::iterator _columnIndicesIter;
+        std::vector<size_type>::iterator _colIndicesIter;
         VectorIterator _valIter;
     };
 
@@ -234,10 +234,10 @@ public:
     // regular (possibly modifying) Iterators
     [[nodiscard]] row_iterator begin() {
         return SparseMatrix<REAL>::row_iterator(
-            _rowPtr.begin(), _columnIndices.begin(), _data.begin());
+            _rowPtr.begin(), _colIndices.begin(), _data.begin());
     }
     [[nodiscard]] row_iterator end() {
-        return row_iterator(_rowPtr.end() - 1, _columnIndices.begin(),
+        return row_iterator(_rowPtr.end() - 1, _colIndices.begin(),
                             _data.begin());
     }
 
@@ -291,7 +291,7 @@ public:
     // write access on matrix element A_ij using A(i,j)
     REAL &operator()(const size_type row, const size_type col) {
         _data.push_back(REAL {});
-        _columnIndices.push_back(col);
+        _colIndices.push_back(col);
         if (row < _rowPtr[col]) {
             _rowPtr[col] = row;
         }
@@ -314,7 +314,7 @@ public:
 
         // look for the entry
         for (auto i = _rowPtr[col]; i < _rowPtr[col + 1]; ++i) {
-            if (_columnIndices[i] == col) {
+            if (_colIndices[i] == col) {
                 return _data[i];
             }
         }
@@ -417,9 +417,9 @@ public:
                    " }";
         };
 
-        return "values = " + comma_fold(_data) +
-               "\ncolInd = " + comma_fold(_columnIndices) +
-               "\nrowPtr = " + comma_fold(_rowPtr) + "\n";
+        return "values=" + comma_fold(_data) + "\n" +        //
+               "colInd=" + comma_fold(_colIndices) + "\n" +  //
+               "rowPtr=" + comma_fold(_rowPtr) + "\n";       //
     }
 
     SparseMatrix<REAL> matchingIdentity() const {}
@@ -483,7 +483,7 @@ public:
             for (std::size_t i = 0; i < _rows.size(); i++) {
                 result._rowPtr[i + 1] = result._rowPtr[i];
                 for (const auto &[index, value] : _rows[i]) {
-                    result._columnIndices.push_back(index);
+                    result._colIndices.push_back(index);
                     result._data.push_back(value);
                     result._rowPtr[i + 1]++;
                 }
