@@ -59,25 +59,50 @@ TYPED_TEST(TestSparseMatrixBuilder, AddElements) {
     builder.addEntry(1, 1, 2);
 }
 
-TYPED_TEST(TestSparseMatrixBuilder, WikipediaTestCase) {
+TYPED_TEST(TestSparseMatrixBuilder, EqualityComparison) {
     // Example from: https://de.wikipedia.org/wiki/Compressed_Row_Storage
-    auto builder = typename SparseMatrix<TypeParam>::builder(4, 5);
-    EXPECT_EQ(builder.rowsize(), 4);
-    EXPECT_EQ(builder.colsize(), 5);
+    auto builder1 = typename SparseMatrix<TypeParam>::builder(4, 5);
+    auto builder2 = typename SparseMatrix<TypeParam>::builder(4, 5);
 
-    builder.addEntry(3, 2, 11);
-    builder.addEntry(0, 0, 10);
-    builder.addEntry(1, 2, 11);
-    builder.addEntry(0, 3, 12);
-    builder.addEntry(2, 1, 16);
-    builder.addEntry(1, 4, 13);
-    builder.addEntry(3, 4, 13);
+    EXPECT_EQ(builder1.rowsize(), 4);
+    EXPECT_EQ(builder1.colsize(), 5);
 
-    auto A = builder.build();
-    EXPECT_EQ(A.rowsize(), 4);
-    EXPECT_EQ(A.colsize(), 5);
+    EXPECT_EQ(builder2.rowsize(), 4);
+    EXPECT_EQ(builder2.colsize(), 5);
 
-    // TODO: Add checks for the contents of A!
+    builder1.addEntry(3, 2, 11);
+    builder1.addEntry(0, 0, 10);
+    builder1.addEntry(1, 2, 11);
+    builder1.addEntry(0, 3, 12);
+    builder1.addEntry(2, 1, 16);
+    builder1.addEntry(1, 4, 13);
+    builder1.addEntry(3, 4, 13);
+
+    builder2.addEntry(3, 2, 11);
+    builder2.addEntry(0, 0, 10);
+    builder2.addEntry(1, 2, 11);
+    builder2.addEntry(0, 3, 12);
+    builder2.addEntry(2, 1, 16);
+    builder2.addEntry(1, 4, 13);
+    builder2.addEntry(3, 4, 13);
+
+    EXPECT_EQ(builder1, builder2);
+
+    auto M1 = builder1.build();
+    auto M2 = builder2.build();
+
+    EXPECT_EQ(M1, M2);
+
+    EXPECT_EQ(M1.rowsize(), 4);
+    EXPECT_EQ(M1.colsize(), 5);
+    EXPECT_EQ(M2.rowsize(), 4);
+    EXPECT_EQ(M2.colsize(), 5);
+
+    builder2.addEntry(3, 3, 13);
+    M2 = builder2.build();
+
+    EXPECT_NE(builder1, builder2);
+    EXPECT_NE(M1, M2);
 }
 
 }  // namespace
