@@ -51,6 +51,7 @@ private:
     static size_type nIndexWidth;
     static size_type nValueWidth;
     static size_type nValuePrecision;
+    static const REAL _zero;
 
     //! get matrix element for write access:
     REAL at(const size_type row, const size_type col) {}
@@ -128,10 +129,12 @@ public:
             return std::make_pair(std::ref(*_valIter),
                                   std::cref(*_colIndicesIter));
         }
-        [[nodiscard]] value_type operator->() {
-            return std::make_pair(std::ref(*_valIter),
-                                  std::ref(*_colIndicesIter));
-        }
+        // [[nodiscard]] value_type operator->() {
+        //     return std::make_pair(std::ref(*_valIter),
+        //                           std::cref(*_colIndicesIter));
+        // }
+
+        [[nodiscard]] VectorIterator value_it() { return _valIter; }
 
         [[nodiscard]] bool operator==(const self_type &other) {
             return (_valIter == other._valIter) and
@@ -179,11 +182,15 @@ public:
         }
 
         [[nodiscard]] value_type operator*() {
-            return std::make_pair(*_valIter, *_colIndicesIter);
+            return std::make_pair(std::ref(*_valIter),
+                                  std::cref(*_colIndicesIter));
         }
-        [[nodiscard]] value_type operator->() {
-            return std::make_pair(*_valIter, *_colIndicesIter);
-        }
+        // TODO: This is wrong
+        // [[nodiscard]] value_type operator->() {
+        //     return std::make_pair(*_valIter, *_colIndicesIter);
+        // }
+
+        [[nodiscard]] ConstVectorIterator value_it() { return _valIter; }
 
         [[nodiscard]] bool operator==(const self_type &other) {
             return (_valIter == other._valIter) and
@@ -208,7 +215,7 @@ public:
         using value_type = self_type;
         using pointer = self_type *;
         using reference = self_type &;
-        using iterator_category = std::bidirectional_iterator_tag;
+        using iterator_category = std::random_access_iterator_tag;
 
         row_iterator(std::vector<size_type>::iterator rowPtrIter,
                      std::vector<size_type>::iterator colIndicesIter,
@@ -239,7 +246,7 @@ public:
         }
 
         [[nodiscard]] self_type &operator*() { return *this; }
-        [[nodiscard]] self_type &operator->() { return *this; }
+        // [[nodiscard]] self_type &operator->() { return *this; }
 
         [[nodiscard]] bool operator==(const self_type &rhs) {
             return _rowPtrIter == rhs._rowPtrIter;
@@ -283,6 +290,13 @@ public:
                 (_colIndicesIter + *(_rowPtrIter + 1)));
         }
 
+        [[nodiscard]] const_column_iterator cbegin() const {
+            return this->begin();
+        }
+        [[nodiscard]] const_column_iterator cend() const {
+            return this->end();  //
+        }
+
         // prefix
         self_type &operator++() {
             _rowPtrIter++;
@@ -297,7 +311,7 @@ public:
         }
 
         [[nodiscard]] self_type &operator*() { return *this; }
-        [[nodiscard]] self_type &operator->() { return *this; }
+        // [[nodiscard]] self_type &operator->() { return this; }
 
         [[nodiscard]] bool operator==(const self_type &rhs) {
             return _rowPtrIter == rhs._rowPtrIter;
@@ -597,6 +611,8 @@ template <typename REAL>
 std::size_t SparseMatrix<REAL>::nValueWidth = 10;
 template <typename REAL>
 std::size_t SparseMatrix<REAL>::nValuePrecision = 3;
+template <typename REAL>
+const REAL SparseMatrix<REAL>::_zero {};
 
 template <typename REAL>
 std::ostream &operator<<(std::ostream &out, const SparseMatrix<REAL> &A) {
