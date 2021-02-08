@@ -65,13 +65,13 @@ private:
     std::string comma_fold(T container) {
         return "{ " +
                std::accumulate(
-                   std::next(container.begin()), container.end(),
+                   std::next(container.cbegin()), container.cend(),
                    std::to_string(container[0]),  // start with first element
                    [](std::string a, REAL b) {
                        return a + ", " + std::to_string(b);
                    }) +
                " }";
-    };
+    }
 
 public:
     //! default constructor (empty Matrix)
@@ -157,8 +157,9 @@ public:
         using reference = value_type &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        const_column_iterator(VectorIterator valIter,
-                              std::vector<size_type>::iterator colIndicesIter)
+        const_column_iterator(
+            ConstVectorIterator valIter,
+            std::vector<size_type>::const_iterator colIndicesIter)
             : _valIter(valIter), _colIndicesIter(colIndicesIter) {}
 
         // prefix
@@ -192,8 +193,8 @@ public:
         }
 
     private:
-        VectorIterator _valIter;
-        std::vector<size_type>::iterator _colIndicesIter;
+        ConstVectorIterator _valIter;
+        std::vector<size_type>::const_iterator _colIndicesIter;
     };
 
     class row_iterator {
@@ -264,9 +265,10 @@ public:
         using reference = self_type &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        const_row_iterator(std::vector<size_type>::iterator rowPtrIter,
-                           std::vector<size_type>::iterator colIndicesIter,
-                           VectorIterator valIter)
+        const_row_iterator(
+            std::vector<size_type>::const_iterator rowPtrIter,
+            std::vector<size_type>::const_iterator colIndicesIter,
+            ConstVectorIterator valIter)
             : _rowPtrIter(rowPtrIter), _colIndicesIter(colIndicesIter),
               _valIter(valIter) {}
 
@@ -304,9 +306,9 @@ public:
         }
 
     private:
-        std::vector<size_type>::iterator _rowPtrIter;
-        std::vector<size_type>::iterator _colIndicesIter;
-        VectorIterator _valIter;
+        std::vector<size_type>::const_iterator _rowPtrIter;
+        std::vector<size_type>::const_iterator _colIndicesIter;
+        ConstVectorIterator _valIter;
     };
 
     // regular (possibly modifying) Iterators
@@ -321,12 +323,12 @@ public:
 
     // const Iterators
     [[nodiscard]] const_row_iterator cbegin() const {
-        return const_row_iterator(_rowPtr.begin(), _colIndices.begin(),
-                                  _data.begin());
+        return const_row_iterator(_rowPtr.cbegin(), _colIndices.cbegin(),
+                                  _data.cbegin());
     }
     [[nodiscard]] const_row_iterator cend() const {
-        return const_row_iterator(_rowPtr.end() - 1, _colIndices.begin(),
-                                  _data.begin());
+        return const_row_iterator(_rowPtr.cend() - 1, _colIndices.cbegin(),
+                                  _data.cbegin());
     }
     [[nodiscard]] const_row_iterator begin() const { return this->cbegin(); }
     [[nodiscard]] const_row_iterator end() const { return this->cend(); }
