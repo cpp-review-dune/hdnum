@@ -389,38 +389,87 @@ public:
     //! set data precision for pretty-printing
     void precision(size_type i) const { nValuePrecision = i; }
 
-    // write access on matrix element A_ij using A(i,j)
-    REAL &operator()(const size_type row, const size_type col) {
-        _data.push_back(REAL {});
-        _colIndices.push_back(col);
-        if (row < _rowPtr[col]) {
-            _rowPtr[col] = row;
-        }
-        return _data[_data.size() - 1];
-    }
+    // auto find_element(const size_type row_index, const size_type col_index) {
+    //     // look for the entry
+    //     using value_pair = typename const_column_iterator::value_type;
+    //     const auto row = this->begin() + row_index;
+    //     auto result =
+    //         std::find_if(row.begin(), row.end(), [col_index](value_pair el) {
+    //             // only care for the index here
+    //             // since the value is unknown
+    //             // anyways
+    //             return el.second == col_index;
+    //         });
+    //     // we found something within the right row
+    //     if (result != row.end()) {
+    //         return result;
+    //     } else {
+    //         throw std::out_of_range(
+    //             "There is no non-zero element for these given indicies!");
+    //     }
+    // }
 
-    //! read-access on matrix element A_ij using A(i,j)
-    const REAL &operator()(const size_type row, const size_type col) const {
-        if (m_cols - 1 <= col) {
+    // write access on matrix element A_ij using A(i,j)
+    REAL &operator()(const size_type row_index, const size_type col_index) {
+        if (not (col_index < m_cols)) {
             HDNUM_ERROR("Out of bounds access: column too big!");
-        } else if (m_rows - 1 <= row) {
+        } else if (not (row_index < m_rows)) {
             HDNUM_ERROR("Out of bounds access: row too big!");
         }
 
-        // Handle the zero matrix case
-        if (_rowPtr[col] == 0 and _rowPtr[col + 1] == 0 or
-            _rowPtr.size() == 1) {
-            return REAL {};
+        // look for the entry
+        using value_pair = typename const_column_iterator::value_type;
+        auto row = row_iterator(_rowPtr.begin() + row_index,
+                                _colIndices.begin(), _data.begin());
+        auto result =
+            std::find_if(row.begin(), row.end(), [col_index](value_pair el) {
+                // only care for the index here
+                // since the value is unknown
+                // anyways
+                return el.second == col_index;
+            });
+        // we found something within the right row
+        if (result != row.end()) {
+            return *result.value_it();
+        }
+        throw std::out_of_range(
+            "There is no non-zero element for these given indicies!");
+        // TODO:
+        /* return *find_element(row_index, col_index).value_it(); */
+    }
+
+    //! read-access on matrix element A_ij using A(i,j)
+    const REAL &operator()(const size_type row_index,
+                           const size_type col_index) const {
+        if (not (col_index < m_cols)) {
+            HDNUM_ERROR("Out of bounds access: column too big!");
+        } else if (not (row_index < m_rows)) {
+            HDNUM_ERROR("Out of bounds access: row too big!");
         }
 
-        // look for the entry
-        for (auto i = _rowPtr[col]; i < _rowPtr[col + 1]; ++i) {
-            if (_colIndices[i] == col) {
-                return _data[i];
-            }
+        using value_pair = typename const_column_iterator::value_type;
+        auto row = const_row_iterator(_rowPtr.begin() + row_index,
+                                      _colIndices.begin(), _data.begin());
+        auto result =
+            std::find_if(row.begin(), row.end(), [col_index](value_pair el) {
+                // only care for the index here
+                // since the value is unknown
+                // anyways
+                return el.second == col_index;
+            });
+        // we found something within the right row
+        if (result != row.end()) {
+            return result;
         }
-        // look for the entry
-        return REAL {};
+        return _zero;
+
+        // TODO:
+        /* try { */
+        /*     auto result = find_element(row_index, col_index); */
+        /*     return *result.value_it(); */
+        /* } catch (std::out_of_range) { */
+        /*     return _zero; */
+        /* } */
     }
 
     //! read-access on matrix element A_ij using A[i][j]
