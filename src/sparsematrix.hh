@@ -9,6 +9,7 @@
 #ifndef SPARSEMATRIX_HH
 #define SPARSEMATRIX_HH
 
+#include <algorithm>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -62,7 +63,7 @@ private:
     // !function that converts container contents into
     // { 1, 2, 3, 4 }
     template <typename T>
-    std::string comma_fold(T container) {
+    [[nodiscard]] std::string comma_fold(T container) const {
         return "{ " +
                std::accumulate(
                    std::next(container.cbegin()), container.cend(),
@@ -499,13 +500,13 @@ public:
         return norm;
     }
 
-    std::string to_string() noexcept {
+    [[nodiscard]] std::string to_string() const noexcept {
         return "values=" + comma_fold(_data) + "\n" +        //
                "colInd=" + comma_fold(_colIndices) + "\n" +  //
                "rowPtr=" + comma_fold(_rowPtr) + "\n";       //
     }
 
-    void print() noexcept { std::cout << this->to_string(); }
+    void print() const noexcept { std::cout << this->to_string(); }
 
     SparseMatrix<REAL> matchingIdentity() const {}
     static SparseMatrix identity(const size_type dimN) {}
@@ -561,13 +562,12 @@ public:
             }
         }
 
-        [[nodiscard]] std::string to_string() {
+        [[nodiscard]] std::string to_string() const {
             std::string output;
             for (std::size_t i = 0; i < _rows.size(); i++) {
                 for (const auto &[index, value] : _rows[i]) {
-                    output += "i=" + std::to_string(i) +
-                              ", j=" + std::to_string(index) + " => " +
-                              std::to_string(value) + "\n";
+                    output += std::to_string(i) + ", " + std::to_string(index) +
+                              " => " + std::to_string(value) + "\n";
                 }
             }
             return output;
@@ -600,7 +600,7 @@ std::size_t SparseMatrix<REAL>::nValuePrecision = 3;
 
 template <typename REAL>
 std::ostream &operator<<(std::ostream &out, const SparseMatrix<REAL> &A) {
-    return out;
+    return out << A.to_string();
 }
 
 //! make a zero matrix
