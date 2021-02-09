@@ -17,6 +17,7 @@ macro(package_add_test TESTNAME)
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
     target_link_libraries(${TESTNAME} ${GTEST_LDFLAGS})
+    target_link_libraries(${TESTNAME} gmp gmpxx)
 
     target_compile_options(${TESTNAME} PUBLIC ${GTEST_CFLAGS})
     add_test("${TESTNAME}Test" ${TESTNAME})
