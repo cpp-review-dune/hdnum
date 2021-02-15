@@ -9,7 +9,7 @@ using hdnum::SparseMatrix;
 class TestReadSparseMatrixFromFile : public ::testing::Test {
 public:
     const SparseMatrix<double> A;
-    const std::string filename = "../readmatrix_simple.ctf";
+    const std::string filename = "../example_matrix_market.mtx";
 
     using size_type = typename SparseMatrix<double>::size_type;
 };

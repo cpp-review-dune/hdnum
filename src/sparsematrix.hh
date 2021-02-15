@@ -834,14 +834,14 @@ inline void readMatrixFromFile(const std::string &filename,
     size_type non_zeros = 0;
 
     if (fin.is_open()) {
+        // ignore all comments from the file (starting with %)
+        while (fin.peek() == '%') fin.ignore(2048, '\n');
+
         std::getline(fin, buffer);
         std::istringstream first_line(buffer);
         first_line >> i >> j >> non_zeros;
 
-        std::cout << "i:" << i << " j: " << j << " non_zeros: " << non_zeros
-                  << "\n";
-
-        // TODO: set the matrix sizes
+        auto builder = typename SparseMatrix<REAL>::builder(i, j);
 
         while (std::getline(fin, buffer)) {
             std::istringstream iss(buffer);
@@ -849,9 +849,9 @@ inline void readMatrixFromFile(const std::string &filename,
             REAL value {};
             iss >> i >> j >> value;
 
-            std::cout << "i:" << i << " j: " << j << " non_zeros: " << non_zeros
-                      << "\n";
+            builder.addEntry(i-1, j-1, value);      // i-1, j-1, because matrix market does not use zero based indexing
         }
+        A = builder.build();
         fin.close();
     } else {
         HDNUM_ERROR("Could not open file!");
