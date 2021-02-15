@@ -7,17 +7,19 @@
  */
 
 #ifndef _VECTOR_HH
-#define	_VECTOR_HH
+#define _VECTOR_HH
 
-#include <vector>
-#include <cmath>
 #include <assert.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-#include <cstdlib>
 
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <vector>
+
+#include "exceptions.hh"
 
 namespace hdnum {
 
