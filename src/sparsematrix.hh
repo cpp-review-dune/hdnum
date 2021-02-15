@@ -53,14 +53,6 @@ private:
     static size_type nValuePrecision;
     static const REAL _zero;
 
-    //! get matrix element for write access:
-    REAL at(const size_type row, const size_type col) {}
-
-    //! get matrix element for read-only access:
-    const REAL at(const size_type row, const size_type col) const {
-        return _data[row * m_cols + col];
-    }
-
     // !function that converts container contents into
     // { 1, 2, 3, 4 }
     template <typename T>
@@ -659,8 +651,15 @@ public:
 
     void print() const noexcept { std::cout << this->to_string(); }
 
-    SparseMatrix<REAL> matchingIdentity() const {}
-    static SparseMatrix identity(const size_type dimN) {}
+    static SparseMatrix identity(const size_type dimN) {
+        auto builder = typename SparseMatrix<REAL>::builder(dimN, dimN);
+        for (typename SparseMatrix<REAL>::size_type i = 0; i < dimN; ++i) {
+            builder.addEntry(i, i, REAL {1});
+        }
+        return builder.build();
+    }
+
+    SparseMatrix<REAL> matchingIdentity() const { return identity(m_cols); }
 
     class builder {
         size_type m_rows {};  // Number of Matrix rows, 0 by default
@@ -685,7 +684,8 @@ public:
 
         [[nodiscard]] bool operator==(
             const SparseMatrix::builder &other) const {
-            return (m_rows == other.m_rows) and (m_cols == other.m_cols) and
+            return (m_rows == other.m_rows) and  //
+                   (m_cols == other.m_cols) and  //
                    (_rows == other._rows);
         }
 
@@ -758,7 +758,9 @@ std::ostream &operator<<(std::ostream &out, const SparseMatrix<REAL> &A) {
 
 //! make a zero matrix
 template <typename REAL>
-inline void zero(SparseMatrix<REAL> &A) {}
+inline void zero(SparseMatrix<REAL> &A) {
+    A = SparseMatrix<REAL>();
+}
 
 /*!
   \relates SparseMatrix
@@ -793,8 +795,13 @@ inline void zero(SparseMatrix<REAL> &A) {}
   \endverbatim
 
 */
-template <class T>
-inline void identity(SparseMatrix<T> &A) {}
+template <class REAL>
+inline void identity(SparseMatrix<REAL> &A) {
+    if (A.rowsize() != A.colsize()) {
+        HDNUM_ERROR("Will not overwrite A since Dimensions are not equal!");
+    }
+    A = SparseMatrix<REAL>::identity(A.colsize());
+}
 
 template <typename REAL>
 inline void readMatrixFromFile(const std::string &filename,
