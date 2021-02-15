@@ -60,21 +60,21 @@ TYPED_TEST(TestSparseMatrixSpecial, ValueIndexTest) {
 
     for (auto i = size_type(0); this->sizedIdentity.rowsize(); i++)
         for (auto j = size_type(0); this->sizedIdentity.colsize(); j++)
-            if (i == j)
+            if (i != j)
                 EXPECT_EQ(TypeParam(0), this->sizedIdentity(i, j));
             else
                 EXPECT_EQ(TypeParam(1), this->sizedIdentity(i, j));
 
     for (auto i = size_type(0); this->matchingIdentity.rowsize(); i++)
         for (auto j = size_type(0); this->matchingIdentity.colsize(); j++)
-            if (i == j)
+            if (i != j)
                 EXPECT_EQ(TypeParam(0), this->matchingIdentity(i, j));
             else
                 EXPECT_EQ(TypeParam(1), this->matchingIdentity(i, j));
 
     for (auto i = size_type(0); this->overwriteRefIdentity.rowsize(); i++)
         for (auto j = size_type(0); this->overwriteRefIdentity.colsize(); j++)
-            if (i == j)
+            if (i != j)
                 EXPECT_EQ(TypeParam(0), this->overwriteRefIdentity(i, j));
             else
                 EXPECT_EQ(TypeParam(1), this->overwriteRefIdentity(i, j));
