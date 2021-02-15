@@ -459,7 +459,7 @@ public:
             });
         // we found something within the right row
         if (result != row.end()) {
-            return result;
+            return *result.value_it();
         }
         return _zero;
 
@@ -707,6 +707,44 @@ inline void zero(SparseMatrix<REAL> &A) {}
 */
 template <class T>
 inline void identity(SparseMatrix<T> &A) {}
+
+template <typename REAL>
+inline void readMatrixFromFile(const std::string &filename,
+                               SparseMatrix<REAL> &A) {
+    // Format taken from here:
+    // https://math.nist.gov/MatrixMarket/formats.html#coord
+
+    using size_type = typename SparseMatrix<REAL>::size_type;
+    std::string buffer;
+    std::ifstream fin(filename);
+    size_type i = 0;
+    size_type j = 0;
+    size_type non_zeros = 0;
+
+    if (fin.is_open()) {
+        std::getline(fin, buffer);
+        std::istringstream first_line(buffer);
+        first_line >> i >> j >> non_zeros;
+
+        std::cout << "i:" << i << " j: " << j << " non_zeros: " << non_zeros
+                  << "\n";
+
+        // TODO: set the matrix sizes
+
+        while (std::getline(fin, buffer)) {
+            std::istringstream iss(buffer);
+
+            REAL value {};
+            iss >> i >> j >> value;
+
+            std::cout << "i:" << i << " j: " << j << " non_zeros: " << non_zeros
+                      << "\n";
+        }
+        fin.close();
+    } else {
+        HDNUM_ERROR("Could not open file!");
+    }
+}
 
 }  // namespace hdnum
 

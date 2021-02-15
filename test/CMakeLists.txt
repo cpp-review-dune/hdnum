@@ -30,3 +30,4 @@ package_add_test(SparseMatrixSpecialMatricies special_matricies_sparse_matrix.cc
 package_add_test(SparseMatrixConstruction construction_sparse_matrix.cc)
 package_add_test(SparseMatrixOperators operators_sparse_matrix.cc)
 package_add_test(SparseMatrixBuilder builder_sparse_matrix_tests.cc)
+package_add_test(ReadSparseMatrixFromFile read_matrix_from_file.cc)
