@@ -134,7 +134,13 @@ public:
         //                           std::cref(*_colIndicesIter));
         // }
 
-        [[nodiscard]] VectorIterator value_it() { return _valIter; }
+        [[nodiscard]] typename value_type::first_type value() {
+            return std::ref(*_valIter);
+        }
+
+        [[nodiscard]] typename value_type::second_type index() {
+            return std::cref(*_colIndicesIter);
+        }
 
         [[nodiscard]] bool operator==(const self_type &other) {
             return (_valIter == other._valIter) and
@@ -190,7 +196,13 @@ public:
         //     return std::make_pair(*_valIter, *_colIndicesIter);
         // }
 
-        [[nodiscard]] ConstVectorIterator value_it() { return _valIter; }
+        [[nodiscard]] typename value_type::first_type value() {
+            return std::ref(*_valIter);
+        }
+
+        [[nodiscard]] typename value_type::second_type index() {
+            return std::cref(*_colIndicesIter);
+        }
 
         [[nodiscard]] bool operator==(const self_type &other) {
             return (_valIter == other._valIter) and
@@ -243,6 +255,49 @@ public:
             self_type cached = *this;
             _rowPtrIter++;
             return cached;
+        }
+
+        self_type &operator+=(difference_type offset) {
+            _rowPtrIter += offset;
+            return *this;
+        }
+
+        self_type &operator-=(difference_type offset) {
+            _rowPtrIter -= offset;
+            return *this;
+        }
+
+        // iter - n
+        self_type operator-(difference_type offset) {
+            self_type cache(*this);
+            cache -= offset;
+            return cache;
+        }
+
+        // iter + n
+        self_type operator+(difference_type offset) {
+            self_type cache(*this);
+            cache += offset;
+            return cache;
+        }
+        // n + iter
+        friend self_type operator+(const difference_type &offset,
+                                   const self_type &sec) {
+            self_type cache(sec);
+            cache += offset;
+            return cache;
+        }
+
+        reference operator[](difference_type offset) {
+            return *(*this + offset);
+        }
+
+        bool operator<(const self_type &other) {
+            return other - (*this) > 0;  //
+        }
+
+        bool operator>(const self_type &other) {
+            return other < (*this);  //
         }
 
         [[nodiscard]] self_type &operator*() { return *this; }
@@ -308,6 +363,49 @@ public:
             self_type cached = *this;
             _rowPtrIter++;
             return cached;
+        }
+
+        self_type &operator+=(difference_type offset) {
+            _rowPtrIter += offset;
+            return *this;
+        }
+
+        self_type &operator-=(difference_type offset) {
+            _rowPtrIter -= offset;
+            return *this;
+        }
+
+        // iter - n
+        self_type operator-(difference_type offset) {
+            self_type cache(*this);
+            cache -= offset;
+            return cache;
+        }
+
+        // iter + n
+        self_type operator+(difference_type offset) {
+            self_type cache(*this);
+            cache += offset;
+            return cache;
+        }
+        // n + iter
+        friend self_type operator+(const difference_type &offset,
+                                   const self_type &sec) {
+            self_type cache(sec);
+            cache += offset;
+            return cache;
+        }
+
+        reference operator[](difference_type offset) {
+            return *(*this + offset);
+        }
+
+        bool operator<(const self_type &other) {
+            return other - (*this) > 0;  //
+        }
+
+        bool operator>(const self_type &other) {
+            return other < (*this);  //
         }
 
         [[nodiscard]] self_type &operator*() { return *this; }
@@ -430,12 +528,10 @@ public:
             });
         // we found something within the right row
         if (result != row.end()) {
-            return *result.value_it();
+            return result.value();
         }
         throw std::out_of_range(
             "There is no non-zero element for these given indicies!");
-        // TODO:
-        /* return *find_element(row_index, col_index).value_it(); */
     }
 
     //! read-access on matrix element A_ij using A(i,j)
@@ -459,17 +555,9 @@ public:
             });
         // we found something within the right row
         if (result != row.end()) {
-            return *result.value_it();
+            return result.value();
         }
         return _zero;
-
-        // TODO:
-        /* try { */
-        /*     auto result = find_element(row_index, col_index); */
-        /*     return *result.value_it(); */
-        /* } catch (std::out_of_range) { */
-        /*     return _zero; */
-        /* } */
     }
 
     //! read-access on matrix element A_ij using A[i][j]
