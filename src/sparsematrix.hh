@@ -480,11 +480,13 @@ public:
                                  const size_type col_index) const {
         if (not (col_index < m_cols)) {
             HDNUM_ERROR("Out of bounds access: column too big! -> " +
-                        std::to_string(col_index));
+                        std::to_string(col_index) + " is not < " +
+                        std::to_string(m_cols));
             return false;
         } else if (not (row_index < m_rows)) {
             HDNUM_ERROR("Out of bounds access: row too big! -> " +
-                        std::to_string(row_index));
+                        std::to_string(row_index) + " is not < " +
+                        std::to_string(m_rows));
             return false;
         }
         return true;
@@ -692,8 +694,8 @@ public:
             return not (*this == other);
         }
 
-        [[nodiscard]] size_type colsize() noexcept { return m_cols; }
-        [[nodiscard]] size_type rowsize() noexcept { return m_rows; }
+        [[nodiscard]] size_type colsize() const noexcept { return m_cols; }
+        [[nodiscard]] size_type rowsize() const noexcept { return m_rows; }
 
         size_type setNumCols(size_type new_m_cols) noexcept {
             m_cols = new_m_cols;
