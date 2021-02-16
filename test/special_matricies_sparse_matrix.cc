@@ -86,7 +86,7 @@ TYPED_TEST(TestSparseMatrixSpecial, VerifyMult) {
     SparseMatrix<TypeParam> testMatrix(this->dimM, this->dimN);
     for (auto i = size_type(0); testMatrix.rowsize(); i++)
         for (auto j = size_type(0); testMatrix.colsize(); j++)
-            testMatrix(i, j) = TypeParam(i + j);
+            testMatrix.get(i, j) = TypeParam(i + j);
 }
 
 }  // namespace

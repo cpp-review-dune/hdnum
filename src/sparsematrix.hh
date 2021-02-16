@@ -492,8 +492,8 @@ public:
         return true;
     }
 
-    // write access on matrix element A_ij using A(i,j)
-    REAL &operator()(const size_type row_index, const size_type col_index) {
+    // write access on matrix element A_ij using A.get(i,j)
+    REAL &get(const size_type row_index, const size_type col_index) {
         checkIfAccessIsInBounds(row_index, col_index);
         // look for the entry
         using value_pair = typename const_column_iterator::value_type;
