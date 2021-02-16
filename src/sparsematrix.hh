@@ -563,11 +563,16 @@ public:
     bool operator>=(const SparseMatrix &other) = delete;
 
     SparseMatrix transpose() const {
-        SparseMatrix A(m_cols, m_rows);
-        for (size_type i = 0; i < m_rows; i++)
-            for (size_type j = 0; j < m_cols; j++)
-                A[j][i] = this->operator()(i, j);
-        return A;
+        SparseMatrix::builder builder(m_cols, m_rows);
+        SparseMatrix::size_type curr_row = 0;
+        for (auto &row : (*this)) {
+            curr_row++;
+            for (const std::pair<REAL const &, const size_type> pair : row) {
+                builder.addEntry(pair.second, curr_row, pair.first);
+            }
+        }
+
+        return builder.build();
     }
 
     // Basic Matrix Operations
