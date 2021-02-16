@@ -626,7 +626,7 @@ public:
                "rowPtr=" + comma_fold(_rowPtr) + "\n";       //
     }
 
-    void print() const noexcept { std::cout << this->to_string(); }
+    void print() const noexcept { std::cout << *this; }
 
     static SparseMatrix identity(const size_type dimN) {
         auto builder = typename SparseMatrix<REAL>::builder(dimN, dimN);
@@ -743,8 +743,29 @@ template <typename REAL>
 const REAL SparseMatrix<REAL>::_zero {};
 
 template <typename REAL>
-std::ostream &operator<<(std::ostream &out, const SparseMatrix<REAL> &A) {
-    return out << A.to_string();
+std::ostream &operator<<(std::ostream &s, const SparseMatrix<REAL> &A) {
+    s << std::endl;
+    s << " " << std::setw(A.iwidth()) << " "
+      << "  ";
+    for (typename SparseMatrix<REAL>::size_type j = 0; j < A.colsize(); ++j)
+        s << std::setw(A.width()) << j << " ";
+    s << std::endl;
+
+    for (typename SparseMatrix<REAL>::size_type i = 0; i < A.rowsize(); ++i) {
+        s << " " << std::setw(A.iwidth()) << i << "  ";
+        for (typename SparseMatrix<REAL>::size_type j = 0; j < A.colsize();
+             ++j) {
+            if (A.scientific()) {
+                s << std::setw(A.width()) << std::scientific << std::showpoint
+                  << std::setprecision(A.precision()) << A(i, j) << " ";
+            } else {
+                s << std::setw(A.width()) << std::fixed << std::showpoint
+                  << std::setprecision(A.precision()) << A(i, j) << " ";
+            }
+        }
+        s << std::endl;
+    }
+    return s;
 }
 
 //! make a zero matrix
