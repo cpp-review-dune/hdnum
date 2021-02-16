@@ -476,26 +476,6 @@ public:
     //! set data precision for pretty-printing
     void precision(size_type i) const { nValuePrecision = i; }
 
-    // auto find_element(const size_type row_index, const size_type col_index) {
-    //     // look for the entry
-    //     using value_pair = typename const_column_iterator::value_type;
-    //     const auto row = this->begin() + row_index;
-    //     auto result =
-    //         std::find_if(row.begin(), row.end(), [col_index](value_pair el) {
-    //             // only care for the index here
-    //             // since the value is unknown
-    //             // anyways
-    //             return el.second == col_index;
-    //         });
-    //     // we found something within the right row
-    //     if (result != row.end()) {
-    //         return result;
-    //     } else {
-    //         throw std::out_of_range(
-    //             "There is no non-zero element for these given indicies!");
-    //     }
-    // }
-
     // write access on matrix element A_ij using A(i,j)
     REAL &operator()(const size_type row_index, const size_type col_index) {
         if (not (col_index < m_cols)) {
@@ -667,6 +647,19 @@ public:
         builder(size_type new_m_rows, size_type new_m_cols)
             : m_rows {new_m_rows}, m_cols {new_m_cols}, _rows {m_rows} {}
 
+        builder(const std::initializer_list<std::initializer_list<REAL>> &v)
+            : m_rows {v.size()}, m_cols {v.begin()->size()}, _rows(m_rows) {
+            size_type i = 0;
+            for (auto &row : v) {
+                size_type j = 0;
+                for (const REAL &element : row) {
+                    addEntry(i, j, element);
+                    j++;
+                }
+                i++;
+            }
+        }
+
         builder() = default;
 
         std::pair<typename std::map<size_type, REAL>::iterator, bool> addEntry(
@@ -713,9 +706,10 @@ public:
         [[nodiscard]] std::string to_string() const {
             std::string output;
             for (std::size_t i = 0; i < _rows.size(); i++) {
-                for (const auto &[index, value] : _rows[i]) {
-                    output += std::to_string(i) + ", " + std::to_string(index) +
-                              " => " + std::to_string(value) + "\n";
+                for (const auto &indexpair : _rows[i]) {
+                    output += std::to_string(i) + ", " +
+                              std::to_string(indexpair.first) + " => " +
+                              std::to_string(indexpair.second) + "\n";
                 }
             }
             return output;
@@ -726,9 +720,9 @@ public:
 
             for (std::size_t i = 0; i < _rows.size(); i++) {
                 result._rowPtr[i + 1] = result._rowPtr[i];
-                for (const auto &[index, value] : _rows[i]) {
-                    result._colIndices.push_back(index);
-                    result._data.push_back(value);
+                for (const auto &indexpair : _rows[i]) {
+                    result._colIndices.push_back(indexpair.first);
+                    result._data.push_back(indexpair.second);
                     result._rowPtr[i + 1]++;
                 }
             }
