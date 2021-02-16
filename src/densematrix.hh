@@ -17,6 +17,7 @@
 #include <string>
 
 #include "exceptions.hh"
+#include "sparsematrix.hh"
 #include "vector.hh"
 
 namespace hdnum {
@@ -79,6 +80,21 @@ public:
                 exit(1);
             }
             for (auto elem : row) m_data.push_back(elem);
+        }
+    }
+
+    //! constructor from hdnum::SparseMatrix
+    DenseMatrix(const hdnum::SparseMatrix<REAL>& other)
+        : m_data(other.rowsize() * other.colsize()), m_rows(other.rowsize()),
+          m_cols(other.colsize()) {
+        using counter_type = typename hdnum::SparseMatrix<REAL>::size_type;
+        counter_type row_index {};
+        for (auto& row : other) {
+            for (const auto& value_index : row) {
+                this->operator[](row_index)[value_index.second] =
+                    value_index.first;
+            }
+            row_index++;
         }
     }
 
