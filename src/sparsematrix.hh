@@ -409,14 +409,23 @@ public:
     //     }
     // }
 
+    bool checkIfAccessIsInBounds(const size_type row_index,
+                                 const size_type col_index) const {
+        if (not (col_index < m_cols)) {
+            HDNUM_ERROR("Out of bounds access: column too big! -> " +
+                        std::to_string(col_index));
+            return false;
+        } else if (not (row_index < m_rows)) {
+            HDNUM_ERROR("Out of bounds access: row too big! -> " +
+                        std::to_string(row_index));
+            return false;
+        }
+        return true;
+    }
+
     // write access on matrix element A_ij using A(i,j)
     REAL &operator()(const size_type row_index, const size_type col_index) {
-        if (not (col_index < m_cols)) {
-            HDNUM_ERROR("Out of bounds access: column too big!");
-        } else if (not (row_index < m_rows)) {
-            HDNUM_ERROR("Out of bounds access: row too big!");
-        }
-
+        checkIfAccessIsInBounds(row_index, col_index);
         // look for the entry
         using value_pair = typename const_column_iterator::value_type;
         auto row = row_iterator(_rowPtr.begin() + row_index,
@@ -441,20 +450,14 @@ public:
     //! read-access on matrix element A_ij using A(i,j)
     const REAL &operator()(const size_type row_index,
                            const size_type col_index) const {
-        if (not (col_index < m_cols)) {
-            HDNUM_ERROR("Out of bounds access: column too big!");
-        } else if (not (row_index < m_rows)) {
-            HDNUM_ERROR("Out of bounds access: row too big!");
-        }
+        checkIfAccessIsInBounds(row_index, col_index);
 
         using value_pair = typename const_column_iterator::value_type;
         auto row = const_row_iterator(_rowPtr.begin() + row_index,
                                       _colIndices.begin(), _data.begin());
         auto result =
             std::find_if(row.begin(), row.end(), [col_index](value_pair el) {
-                // only care for the index here
-                // since the value is unknown
-                // anyways
+                // only care for the index here since the value is unknown
                 return el.second == col_index;
             });
         // we found something within the right row
@@ -737,7 +740,9 @@ inline void readMatrixFromFile(const std::string &filename,
             REAL value {};
             iss >> i >> j >> value;
 
-            builder.addEntry(i-1, j-1, value);      // i-1, j-1, because matrix market does not use zero based indexing
+            builder.addEntry(i - 1, j - 1,
+                             value);  // i-1, j-1, because matrix market does
+                                      // not use zero based indexing
         }
         A = builder.build();
         fin.close();
