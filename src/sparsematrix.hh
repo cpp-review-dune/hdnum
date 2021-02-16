@@ -77,9 +77,6 @@ public:
         : _data(), _colIndices(), _rowPtr(_rows + 1), m_rows(_rows),
           m_cols(_cols) {}
 
-    //! constructor from initializer list
-    SparseMatrix(const std::initializer_list<std::initializer_list<REAL>> &v) {}
-
     [[nodiscard]] size_type rowsize() const { return m_rows; }
     [[nodiscard]] size_type colsize() const { return m_cols; }
 

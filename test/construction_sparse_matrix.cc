@@ -35,8 +35,10 @@ public:
 
     TestSparseMatrix()
         : sizedConstructed(dimM, dimN),
-          fromInitializerListQuad(initializerListQuad),
-          fromInitializerList(initializerList) {}
+          fromInitializerListQuad(
+              typename SparseMatrix<T>::builder(initializerListQuad).build()),
+          fromInitializerList(
+              typename SparseMatrix<T>::builder(initializerList).build()) {}
 };
 
 using TestTypes = ::testing::Types<int, double, float, std::complex<int>,
