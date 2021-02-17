@@ -53,14 +53,6 @@ private:
     static size_type nValuePrecision;
     static const REAL _zero;
 
-    //! get matrix element for write access:
-    REAL at(const size_type row, const size_type col) {}
-
-    //! get matrix element for read-only access:
-    const REAL at(const size_type row, const size_type col) const {
-        return _data[row * m_cols + col];
-    }
-
     // !function that converts container contents into
     // { 1, 2, 3, 4 }
     template <typename T>
@@ -84,9 +76,6 @@ public:
     SparseMatrix(const size_type _rows, const size_type _cols)
         : _data(), _colIndices(), _rowPtr(_rows + 1), m_rows(_rows),
           m_cols(_cols) {}
-
-    //! constructor from initializer list
-    SparseMatrix(const std::initializer_list<std::initializer_list<REAL>> &v) {}
 
     [[nodiscard]] size_type rowsize() const { return m_rows; }
     [[nodiscard]] size_type colsize() const { return m_cols; }
@@ -134,7 +123,13 @@ public:
         //                           std::cref(*_colIndicesIter));
         // }
 
-        [[nodiscard]] VectorIterator value_it() { return _valIter; }
+        [[nodiscard]] typename value_type::first_type value() {
+            return std::ref(*_valIter);
+        }
+
+        [[nodiscard]] typename value_type::second_type index() {
+            return std::cref(*_colIndicesIter);
+        }
 
         [[nodiscard]] bool operator==(const self_type &other) {
             return (_valIter == other._valIter) and
@@ -190,7 +185,13 @@ public:
         //     return std::make_pair(*_valIter, *_colIndicesIter);
         // }
 
-        [[nodiscard]] ConstVectorIterator value_it() { return _valIter; }
+        [[nodiscard]] typename value_type::first_type value() {
+            return std::ref(*_valIter);
+        }
+
+        [[nodiscard]] typename value_type::second_type index() {
+            return std::cref(*_colIndicesIter);
+        }
 
         [[nodiscard]] bool operator==(const self_type &other) {
             return (_valIter == other._valIter) and
@@ -243,6 +244,49 @@ public:
             self_type cached = *this;
             _rowPtrIter++;
             return cached;
+        }
+
+        self_type &operator+=(difference_type offset) {
+            _rowPtrIter += offset;
+            return *this;
+        }
+
+        self_type &operator-=(difference_type offset) {
+            _rowPtrIter -= offset;
+            return *this;
+        }
+
+        // iter - n
+        self_type operator-(difference_type offset) {
+            self_type cache(*this);
+            cache -= offset;
+            return cache;
+        }
+
+        // iter + n
+        self_type operator+(difference_type offset) {
+            self_type cache(*this);
+            cache += offset;
+            return cache;
+        }
+        // n + iter
+        friend self_type operator+(const difference_type &offset,
+                                   const self_type &sec) {
+            self_type cache(sec);
+            cache += offset;
+            return cache;
+        }
+
+        reference operator[](difference_type offset) {
+            return *(*this + offset);
+        }
+
+        bool operator<(const self_type &other) {
+            return other - (*this) > 0;  //
+        }
+
+        bool operator>(const self_type &other) {
+            return other < (*this);  //
         }
 
         [[nodiscard]] self_type &operator*() { return *this; }
@@ -308,6 +352,49 @@ public:
             self_type cached = *this;
             _rowPtrIter++;
             return cached;
+        }
+
+        self_type &operator+=(difference_type offset) {
+            _rowPtrIter += offset;
+            return *this;
+        }
+
+        self_type &operator-=(difference_type offset) {
+            _rowPtrIter -= offset;
+            return *this;
+        }
+
+        // iter - n
+        self_type operator-(difference_type offset) {
+            self_type cache(*this);
+            cache -= offset;
+            return cache;
+        }
+
+        // iter + n
+        self_type operator+(difference_type offset) {
+            self_type cache(*this);
+            cache += offset;
+            return cache;
+        }
+        // n + iter
+        friend self_type operator+(const difference_type &offset,
+                                   const self_type &sec) {
+            self_type cache(sec);
+            cache += offset;
+            return cache;
+        }
+
+        reference operator[](difference_type offset) {
+            return *(*this + offset);
+        }
+
+        bool operator<(const self_type &other) {
+            return other - (*this) > 0;  //
+        }
+
+        bool operator>(const self_type &other) {
+            return other < (*this);  //
         }
 
         [[nodiscard]] self_type &operator*() { return *this; }
@@ -389,42 +476,24 @@ public:
     //! set data precision for pretty-printing
     void precision(size_type i) const { nValuePrecision = i; }
 
-    // auto find_element(const size_type row_index, const size_type col_index) {
-    //     // look for the entry
-    //     using value_pair = typename const_column_iterator::value_type;
-    //     const auto row = this->begin() + row_index;
-    //     auto result =
-    //         std::find_if(row.begin(), row.end(), [col_index](value_pair el) {
-    //             // only care for the index here
-    //             // since the value is unknown
-    //             // anyways
-    //             return el.second == col_index;
-    //         });
-    //     // we found something within the right row
-    //     if (result != row.end()) {
-    //         return result;
-    //     } else {
-    //         throw std::out_of_range(
-    //             "There is no non-zero element for these given indicies!");
-    //     }
-    // }
-
     bool checkIfAccessIsInBounds(const size_type row_index,
                                  const size_type col_index) const {
-        if (not (col_index < m_cols)) {
-            HDNUM_ERROR("Out of bounds access: column too big! -> " +
-                        std::to_string(col_index));
-            return false;
-        } else if (not (row_index < m_rows)) {
+        if (not (row_index < m_rows)) {
             HDNUM_ERROR("Out of bounds access: row too big! -> " +
-                        std::to_string(row_index));
+                        std::to_string(row_index) + " is not < " +
+                        std::to_string(m_rows));
+            return false;
+        } else if (not (col_index < m_cols)) {
+            HDNUM_ERROR("Out of bounds access: column too big! -> " +
+                        std::to_string(col_index) + " is not < " +
+                        std::to_string(m_cols));
             return false;
         }
         return true;
     }
 
-    // write access on matrix element A_ij using A(i,j)
-    REAL &operator()(const size_type row_index, const size_type col_index) {
+    // write access on matrix element A_ij using A.get(i,j)
+    REAL &get(const size_type row_index, const size_type col_index) {
         checkIfAccessIsInBounds(row_index, col_index);
         // look for the entry
         using value_pair = typename const_column_iterator::value_type;
@@ -439,12 +508,10 @@ public:
             });
         // we found something within the right row
         if (result != row.end()) {
-            return *result.value_it();
+            return result.value();
         }
         throw std::out_of_range(
             "There is no non-zero element for these given indicies!");
-        // TODO:
-        /* return *find_element(row_index, col_index).value_it(); */
     }
 
     //! read-access on matrix element A_ij using A(i,j)
@@ -462,17 +529,9 @@ public:
             });
         // we found something within the right row
         if (result != row.end()) {
-            return *result.value_it();
+            return result.value();
         }
         return _zero;
-
-        // TODO:
-        /* try { */
-        /*     auto result = find_element(row_index, col_index); */
-        /*     return *result.value_it(); */
-        /* } catch (std::out_of_range) { */
-        /*     return _zero; */
-        /* } */
     }
 
     //! read-access on matrix element A_ij using A[i][j]
@@ -509,11 +568,16 @@ public:
     bool operator>=(const SparseMatrix &other) = delete;
 
     SparseMatrix transpose() const {
-        SparseMatrix A(m_cols, m_rows);
-        for (size_type i = 0; i < m_rows; i++)
-            for (size_type j = 0; j < m_cols; j++)
-                A[j][i] = this->operator()(i, j);
-        return A;
+        SparseMatrix::builder builder(m_cols, m_rows);
+        SparseMatrix::size_type curr_row = 0;
+        for (auto &row : (*this)) {
+            curr_row++;
+            for (const std::pair<REAL const &, const size_type> pair : row) {
+                builder.addEntry(pair.second, curr_row, pair.first);
+            }
+        }
+
+        return builder.build();
     }
 
     // Basic Matrix Operations
@@ -572,10 +636,17 @@ public:
                "rowPtr=" + comma_fold(_rowPtr) + "\n";       //
     }
 
-    void print() const noexcept { std::cout << this->to_string(); }
+    void print() const noexcept { std::cout << *this; }
 
-    SparseMatrix<REAL> matchingIdentity() const {}
-    static SparseMatrix identity(const size_type dimN) {}
+    static SparseMatrix identity(const size_type dimN) {
+        auto builder = typename SparseMatrix<REAL>::builder(dimN, dimN);
+        for (typename SparseMatrix<REAL>::size_type i = 0; i < dimN; ++i) {
+            builder.addEntry(i, i, REAL {1});
+        }
+        return builder.build();
+    }
+
+    SparseMatrix<REAL> matchingIdentity() const { return identity(m_cols); }
 
     class builder {
         size_type m_rows {};  // Number of Matrix rows, 0 by default
@@ -585,6 +656,19 @@ public:
     public:
         builder(size_type new_m_rows, size_type new_m_cols)
             : m_rows {new_m_rows}, m_cols {new_m_cols}, _rows {m_rows} {}
+
+        builder(const std::initializer_list<std::initializer_list<REAL>> &v)
+            : m_rows {v.size()}, m_cols {v.begin()->size()}, _rows(m_rows) {
+            size_type i = 0;
+            for (auto &row : v) {
+                size_type j = 0;
+                for (const REAL &element : row) {
+                    addEntry(i, j, element);
+                    j++;
+                }
+                i++;
+            }
+        }
 
         builder() = default;
 
@@ -600,7 +684,8 @@ public:
 
         [[nodiscard]] bool operator==(
             const SparseMatrix::builder &other) const {
-            return (m_rows == other.m_rows) and (m_cols == other.m_cols) and
+            return (m_rows == other.m_rows) and  //
+                   (m_cols == other.m_cols) and  //
                    (_rows == other._rows);
         }
 
@@ -609,8 +694,8 @@ public:
             return not (*this == other);
         }
 
-        [[nodiscard]] size_type colsize() noexcept { return m_cols; }
-        [[nodiscard]] size_type rowsize() noexcept { return m_rows; }
+        [[nodiscard]] size_type colsize() const noexcept { return m_cols; }
+        [[nodiscard]] size_type rowsize() const noexcept { return m_rows; }
 
         size_type setNumCols(size_type new_m_cols) noexcept {
             m_cols = new_m_cols;
@@ -631,9 +716,10 @@ public:
         [[nodiscard]] std::string to_string() const {
             std::string output;
             for (std::size_t i = 0; i < _rows.size(); i++) {
-                for (const auto &[index, value] : _rows[i]) {
-                    output += std::to_string(i) + ", " + std::to_string(index) +
-                              " => " + std::to_string(value) + "\n";
+                for (const auto &indexpair : _rows[i]) {
+                    output += std::to_string(i) + ", " +
+                              std::to_string(indexpair.first) + " => " +
+                              std::to_string(indexpair.second) + "\n";
                 }
             }
             return output;
@@ -644,9 +730,9 @@ public:
 
             for (std::size_t i = 0; i < _rows.size(); i++) {
                 result._rowPtr[i + 1] = result._rowPtr[i];
-                for (const auto &[index, value] : _rows[i]) {
-                    result._colIndices.push_back(index);
-                    result._data.push_back(value);
+                for (const auto &indexpair : _rows[i]) {
+                    result._colIndices.push_back(indexpair.first);
+                    result._data.push_back(indexpair.second);
                     result._rowPtr[i + 1]++;
                 }
             }
@@ -667,13 +753,36 @@ template <typename REAL>
 const REAL SparseMatrix<REAL>::_zero {};
 
 template <typename REAL>
-std::ostream &operator<<(std::ostream &out, const SparseMatrix<REAL> &A) {
-    return out << A.to_string();
+std::ostream &operator<<(std::ostream &s, const SparseMatrix<REAL> &A) {
+    s << std::endl;
+    s << " " << std::setw(A.iwidth()) << " "
+      << "  ";
+    for (typename SparseMatrix<REAL>::size_type j = 0; j < A.colsize(); ++j)
+        s << std::setw(A.width()) << j << " ";
+    s << std::endl;
+
+    for (typename SparseMatrix<REAL>::size_type i = 0; i < A.rowsize(); ++i) {
+        s << " " << std::setw(A.iwidth()) << i << "  ";
+        for (typename SparseMatrix<REAL>::size_type j = 0; j < A.colsize();
+             ++j) {
+            if (A.scientific()) {
+                s << std::setw(A.width()) << std::scientific << std::showpoint
+                  << std::setprecision(A.precision()) << A(i, j) << " ";
+            } else {
+                s << std::setw(A.width()) << std::fixed << std::showpoint
+                  << std::setprecision(A.precision()) << A(i, j) << " ";
+            }
+        }
+        s << std::endl;
+    }
+    return s;
 }
 
 //! make a zero matrix
 template <typename REAL>
-inline void zero(SparseMatrix<REAL> &A) {}
+inline void zero(SparseMatrix<REAL> &A) {
+    A = SparseMatrix<REAL>();
+}
 
 /*!
   \relates SparseMatrix
@@ -708,8 +817,13 @@ inline void zero(SparseMatrix<REAL> &A) {}
   \endverbatim
 
 */
-template <class T>
-inline void identity(SparseMatrix<T> &A) {}
+template <class REAL>
+inline void identity(SparseMatrix<REAL> &A) {
+    if (A.rowsize() != A.colsize()) {
+        HDNUM_ERROR("Will not overwrite A since Dimensions are not equal!");
+    }
+    A = SparseMatrix<REAL>::identity(A.colsize());
+}
 
 template <typename REAL>
 inline void readMatrixFromFile(const std::string &filename,

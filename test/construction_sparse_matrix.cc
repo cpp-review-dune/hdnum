@@ -14,10 +14,8 @@ class TestSparseMatrix : public ::testing::Test {
 public:
     const SparseMatrix<T> sizedConstructed;
 
-    const SparseMatrix<T> fromInitializerListQuad;
+    const SparseMatrix<T> fromInitializerQuad;
     const SparseMatrix<T> fromInitializerList;
-
-    const SparseMatrix<T> fromDenseMatrix;
 
     using size_type = typename SparseMatrix<T>::size_type;
 
@@ -35,12 +33,13 @@ public:
 
     TestSparseMatrix()
         : sizedConstructed(dimM, dimN),
-          fromInitializerListQuad(initializerListQuad),
-          fromInitializerList(initializerList) {}
+          fromInitializerQuad(
+              typename SparseMatrix<T>::builder(initializerListQuad).build()),
+          fromInitializerList(
+              typename SparseMatrix<T>::builder(initializerList).build()) {}
 };
 
-using TestTypes = ::testing::Types<int, double, float, std::complex<int>,
-                                   std::complex<double>, std::complex<float>>;
+using TestTypes = ::testing::Types<int, double, float>;
 TYPED_TEST_SUITE(TestSparseMatrix, TestTypes);
 
 TYPED_TEST(TestSparseMatrix, SizeTest) {
@@ -50,31 +49,46 @@ TYPED_TEST(TestSparseMatrix, SizeTest) {
     EXPECT_EQ(T::dimM, this->sizedConstructed.rowsize());
     EXPECT_EQ(T::dimN, this->sizedConstructed.colsize());
 
-    EXPECT_EQ(size_type(4), this->fromInitializerListQuad.rowsize());
-    EXPECT_EQ(size_type(4), this->fromInitializerListQuad.colsize());
+    EXPECT_EQ(size_type(6), this->fromInitializerQuad.rowsize());
+    EXPECT_EQ(size_type(6), this->fromInitializerQuad.colsize());
 
-    EXPECT_EQ(size_type(4), this->fromInitializerList.rowsize());
-    EXPECT_EQ(size_type(1), this->fromInitializerList.colsize());
+    EXPECT_EQ(size_type(1), this->fromInitializerList.rowsize());
+    EXPECT_EQ(size_type(4), this->fromInitializerList.colsize());
 }
 
 TYPED_TEST(TestSparseMatrix, ValueIndexTest) {
     using T = TestSparseMatrix<TypeParam>;
     using size_type = typename T::size_type;
 
-    for (auto i = size_type(0); this->sizedConstructed.rowsize(); i++)
-        for (auto j = size_type(0); this->sizedConstructed.colsize(); j++)
+    for (auto i = size_type(0); i < this->sizedConstructed.rowsize(); i++)
+        for (auto j = size_type(0); j < this->sizedConstructed.colsize(); j++)
             EXPECT_EQ(TypeParam(0), this->sizedConstructed(i, j));
 
-    for (auto i = size_type(0); this->fromInitializerList.rowsize(); i++)
-        for (auto j = size_type(0); this->fromInitializerList.colsize(); j++)
+    for (auto i = size_type(0); i < this->fromInitializerList.rowsize(); i++)
+        for (auto j = size_type(0); j < this->fromInitializerList.colsize();
+             j++)
             EXPECT_EQ(TypeParam(i * this->fromInitializerList.rowsize() + j),
                       this->fromInitializerList(i, j));
 
-    for (auto i = size_type(0); this->fromInitializerListQuad.rowsize(); i++)
-        for (auto j = size_type(0); this->fromInitializerListQuad.colsize();
+    for (auto i = size_type(0); i < this->fromInitializerQuad.rowsize(); i++)
+        for (auto j = size_type(0); j < this->fromInitializerQuad.colsize();
              j++)
-            EXPECT_EQ(
-                TypeParam(i * this->fromInitializerListQuad.rowsize() + j),
-                this->fromInitializerListQuad(i, j));
+            EXPECT_EQ(TypeParam(i * this->fromInitializerQuad.rowsize() + j),
+                      this->fromInitializerQuad(i, j));
 }
+
+TYPED_TEST(TestSparseMatrix, ConversionTest) {
+    using size_type = typename SparseMatrix<TypeParam>::size_type;
+    auto denseMatrix = hdnum::DenseMatrix(this->fromInitializerQuad);
+
+    EXPECT_EQ(denseMatrix.rowsize(), this->fromInitializerQuad.rowsize());
+    EXPECT_EQ(denseMatrix.colsize(), this->fromInitializerQuad.colsize());
+
+    for (size_type i = 0; i < denseMatrix.rowsize(); i++) {
+        for (size_type j = 0; j < denseMatrix.colsize(); j++) {
+            EXPECT_EQ(denseMatrix[i][j], this->fromInitializerQuad(i, j));
+        }
+    }
+}
+
 }  // namespace
