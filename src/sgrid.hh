@@ -229,6 +229,6 @@ namespace hdnum {
   
   };
 
-};
+}
 
 #endif // HDNUM_SGRID_HH
