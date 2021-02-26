@@ -56,7 +56,7 @@ TEST_F(TestReadSparseMatrixFromFile, ReadInMatrixFromValidFile) {
             EXPECT_THROW({
                 try
                 {
-                    A(r, c);
+                    int x = A(r, c);
                 }
                 catch(const hdnum::ErrorException& e)
                 {
