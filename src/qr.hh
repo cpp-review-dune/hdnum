@@ -93,12 +93,6 @@ namespace hdnum
   DenseMatrix<T> qr_decomposition_gram_schmidt (DenseMatrix<T>& Q)
   {
     // check preconditions
-    // Is A a small matrix?
-    if (Q.colsize() >= Q.rowsize())
-      {
-        HDNUM_ERROR("The Matrix is not a small matrix!");
-      }
-
     // save matrix A, before it's replaced with Q
     DenseMatrix<T> A(Q);
 
@@ -164,12 +158,6 @@ namespace hdnum
   DenseMatrix<T> qr_decomposition_gram_schmidt_pivoting (DenseMatrix<T>& Q)
   {
     // check preconditions
-    // Is A a small matrix?
-    if (Q.colsize() >= Q.rowsize())
-      {
-        HDNUM_ERROR("The Matrix is not a small matrix!");
-      }
-
     // save matrix A, before it's replaced with Q
     DenseMatrix<T> A(Q);
 
