@@ -1,8 +1,9 @@
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "../hdnum.hh"
 #include "gtest/gtest.h"
-#include <vector>
-#include <utility>
-#include <algorithm>
 
 namespace {
 // In this example, we test the operators for the SparseMatrix class.
@@ -36,36 +37,36 @@ TEST_F(TestReadSparseMatrixFromFile, ReadInMatrixFromValidFile) {
     ASSERT_EQ(B.rowsize(), 5);
     ASSERT_EQ(B.colsize(), 5);
 
-    std::vector< std::pair<int, int> > nonzeros = {{0, 0}, {4, 0}, {1, 1}, {2, 2}, {3, 3}};
+    std::vector<std::pair<int, int>> nonzeros = {
+        {0, 0}, {4, 0}, {1, 1}, {2, 2}, {3, 3}};
 
     // check nonzero elements
-    ASSERT_EQ(B(0,0), 1474.779);
+    ASSERT_EQ(B(0, 0), 1474.779);
     ASSERT_EQ(B(4, 0), -9.017133);
     ASSERT_EQ(B(1, 1), 9.136654);
     ASSERT_EQ(B(2, 2), 69.61468);
     ASSERT_EQ(B(3, 3), 68.60106);
 
     // check zero elements
-    for (int r=0; r < B.rowsize(); r++) {
-        for (int c=0; c < B.colsize(); c++) {
+    for (int r = 0; r < B.rowsize(); r++) {
+        for (int c = 0; c < B.colsize(); c++) {
             // nonzero
-            if (std::find(nonzeros.begin(), nonzeros.end(), (std::pair<int, int>){r, c}) != nonzeros.end()) {
+            if (std::find(nonzeros.begin(), nonzeros.end(),
+                          std::make_pair(r, c)) != nonzeros.end()) {
                 continue;
             }
             // zero
-            EXPECT_THROW({
-                try
+            EXPECT_THROW(
                 {
-                    int x = A(r, c);
-                }
-                catch(const hdnum::ErrorException& e)
-                {
-                    throw;
-                }
-            }, hdnum::ErrorException);
+                    try {
+                        B(r, c);
+                    } catch (const hdnum::ErrorException& e) {
+                        throw;
+                    }
+                },
+                std::out_of_range);
         }
     }
-    
 }
 
 }  // namespace
