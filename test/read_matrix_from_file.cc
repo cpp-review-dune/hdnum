@@ -56,15 +56,7 @@ TEST_F(TestReadSparseMatrixFromFile, ReadInMatrixFromValidFile) {
                 continue;
             }
             // zero
-            EXPECT_THROW(
-                {
-                    try {
-                        B(r, c);
-                    } catch (const hdnum::ErrorException& e) {
-                        throw;
-                    }
-                },
-                std::out_of_range);
+            ASSERT_EQ(B(r, c), 0);
         }
     }
 }
