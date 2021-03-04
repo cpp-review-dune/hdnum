@@ -92,13 +92,110 @@ public:
         // conform to the iterator traits
         // https://en.cppreference.com/w/cpp/iterator/iterator_traits
         using difference_type = std::ptrdiff_t;
+        using value_type = REAL;
+        using pointer = value_type *;
+        using reference = value_type &;
+        using iterator_category = std::bidirectional_iterator_tag;
+
+        column_iterator(VectorIterator valIter) : _valIter(valIter) {}
+
+        // prefix
+        self_type &operator++() {
+            _valIter++;
+            return *this;
+        }
+
+        // postfix
+        self_type &operator++(int junk) {
+            self_type cached = *this;
+            _valIter++;
+            return cached;
+        }
+
+        [[nodiscard]] reference operator*() {
+            return *_valIter;  //
+        }
+
+        // [[nodiscard]] value_type operator->() {
+        //     return std::make_pair(std::ref(*_valIter),
+        //                           std::cref(*_colIndicesIter));
+        // }
+
+        [[nodiscard]] bool operator==(const self_type &other) {
+            return (_valIter == other._valIter);
+        }
+
+        [[nodiscard]] bool operator!=(const self_type &other) {
+            return not (*this == other);
+        }
+
+    private:
+        VectorIterator _valIter;
+    };
+
+    class const_column_iterator {
+    public:
+        using self_type = const_column_iterator;
+
+        // conform to the iterator traits
+        // https://en.cppreference.com/w/cpp/iterator/iterator_traits
+        using difference_type = std::ptrdiff_t;
+        using value_type = REAL;
+        using pointer = value_type const *;
+        using reference = value_type const &;
+        using iterator_category = std::bidirectional_iterator_tag;
+
+        const_column_iterator(ConstVectorIterator valIter)
+            : _valIter(valIter) {}
+
+        // prefix
+        self_type &operator++() {
+            _valIter++;
+            return *this;
+        }
+
+        // postfix
+        self_type &operator++(int junk) {
+            self_type cached = *this;
+            _valIter++;
+            return cached;
+        }
+
+        [[nodiscard]] reference operator*() {
+            return std::cref(*_valIter);  //
+        }
+
+        // [[nodiscard]] value_type operator->() {
+        //     return std::make_pair(std::ref(*_valIter),
+        //                           std::cref(*_colIndicesIter));
+        // }
+
+        [[nodiscard]] bool operator==(const self_type &other) {
+            return (_valIter == other._valIter);
+        }
+
+        [[nodiscard]] bool operator!=(const self_type &other) {
+            return not (*this == other);
+        }
+
+    private:
+        ConstVectorIterator _valIter;
+    };
+
+    class column_index_iterator {
+    public:
+        using self_type = column_index_iterator;
+
+        // conform to the iterator traits
+        // https://en.cppreference.com/w/cpp/iterator/iterator_traits
+        using difference_type = std::ptrdiff_t;
         using value_type = std::pair<REAL &, size_type const &>;
         using pointer = value_type *;
         using reference = value_type &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        column_iterator(VectorIterator valIter,
-                        std::vector<size_type>::iterator colIndicesIter)
+        column_index_iterator(VectorIterator valIter,
+                              std::vector<size_type>::iterator colIndicesIter)
             : _valIter(valIter), _colIndicesIter(colIndicesIter) {}
 
         // prefix
@@ -146,9 +243,9 @@ public:
         std::vector<size_type>::iterator _colIndicesIter;
     };
 
-    class const_column_iterator {
+    class const_column_index_iterator {
     public:
-        using self_type = const_column_iterator;
+        using self_type = const_column_index_iterator;
 
         // conform to the iterator traits
         // https://en.cppreference.com/w/cpp/iterator/iterator_traits
@@ -158,7 +255,7 @@ public:
         using reference = value_type &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        const_column_iterator(
+        const_column_index_iterator(
             ConstVectorIterator valIter,
             std::vector<size_type>::const_iterator colIndicesIter)
             : _valIter(valIter), _colIndicesIter(colIndicesIter) {}
@@ -171,7 +268,7 @@ public:
         }
 
         // postfix
-        self_type &operator++(int junk) {
+        self_type operator++(int junk) {
             self_type cached = *this;
             _valIter++;
             _colIndicesIter++;
@@ -227,12 +324,20 @@ public:
               _valIter(valIter) {}
 
         [[nodiscard]] column_iterator begin() {
-            return column_iterator((_valIter + *_rowPtrIter),
-                                   (_colIndicesIter + *_rowPtrIter));
+            return column_iterator((_valIter + *_rowPtrIter));
         }
         [[nodiscard]] column_iterator end() {
-            return column_iterator((_valIter + *(_rowPtrIter + 1)),
-                                   (_colIndicesIter + *(_rowPtrIter + 1)));
+            return column_iterator((_valIter + *(_rowPtrIter + 1)));
+        }
+
+        [[nodiscard]] column_index_iterator ibegin() {
+            return column_index_iterator((_valIter + *_rowPtrIter),
+                                         (_colIndicesIter + *_rowPtrIter));
+        }
+        [[nodiscard]] column_index_iterator iend() {
+            return column_index_iterator(
+                (_valIter + *(_rowPtrIter + 1)),
+                (_colIndicesIter + *(_rowPtrIter + 1)));
         }
 
         // prefix
@@ -327,11 +432,18 @@ public:
               _valIter(valIter) {}
 
         [[nodiscard]] const_column_iterator begin() const {
-            return const_column_iterator((_valIter + *_rowPtrIter),
-                                         (_colIndicesIter + *_rowPtrIter));
+            return const_column_iterator((_valIter + *_rowPtrIter));
         }
         [[nodiscard]] const_column_iterator end() const {
-            return const_column_iterator(
+            return const_column_iterator((_valIter + *(_rowPtrIter + 1)));
+        }
+
+        [[nodiscard]] const_column_index_iterator ibegin() const {
+            return const_column_index_iterator(
+                (_valIter + *_rowPtrIter), (_colIndicesIter + *_rowPtrIter));
+        }
+        [[nodiscard]] const_column_index_iterator iend() const {
+            return const_column_index_iterator(
                 (_valIter + *(_rowPtrIter + 1)),
                 (_colIndicesIter + *(_rowPtrIter + 1)));
         }
@@ -498,18 +610,18 @@ public:
     REAL &get(const size_type row_index, const size_type col_index) {
         checkIfAccessIsInBounds(row_index, col_index);
         // look for the entry
-        using value_pair = typename const_column_iterator::value_type;
+        using value_pair = typename const_column_index_iterator::value_type;
         auto row = row_iterator(_rowPtr.begin() + row_index,
                                 _colIndices.begin(), _data.begin());
         auto result =
-            std::find_if(row.begin(), row.end(), [col_index](value_pair el) {
+            std::find_if(row.ibegin(), row.iend(), [col_index](value_pair el) {
                 // only care for the index here
                 // since the value is unknown
                 // anyways
                 return el.second == col_index;
             });
         // we found something within the right row
-        if (result != row.end()) {
+        if (result != row.iend()) {
             return result.value();
         }
         throw std::out_of_range(
@@ -521,16 +633,16 @@ public:
                            const size_type col_index) const {
         checkIfAccessIsInBounds(row_index, col_index);
 
-        using value_pair = typename const_column_iterator::value_type;
+        using value_pair = typename const_column_index_iterator::value_type;
         auto row = const_row_iterator(_rowPtr.begin() + row_index,
                                       _colIndices.begin(), _data.begin());
         auto result =
-            std::find_if(row.begin(), row.end(), [col_index](value_pair el) {
+            std::find_if(row.ibegin(), row.iend(), [col_index](value_pair el) {
                 // only care for the index here since the value is unknown
                 return el.second == col_index;
             });
         // we found something within the right row
-        if (result != row.end()) {
+        if (result != row.iend()) {
             return result.value();
         }
         return _zero;
@@ -574,8 +686,8 @@ public:
         SparseMatrix::size_type curr_row = 0;
         for (auto &row : (*this)) {
             curr_row++;
-            for (const std::pair<REAL const &, const size_type> pair : row) {
-                builder.addEntry(pair.second, curr_row, pair.first);
+            for (auto it = row.ibegin(); it != row.iend(); it++) {
+                builder.addEntry(it.index(), curr_row, it.value());
             }
         }
 
@@ -617,7 +729,7 @@ public:
         size_type curr_row = 0;
         for (auto row : (*this)) {
             result[curr_row] = std::accumulate(
-                row.begin(), row.end(), V {}, [&](V result, auto el) -> V {
+                row.ibegin(), row.iend(), V {}, [&](V result, auto el) -> V {
                     return result + (x[el.second] * el.first);
                 });
             curr_row++;
@@ -645,7 +757,7 @@ public:
         size_type curr_row {};
         for (auto row : (*this)) {
             result[curr_row] += std::accumulate(
-                row.begin(), row.end(), V {}, [&](V result, auto el) -> V {
+                row.ibegin(), row.iend(), V {}, [&](V result, auto el) -> V {
                     return result + (x[el.second] * el.first);
                 });
             curr_row++;

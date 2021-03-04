@@ -90,9 +90,8 @@ public:
         using counter_type = typename hdnum::SparseMatrix<REAL>::size_type;
         counter_type row_index {};
         for (auto& row : other) {
-            for (const auto& value_index : row) {
-                this->operator[](row_index)[value_index.second] =
-                    value_index.first;
+            for (auto it = row.ibegin(); it != row.iend(); it++) {
+                this->operator[](row_index)[it.index()] = it.value();
             }
             row_index++;
         }
