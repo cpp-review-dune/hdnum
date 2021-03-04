@@ -10,12 +10,14 @@
 #define SPARSEMATRIX_HH
 
 #include <algorithm>
+#include <complex>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <map>
 #include <numeric>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "densematrix.hh"
@@ -580,13 +582,17 @@ public:
         return builder.build();
     }
 
-    // Basic Matrix Operations
-    [[nodiscard]] SparseMatrix operator+=(const SparseMatrix &B) {}
-    [[nodiscard]] SparseMatrix operator-=(const SparseMatrix &B) {}
-    [[nodiscard]] SparseMatrix operator*=(const REAL s) {}
-    [[nodiscard]] SparseMatrix operator/=(const REAL s) {}
+    [[nodiscard]] SparseMatrix operator*=(const REAL scalar) {
+        // This could also be done out of order
+        std::transform(_data.cbegin(), _data.cend(), _data.begin(),
+                       [&](REAL value) { return value * scalar; });
+    }
 
-    void update(const REAL s, const SparseMatrix &B) {}
+    [[nodiscard]] SparseMatrix operator/=(const REAL scalar) {
+        // This could also be done out of order
+        std::transform(_data.cbegin(), _data.cend(), _data.begin(),
+                       [&](REAL value) { return value / scalar; });
+    }
 
     template <class V>
     void mv(Vector<V> &y, const Vector<V> &x) const {}
