@@ -594,16 +594,69 @@ public:
                        [&](REAL value) { return value / scalar; });
     }
 
-    template <class V>
-    void mv(Vector<V> &y, const Vector<V> &x) const {}
+    void update(const REAL s, const SparseMatrix &B) {}
 
     template <class V>
-    void umv(Vector<V> &y, const Vector<V> &x) const {}
+    void mv(Vector<V> &result, const Vector<V> &x) const {
+        static_assert(std::is_convertible<V, REAL>::value,
+                      "The types in the Matrix vector multiplication cant be "
+                      "converted properly!");
+
+        if (result.size() != this->colsize())
+            HDNUM_ERROR(
+                (std::string("The result vector has the wrong dimension! ") +
+                 "Vector dimension " + std::to_string(result.size()) +
+                 " != " + std::to_string(this->colsize()) + " colsize"));
+
+        if (x.size() != this->colsize())
+            HDNUM_ERROR(
+                (std::string("The input vector has the wrong dimension! ") +
+                 "Vector dimension " + std::to_string(x.size()) +
+                 " != " + std::to_string(this->colsize()) + " colsize"));
+
+        size_type curr_row = 0;
+        for (auto row : (*this)) {
+            result[curr_row] = std::accumulate(
+                row.begin(), row.end(), V {}, [&](V result, auto el) -> V {
+                    return result + (x[el.second] * el.first);
+                });
+            curr_row++;
+        }
+    }
 
     template <class V>
-    void umv(Vector<V> &y, const V &s, const Vector<V> &x) const {}
+    void umv(Vector<V> &result, const Vector<V> &x) const {
+        static_assert(std::is_convertible<V, REAL>::value,
+                      "The types in the Matrix vector multiplication cant be "
+                      "converted properly!");
 
-    void mm(const SparseMatrix<REAL> &A, const SparseMatrix<REAL> &B) {}
+        if (result.size() != this->colsize())
+            HDNUM_ERROR(
+                (std::string("The result vector has the wrong dimension! ") +
+                 "Vector dimension " + std::to_string(result.size()) +
+                 " != " + std::to_string(this->colsize()) + " colsize"));
+
+        if (x.size() != this->colsize())
+            HDNUM_ERROR(
+                (std::string("The input vector has the wrong dimension! ") +
+                 "Vector dimension " + std::to_string(result.size()) +
+                 " != " + std::to_string(this->colsize()) + " colsize"));
+
+        size_type curr_row {};
+        for (auto row : (*this)) {
+            result[curr_row] += std::accumulate(
+                row.begin(), row.end(), V {}, [&](V result, auto el) -> V {
+                    return result + (x[el.second] * el.first);
+                });
+            curr_row++;
+        }
+    }
+
+    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL> &x) const {
+        hdnum::Vector<REAL> result(this->colsize(), 0);
+        this->mv(result, x);
+        return result;
+    }
 
     [[nodiscard]] Vector<REAL> operator*(const Vector<REAL> &x) const {}
 
@@ -787,7 +840,7 @@ std::ostream &operator<<(std::ostream &s, const SparseMatrix<REAL> &A) {
 //! make a zero matrix
 template <typename REAL>
 inline void zero(SparseMatrix<REAL> &A) {
-    A = SparseMatrix<REAL>();
+    A = SparseMatrix<REAL>(A.rowsize(), A.colsize());
 }
 
 /*!
