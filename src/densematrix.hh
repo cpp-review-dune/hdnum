@@ -22,6 +22,11 @@
 
 namespace hdnum {
 
+// forward-declare the sparse matrix template to make the transforming
+// constructor from hdnum::SparseMatrix -> hdnum::DenseMatrix working
+template <typename REAL>
+class SparseMatrix;
+
 /*! \brief Class with mathematical matrix operations
  */
 template <typename REAL>

@@ -43,8 +43,8 @@ private:
     std::vector<size_type> _colIndices;
     std::vector<size_type> _rowPtr;
 
-    size_type m_rows;  // Number of Matrix rows
-    size_type m_cols;  // Number of Matrix columns
+    size_type m_rows = 0;  // Number of Matrix rows
+    size_type m_cols = 0;  // Number of Matrix columns
 
     static bool bScientific;
     static size_type nIndexWidth;
@@ -60,7 +60,7 @@ private:
                std::accumulate(
                    std::next(container.cbegin()), container.cend(),
                    std::to_string(container[0]),  // start with first element
-                   [](std::string a, REAL b) {
+                   [](const std::string &a, REAL b) {
                        return a + ", " + std::to_string(b);
                    }) +
                " }";
@@ -82,7 +82,8 @@ private:
                         std::to_string(row_index) + " is not < " +
                         std::to_string(m_rows));
             return false;
-        } else if (not (col_index < m_cols)) {
+        }
+        if (not (col_index < m_cols)) {
             HDNUM_ERROR("Out of bounds access: column too big! -> " +
                         std::to_string(col_index) + " is not < " +
                         std::to_string(m_cols));
@@ -93,13 +94,11 @@ private:
 
 public:
     //! default constructor (empty Matrix)
-    SparseMatrix() noexcept
-        : _data(), _colIndices(), _rowPtr(), m_rows(0), m_cols(0) {}
+    SparseMatrix() = default;
 
     //! constructor with added dimensions and columns
     SparseMatrix(const size_type _rows, const size_type _cols)
-        : _data(), _colIndices(), _rowPtr(_rows + 1), m_rows(_rows),
-          m_cols(_cols) {}
+        : _rowPtr(_rows + 1), m_rows(_rows), m_cols(_cols) {}
 
     //! returns the amount of rows
     [[nodiscard]] size_type rowsize() const { return m_rows; }
@@ -121,7 +120,7 @@ public:
         using reference = value_type &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        column_iterator(typename std::vector<REAL>::iterator valIter)
+        explicit column_iterator(typename std::vector<REAL>::iterator valIter)
             : _valIter(valIter) {}
 
         // prefix
@@ -170,7 +169,7 @@ public:
         using reference = value_type const &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        const_column_iterator(
+        explicit const_column_iterator(
             typename std::vector<REAL>::const_iterator valIter)
             : _valIter(valIter) {}
 
@@ -716,17 +715,19 @@ public:
                       "The types in the Matrix vector multiplication cant be "
                       "converted properly!");
 
-        if (result.size() != this->colsize())
+        if (result.size() != this->colsize()) {
             HDNUM_ERROR(
                 (std::string("The result vector has the wrong dimension! ") +
                  "Vector dimension " + std::to_string(result.size()) +
                  " != " + std::to_string(this->colsize()) + " colsize"));
+        }
 
-        if (x.size() != this->colsize())
+        if (x.size() != this->colsize()) {
             HDNUM_ERROR(
                 (std::string("The input vector has the wrong dimension! ") +
                  "Vector dimension " + std::to_string(x.size()) +
                  " != " + std::to_string(this->colsize()) + " colsize"));
+        }
 
         size_type curr_row = 0;
         for (auto row : (*this)) {
@@ -744,17 +745,19 @@ public:
                       "The types in the Matrix vector multiplication cant be "
                       "converted properly!");
 
-        if (result.size() != this->colsize())
+        if (result.size() != this->colsize()) {
             HDNUM_ERROR(
                 (std::string("The result vector has the wrong dimension! ") +
                  "Vector dimension " + std::to_string(result.size()) +
                  " != " + std::to_string(this->colsize()) + " colsize"));
+        }
 
-        if (x.size() != this->colsize())
+        if (x.size() != this->colsize()) {
             HDNUM_ERROR(
                 (std::string("The input vector has the wrong dimension! ") +
                  "Vector dimension " + std::to_string(result.size()) +
                  " != " + std::to_string(this->colsize()) + " colsize"));
+        }
 
         size_type curr_row {};
         for (auto row : (*this)) {
@@ -781,7 +784,9 @@ public:
                                 [](norm_type res, REAL value) -> norm_type {
                                     return res + std::abs(value);
                                 });
-            if (norm < rowsum) norm = rowsum;
+            if (norm < rowsum) {
+                norm = rowsum;
+            }
         }
         return norm;
     }
@@ -922,8 +927,9 @@ std::ostream &operator<<(std::ostream &s, const SparseMatrix<REAL> &A) {
     s << std::endl;
     s << " " << std::setw(A.iwidth()) << " "
       << "  ";
-    for (typename SparseMatrix<REAL>::size_type j = 0; j < A.colsize(); ++j)
+    for (typename SparseMatrix<REAL>::size_type j = 0; j < A.colsize(); ++j) {
         s << std::setw(A.width()) << j << " ";
+    }
     s << std::endl;
 
     for (typename SparseMatrix<REAL>::size_type i = 0; i < A.rowsize(); ++i) {
@@ -1018,10 +1024,8 @@ inline void readMatrixFromFile(const std::string &filename,
 
             REAL value {};
             iss >> i >> j >> value;
-
-            builder.addEntry(i - 1, j - 1,
-                             value);  // i-1, j-1, because matrix market does
-                                      // not use zero based indexing
+            // i-1, j-1, because matrix market does not use zero based indexing
+            builder.addEntry(i - 1, j - 1, value);
         }
         A = builder.build();
         fin.close();
