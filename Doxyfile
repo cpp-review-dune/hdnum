@@ -1,4 +1,4 @@
-# Doxyfile 1.5.5
+# Doxyfile 1.8.8
 
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project
@@ -720,13 +720,13 @@ HTML_FILE_EXTENSION    = .html
 # each generated HTML page. If it is left blank doxygen will generate a 
 # standard header.
 
-HTML_HEADER            = 
+HTML_HEADER            = ./doxygen-bootstrapped/example-site/header.html
 
 # The HTML_FOOTER tag can be used to specify a personal HTML footer for 
 # each generated HTML page. If it is left blank doxygen will generate a 
 # standard footer.
 
-HTML_FOOTER            = 
+HTML_FOOTER            = ./doxygen-bootstrapped/example-site/footer.html
 
 # The HTML_STYLESHEET tag can be used to specify a user-defined cascading 
 # style sheet that is used by each HTML page. It can be used to 
@@ -736,6 +736,9 @@ HTML_FOOTER            =
 # stylesheet in the HTML output directory as well, or it will be erased!
 
 HTML_STYLESHEET        = 
+HTML_EXTRA_STYLESHEET  = ./doxygen-bootstrapped/customdoxygen.css
+HTML_EXTRA_FILES       = ./doxygen-bootstrapped/doxy-boot.js
+HTML_DYNAMIC_MENUS     = NO
 
 # If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
 # files or namespaces will be aligned in HTML using tables. If set to 
