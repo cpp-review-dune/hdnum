@@ -35,12 +35,11 @@ TYPED_TEST(TestSparseMatrixOperators, ComparisonOperators) {
     EXPECT_TRUE(this->A == B);
     EXPECT_FALSE(this->A != B);
 
-    std::cerr << this->A << std::endl;
-
     auto A_t = this->A.transpose();
-    // EXPECT_FALSE(this->A == A_t);
-    // EXPECT_TRUE(this->A != A_t);
-    // EXPECT_TRUE(this->A == A_t.transpose());
+
+    EXPECT_FALSE(this->A == A_t);
+    EXPECT_TRUE(this->A != A_t);
+    EXPECT_TRUE(this->A == A_t.transpose());
 }
 
 TYPED_TEST(TestSparseMatrixOperators, AccessOperators) {
