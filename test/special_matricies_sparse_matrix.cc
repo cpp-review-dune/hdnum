@@ -53,40 +53,35 @@ TYPED_TEST(TestSparseMatrixSpecial, SizeTest) {
 
     EXPECT_EQ(T::dimN, this->overwriteRefIdentity.rowsize());
     EXPECT_EQ(T::dimN, this->overwriteRefIdentity.colsize());
+
+    EXPECT_EQ(1, this->overwriteRefIdentity.norm_infty());
+    EXPECT_EQ(1, this->overwriteRefIdentity.norm_infty());
 }
 
 TYPED_TEST(TestSparseMatrixSpecial, ValueIndexTest) {
     using size_type = typename SparseMatrix<TypeParam>::size_type;
 
-    for (auto i = size_type(0); this->sizedIdentity.rowsize(); i++)
-        for (auto j = size_type(0); this->sizedIdentity.colsize(); j++)
+    for (auto i = size_type(0); i < this->sizedIdentity.rowsize(); i++)
+        for (auto j = size_type(0); j < this->sizedIdentity.colsize(); j++)
             if (i != j)
                 EXPECT_EQ(TypeParam(0), this->sizedIdentity(i, j));
             else
                 EXPECT_EQ(TypeParam(1), this->sizedIdentity(i, j));
 
-    for (auto i = size_type(0); this->matchingIdentity.rowsize(); i++)
-        for (auto j = size_type(0); this->matchingIdentity.colsize(); j++)
+    for (auto i = size_type(0); i < this->matchingIdentity.rowsize(); i++)
+        for (auto j = size_type(0); j < this->matchingIdentity.colsize(); j++)
             if (i != j)
                 EXPECT_EQ(TypeParam(0), this->matchingIdentity(i, j));
             else
                 EXPECT_EQ(TypeParam(1), this->matchingIdentity(i, j));
 
-    for (auto i = size_type(0); this->overwriteRefIdentity.rowsize(); i++)
-        for (auto j = size_type(0); this->overwriteRefIdentity.colsize(); j++)
+    for (auto i = size_type(0); i < this->overwriteRefIdentity.rowsize(); i++)
+        for (auto j = size_type(0); j < this->overwriteRefIdentity.colsize();
+             j++)
             if (i != j)
                 EXPECT_EQ(TypeParam(0), this->overwriteRefIdentity(i, j));
             else
                 EXPECT_EQ(TypeParam(1), this->overwriteRefIdentity(i, j));
-}
-
-TYPED_TEST(TestSparseMatrixSpecial, VerifyMult) {
-    using size_type = typename SparseMatrix<TypeParam>::size_type;
-
-    SparseMatrix<TypeParam> testMatrix(this->dimM, this->dimN);
-    for (auto i = size_type(0); testMatrix.rowsize(); i++)
-        for (auto j = size_type(0); testMatrix.colsize(); j++)
-            testMatrix.get(i, j) = TypeParam(i + j);
 }
 
 }  // namespace
