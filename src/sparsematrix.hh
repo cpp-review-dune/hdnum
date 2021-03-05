@@ -69,6 +69,15 @@ private:
                " }";
     }
 
+    // This code was copied from StackOverflow to gerneralize a check whether a
+    // template is a specialization i.e. for std::complex
+    // https://stackoverflow.com/questions/31762958/check-if-class-is-a-template-specialization
+    template <class T, template <class...> class Template>
+    struct is_specialization : std::false_type {};
+
+    template <template <class...> class Template, class... Args>
+    struct is_specialization<Template<Args...>, Template> : std::true_type {};
+
 public:
     //! default constructor (empty Matrix)
     SparseMatrix() noexcept
@@ -767,15 +776,6 @@ public:
         this->mv(result, x);
         return result;
     }
-
-    // This code was copied from StackOverflow to gerneralize a check whether a
-    // template is a specialization for std::complex
-    // https://stackoverflow.com/questions/31762958/check-if-class-is-a-template-specialization
-    template <class T, template <class...> class Template>
-    struct is_specialization : std::false_type {};
-
-    template <template <class...> class Template, class... Args>
-    struct is_specialization<Template<Args...>, Template> : std::true_type {};
 
     template <typename norm_type>
     norm_type norm_infty_impl() const {
