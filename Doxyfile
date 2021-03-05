@@ -31,7 +31,7 @@ PROJECT_NAME           = "Heidelberg Educational Numerics Library"
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = "Version 0.24 (from 9 September 2011)"
+PROJECT_NUMBER         = "Version 0.27 (from 15 March 2021)"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
