@@ -53,33 +53,6 @@ TYPED_TEST(TestSparseMatrixOperators, AccessOperators) {
     // EXPECT_EQ(B(0, 1), TypeParam {5});
 }
 
-TYPED_TEST(TestSparseMatrixOperators, MatrixMatrixMultiplication) {
-    using size_type = typename TestSparseMatrixOperators<TypeParam>::size_type;
-
-    const auto B = typename SparseMatrix<TypeParam>::builder(
-                       {{1, -2, 0}, {10, -4, 2}, {4, 4, 2}})
-                       .build();
-    const auto expectedResult = typename SparseMatrix<TypeParam>::builder(
-                                    {{47, 2, 14}, {-34, 28, -4}, {27, 2, 8}})
-                                    .build();
-
-    auto C = this->A * B;
-    auto I = this->A.matchingIdentity();
-    SparseMatrix<TypeParam> C_mm(this->A.rowsize(), B.colsize());
-
-    auto A_equal = this->A * I;
-
-    C_mm.mm(this->A, B);
-
-    for (auto i = size_type(0); this->A.rowsize(); i++) {
-        for (auto j = size_type(0); this->A.colsize(); j++) {
-            EXPECT_EQ(C_mm(i, j), expectedResult(i, j));
-            EXPECT_EQ(C(i, j), expectedResult(i, j));
-            EXPECT_EQ(A_equal(i, j), this->A(i, j));
-        }
-    }
-}
-
 TYPED_TEST(TestSparseMatrixOperators, MatrixVectorMultiplication) {
     using size_type = typename TestSparseMatrixOperators<TypeParam>::size_type;
 
@@ -90,7 +63,7 @@ TYPED_TEST(TestSparseMatrixOperators, MatrixVectorMultiplication) {
 
     this->A.mv(y_mv, this->x);
 
-    for (auto i = size_type(0); expectedResult.size(); i++) {
+    for (auto i = size_type(0); i < expectedResult.size(); i++) {
         EXPECT_EQ(y.at(i), expectedResult.at(i));
         EXPECT_EQ(y_mv.at(i), expectedResult.at(i));
     }
