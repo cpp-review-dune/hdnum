@@ -706,8 +706,6 @@ public:
                        [&](REAL value) { return value / scalar; });
     }
 
-    void update(const REAL s, const SparseMatrix &B) {}
-
     template <class V>
     void mv(Vector<V> &result, const Vector<V> &x) const {
         static_assert(std::is_convertible<V, REAL>::value,
@@ -770,35 +768,36 @@ public:
         return result;
     }
 
-    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL> &x) const {}
+    // This code was copied from StackOverflow to gerneralize a check whether a
+    // template is a specialization for std::complex
+    // https://stackoverflow.com/questions/31762958/check-if-class-is-a-template-specialization
+    template <class T, template <class...> class Template>
+    struct is_specialization : std::false_type {};
 
-    [[nodiscard]] SparseMatrix operator+(const SparseMatrix &x) const {}
-    [[nodiscard]] SparseMatrix operator-(const SparseMatrix &x) const {}
-    [[nodiscard]] SparseMatrix operator*(const SparseMatrix &x) const {}
-    [[nodiscard]] SparseMatrix operator/(const SparseMatrix &x) const {}
+    template <template <class...> class Template, class... Args>
+    struct is_specialization<Template<Args...>, Template> : std::true_type {};
 
-    //! compute row sum norm
-    REAL norm_infty() const {
-        REAL norm(0.0);
-        for (size_type i = 0; i < rowsize(); i++) {
-            REAL sum(0.0);
-            for (size_type j = 0; j < colsize(); j++)
-                sum += myabs((*this)(i, j));
-            if (sum > norm) norm = sum;
+    template <typename norm_type>
+    norm_type norm_infty_impl() const {
+        norm_type norm {};
+        for (auto row : *this) {
+            norm_type rowsum =
+                std::accumulate(row.begin(), row.end(), norm_type {},
+                                [](norm_type res, REAL value) -> norm_type {
+                                    return res + std::abs(value);
+                                });
+            if (norm < rowsum) norm = rowsum;
         }
         return norm;
     }
 
-    //! compute column sum norm
-    REAL norm_1() const {
-        REAL norm(0.0);
-        for (size_type j = 0; j < colsize(); j++) {
-            REAL sum(0.0);
-            for (size_type i = 0; i < rowsize(); i++)
-                sum += myabs((*this)(i, j));
-            if (sum > norm) norm = sum;
+    //! compute row sum norm
+    auto norm_infty() const {
+        if constexpr (is_specialization<REAL, std::complex> {}) {
+            return norm_infty_impl<double>();
+        } else {
+            return norm_infty_impl<REAL>();
         }
-        return norm;
     }
 
     [[nodiscard]] std::string to_string() const noexcept {
