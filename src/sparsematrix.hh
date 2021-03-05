@@ -32,13 +32,10 @@ class SparseMatrix {
 public:
     /** \brief Types used for array indices */
     using size_type = std::size_t;
-    using VType = typename std::vector<REAL>;
-    using VectorIterator = typename std::vector<REAL>::iterator;
-    using ConstVectorIterator = typename VType::const_iterator;
 
 private:
     // Matrix data is stored in an STL vector!
-    VType _data;
+    std::vector<REAL> _data;
 
     // The non-null indices are stored in STL vectors with the size_type!
     // Explanation on how the mapping works can be found here:
@@ -78,17 +75,35 @@ private:
     template <template <class...> class Template, class... Args>
     struct is_specialization<Template<Args...>, Template> : std::true_type {};
 
+    bool checkIfAccessIsInBounds(const size_type row_index,
+                                 const size_type col_index) const {
+        if (not (row_index < m_rows)) {
+            HDNUM_ERROR("Out of bounds access: row too big! -> " +
+                        std::to_string(row_index) + " is not < " +
+                        std::to_string(m_rows));
+            return false;
+        } else if (not (col_index < m_cols)) {
+            HDNUM_ERROR("Out of bounds access: column too big! -> " +
+                        std::to_string(col_index) + " is not < " +
+                        std::to_string(m_cols));
+            return false;
+        }
+        return true;
+    }
+
 public:
     //! default constructor (empty Matrix)
     SparseMatrix() noexcept
         : _data(), _colIndices(), _rowPtr(), m_rows(0), m_cols(0) {}
 
-    //! constructor
+    //! constructor with added dimensions and columns
     SparseMatrix(const size_type _rows, const size_type _cols)
         : _data(), _colIndices(), _rowPtr(_rows + 1), m_rows(_rows),
           m_cols(_cols) {}
 
+    //! returns the amount of rows
     [[nodiscard]] size_type rowsize() const { return m_rows; }
+    //! returns the amount of columns
     [[nodiscard]] size_type colsize() const { return m_cols; }
 
     // pretty-print output properties
@@ -106,7 +121,8 @@ public:
         using reference = value_type &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        column_iterator(VectorIterator valIter) : _valIter(valIter) {}
+        column_iterator(typename std::vector<REAL>::iterator valIter)
+            : _valIter(valIter) {}
 
         // prefix
         self_type &operator++() {
@@ -139,7 +155,7 @@ public:
         }
 
     private:
-        VectorIterator _valIter;
+        typename std::vector<REAL>::iterator _valIter;
     };
 
     class const_column_iterator {
@@ -154,7 +170,8 @@ public:
         using reference = value_type const &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        const_column_iterator(ConstVectorIterator valIter)
+        const_column_iterator(
+            typename std::vector<REAL>::const_iterator valIter)
             : _valIter(valIter) {}
 
         // prefix
@@ -188,7 +205,7 @@ public:
         }
 
     private:
-        ConstVectorIterator _valIter;
+        typename std::vector<REAL>::const_iterator _valIter;
     };
 
     class column_index_iterator {
@@ -203,7 +220,7 @@ public:
         using reference = value_type &;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        column_index_iterator(VectorIterator valIter,
+        column_index_iterator(typename std::vector<REAL>::iterator valIter,
                               std::vector<size_type>::iterator colIndicesIter)
             : _valIter(valIter), _colIndicesIter(colIndicesIter) {}
 
@@ -248,7 +265,7 @@ public:
         }
 
     private:
-        VectorIterator _valIter;
+        typename std::vector<REAL>::iterator _valIter;
         std::vector<size_type>::iterator _colIndicesIter;
     };
 
@@ -265,7 +282,7 @@ public:
         using iterator_category = std::bidirectional_iterator_tag;
 
         const_column_index_iterator(
-            ConstVectorIterator valIter,
+            typename std::vector<REAL>::const_iterator valIter,
             std::vector<size_type>::const_iterator colIndicesIter)
             : _valIter(valIter), _colIndicesIter(colIndicesIter) {}
 
@@ -310,7 +327,7 @@ public:
         }
 
     private:
-        ConstVectorIterator _valIter;
+        typename std::vector<REAL>::const_iterator _valIter;
         std::vector<size_type>::const_iterator _colIndicesIter;
     };
 
@@ -328,7 +345,7 @@ public:
 
         row_iterator(std::vector<size_type>::iterator rowPtrIter,
                      std::vector<size_type>::iterator colIndicesIter,
-                     VectorIterator valIter)
+                     std::vector<REAL> valIter)
             : _rowPtrIter(rowPtrIter), _colIndicesIter(colIndicesIter),
               _valIter(valIter) {}
 
@@ -418,7 +435,7 @@ public:
     private:
         std::vector<size_type>::iterator _rowPtrIter;
         std::vector<size_type>::iterator _colIndicesIter;
-        VectorIterator _valIter;
+        typename std::vector<REAL>::iterator _valIter;
     };
 
     class const_row_iterator {
@@ -436,7 +453,7 @@ public:
         const_row_iterator(
             std::vector<size_type>::const_iterator rowPtrIter,
             std::vector<size_type>::const_iterator colIndicesIter,
-            ConstVectorIterator valIter)
+            typename std::vector<REAL>::const_iterator valIter)
             : _rowPtrIter(rowPtrIter), _colIndicesIter(colIndicesIter),
               _valIter(valIter) {}
 
@@ -533,7 +550,7 @@ public:
     private:
         std::vector<size_type>::const_iterator _rowPtrIter;
         std::vector<size_type>::const_iterator _colIndicesIter;
-        ConstVectorIterator _valIter;
+        typename std::vector<REAL>::const_iterator _valIter;
     };
 
     // regular (possibly modifying) Iterators
@@ -599,22 +616,6 @@ public:
     //! set data precision for pretty-printing
     void precision(size_type i) const { nValuePrecision = i; }
 
-    bool checkIfAccessIsInBounds(const size_type row_index,
-                                 const size_type col_index) const {
-        if (not (row_index < m_rows)) {
-            HDNUM_ERROR("Out of bounds access: row too big! -> " +
-                        std::to_string(row_index) + " is not < " +
-                        std::to_string(m_rows));
-            return false;
-        } else if (not (col_index < m_cols)) {
-            HDNUM_ERROR("Out of bounds access: column too big! -> " +
-                        std::to_string(col_index) + " is not < " +
-                        std::to_string(m_cols));
-            return false;
-        }
-        return true;
-    }
-
     // write access on matrix element A_ij using A.get(i,j)
     REAL &get(const size_type row_index, const size_type col_index) {
         checkIfAccessIsInBounds(row_index, col_index);
@@ -656,12 +657,6 @@ public:
         }
         return _zero;
     }
-
-    //! read-access on matrix element A_ij using A[i][j]
-    const ConstVectorIterator operator[](const size_type row) const {}
-
-    //! write-access on matrix element A_ij using A[i][j]
-    VectorIterator operator[](const size_type row) {}
 
     SparseMatrix &operator=(const SparseMatrix &other) {
         _data = other._data;
