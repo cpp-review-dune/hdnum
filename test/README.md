@@ -13,9 +13,8 @@ Install the necessary dependencies:
 # RUN TESTS
 
 ```
-$ mkdir tests
-$ cd tests
-$ cmake ..
+$ cmake . -B build
+$ cd build
 $ make
 $ make tests
 ```
