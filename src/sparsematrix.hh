@@ -685,10 +685,10 @@ public:
         SparseMatrix::builder builder(m_cols, m_rows);
         SparseMatrix::size_type curr_row = 0;
         for (auto &row : (*this)) {
-            curr_row++;
             for (auto it = row.ibegin(); it != row.iend(); it++) {
                 builder.addEntry(it.index(), curr_row, it.value());
             }
+            curr_row++;
         }
 
         return builder.build();
