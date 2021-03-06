@@ -5,7 +5,8 @@
 #include "gtest/gtest.h"
 
 namespace {
-// In this example, we test the copy constructor of DenseMatrix from a sparsematrix
+// In this example, we test the copy constructor of DenseMatrix from a
+// sparsematrix
 
 using hdnum::SparseMatrix, hdnum::Vector, std::initializer_list;
 
@@ -27,7 +28,6 @@ public:
 
         A = builder.build();
     }
-
 };
 
 using TestTypes = ::testing::Types<int, double, float, std::complex<int>,
@@ -36,7 +36,6 @@ using TestTypes = ::testing::Types<int, double, float, std::complex<int>,
 TYPED_TEST_SUITE(TestDenseMatrixCopyConstructor, TestTypes);
 
 TYPED_TEST(TestDenseMatrixCopyConstructor, CopyConstructorFromSparseMatrix) {
-
     hdnum::DenseMatrix<TypeParam> B(this->A);
 
     ASSERT_EQ(this->A.rowsize(), B.rowsize());
@@ -48,6 +47,5 @@ TYPED_TEST(TestDenseMatrixCopyConstructor, CopyConstructorFromSparseMatrix) {
         }
     }
 }
-
 
 }  // namespace
