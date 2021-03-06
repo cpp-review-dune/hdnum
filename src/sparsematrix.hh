@@ -657,16 +657,6 @@ public:
         return _zero;
     }
 
-    SparseMatrix &operator=(const SparseMatrix &other) {
-        _data = other._data;
-        _rowPtr = other._rowPtr;
-        _colIndices = other._colIndices;
-
-        m_cols = other.m_cols;
-        m_rows = other.m_rows;
-        return *this;
-    }
-
     [[nodiscard]] bool operator==(const SparseMatrix &other) const {
         return (_data == other._data) and              //
                (_rowPtr == other._rowPtr) and          //
