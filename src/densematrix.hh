@@ -1400,7 +1400,7 @@ inline void gnuplot(const std::string& fname, const DenseMatrix<REAL>& A) {
   \endverbatim
 */
 template <typename REAL>
-inline void readMatrixFromFile(const std::string& filename,
+inline void readMatrixFromFileDat(const std::string& filename,
                                DenseMatrix<REAL>& A) {
     std::string buffer;
     std::ifstream fin(filename.c_str());
@@ -1428,6 +1428,70 @@ inline void readMatrixFromFile(const std::string& filename,
                 // std::cout << std::endl;
             }
         }
+        fin.close();
+    } else {
+        HDNUM_ERROR("Could not open file!");
+    }
+}
+
+/*!
+  \relates DenseMatrix
+  \brief Read matrix from a matrix market file
+
+  \param[in] filename name of the text file
+  \param[in,out] A reference to a DenseMatrix
+
+  \b Example:
+  \code
+  hdnum::DenseMatrix<number> L;
+  readMatrixFromFile("matrixL.mtx", L );
+  std::cout << "L=" << L << std::endl;
+  \endcode
+
+  \b Output:
+  \verbatim
+  Contents of "matrixL.mtx":
+  3 3 6
+  1 1 1
+  2 1 2
+  2 2 1
+  3 1 3
+  3 2 2
+  3 3 1
+
+  would give:
+  L=
+  0          1          2
+  0   1.000e+00  0.000e+00  0.000e+00
+  1   2.000e+00  1.000e+00  0.000e+00
+  2   3.000e+00  2.000e+00  1.000e+00
+  \endverbatim
+*/
+template <typename REAL>
+inline void readMatrixFromFileMatrixMarket(const std::string& filename,
+                               DenseMatrix<REAL>& A) {
+    std::string buffer;
+    std::ifstream fin(filename.c_str());
+    std::size_t i = 0;
+    std::size_t j = 0;
+    if (fin.is_open()) {
+        // ignore all comments from the file (starting with %)
+        while (fin.peek() == '%') fin.ignore(2048, '\n');
+
+        std::getline(fin, buffer);
+        std::istringstream first_line(buffer);
+        first_line >> i >> j;
+        DenseMatrix<REAL> A_temp(i, j);
+
+        while (std::getline(fin, buffer)) {
+            std::istringstream iss(buffer);
+
+            REAL value {};
+            iss >> i >> j >> value;
+            // i-1, j-1, because matrix market does not use zero based indexing
+            A_temp(i-1, j-1) = value;
+        }
+        A = A_temp;
         fin.close();
     } else {
         HDNUM_ERROR("Could not open file!");
