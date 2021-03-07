@@ -13,6 +13,7 @@ doc
 !*.*
 
 /doc
+/mystuff
 
 /**/build
 /**/release
