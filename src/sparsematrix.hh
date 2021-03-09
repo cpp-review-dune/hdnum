@@ -33,6 +33,11 @@ public:
     /** \brief Types used for array indices */
     using size_type = std::size_t;
 
+    /** \brief type of a regular column iterator (no access to indices) */
+    using column_iterator = typename std::vector<REAL>::iterator;
+    /** \brief type of a const regular column iterator (no access to indices) */
+    using const_column_iterator = typename std::vector<REAL>::const_iterator;
+
 private:
     // Matrix data is stored in an STL vector!
     std::vector<REAL> _data;
@@ -107,105 +112,6 @@ public:
 
     // pretty-print output properties
     [[nodiscard]] bool scientific() const { return bScientific; }
-
-    class column_iterator {
-    public:
-        using self_type = column_iterator;
-
-        // conform to the iterator traits
-        // https://en.cppreference.com/w/cpp/iterator/iterator_traits
-        using difference_type = std::ptrdiff_t;
-        using value_type = REAL;
-        using pointer = value_type *;
-        using reference = value_type &;
-        using iterator_category = std::bidirectional_iterator_tag;
-
-        explicit column_iterator(typename std::vector<REAL>::iterator valIter)
-            : _valIter(valIter) {}
-
-        // prefix
-        self_type &operator++() {
-            _valIter++;
-            return *this;
-        }
-
-        // postfix
-        self_type &operator++(int junk) {
-            self_type cached = *this;
-            _valIter++;
-            return cached;
-        }
-
-        [[nodiscard]] reference operator*() {
-            return *_valIter;  //
-        }
-
-        // [[nodiscard]] value_type operator->() {
-        //     return std::make_pair(std::ref(*_valIter),
-        //                           std::cref(*_colIndicesIter));
-        // }
-
-        [[nodiscard]] bool operator==(const self_type &other) {
-            return (_valIter == other._valIter);
-        }
-
-        [[nodiscard]] bool operator!=(const self_type &other) {
-            return not (*this == other);
-        }
-
-    private:
-        typename std::vector<REAL>::iterator _valIter;
-    };
-
-    class const_column_iterator {
-    public:
-        using self_type = const_column_iterator;
-
-        // conform to the iterator traits
-        // https://en.cppreference.com/w/cpp/iterator/iterator_traits
-        using difference_type = std::ptrdiff_t;
-        using value_type = REAL;
-        using pointer = value_type const *;
-        using reference = value_type const &;
-        using iterator_category = std::bidirectional_iterator_tag;
-
-        explicit const_column_iterator(
-            typename std::vector<REAL>::const_iterator valIter)
-            : _valIter(valIter) {}
-
-        // prefix
-        self_type &operator++() {
-            _valIter++;
-            return *this;
-        }
-
-        // postfix
-        self_type &operator++(int junk) {
-            self_type cached = *this;
-            _valIter++;
-            return cached;
-        }
-
-        [[nodiscard]] reference operator*() {
-            return std::cref(*_valIter);  //
-        }
-
-        // [[nodiscard]] value_type operator->() {
-        //     return std::make_pair(std::ref(*_valIter),
-        //                           std::cref(*_colIndicesIter));
-        // }
-
-        [[nodiscard]] bool operator==(const self_type &other) {
-            return (_valIter == other._valIter);
-        }
-
-        [[nodiscard]] bool operator!=(const self_type &other) {
-            return not (*this == other);
-        }
-
-    private:
-        typename std::vector<REAL>::const_iterator _valIter;
-    };
 
     class column_index_iterator {
     public:
