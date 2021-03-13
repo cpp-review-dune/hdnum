@@ -14,12 +14,12 @@ using hdnum::DenseMatrix;
 class TestReadMatrixFromFile : public ::testing::Test {
 public:
     const SparseMatrix<double> A_sparse;
-    const std::string filename = "../example_matrix_market.mtx";
+    const std::string filename = "../matrix_market_files/example_matrix_market.mtx";
 
     const DenseMatrix<double> A_dense;
 
     const SparseMatrix<double> A_sparse_empty;
-    const std::string filename_empty = "../example_empty_matrix_market.mtx";
+    const std::string filename_empty = "../matrix_market_files/example_empty_matrix_market.mtx";
 
     const DenseMatrix<double> A_dense_empty;
 
