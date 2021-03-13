@@ -76,7 +76,7 @@ DenseMatrix<T> modified_gram_schmidt(const DenseMatrix<T>& A) {
     return Q;
 }
 
-//! computes qr decomposition using modified Gram-Schmidt - works only with small and aquare matrices
+//! computes qr decomposition using modified Gram-Schmidt - works only with small (m>n) and square matrices
 template <class T>
 DenseMatrix<T> qr_gram_schmidt_simple(DenseMatrix<T>& Q) {
     // save matrix A, before it's replaced with Q
@@ -131,7 +131,7 @@ DenseMatrix<T> qr_gram_schmidt_simple(DenseMatrix<T>& Q) {
     return R;
 }
 
-//! computes qr decomposition using modified Gram-Schmidt - works only with small and aquare matrices
+//! computes qr decomposition using modified Gram-Schmidt - works only with small (m>n) and square matrices
 template <class T>
 DenseMatrix<T> qr_gram_schmidt(DenseMatrix<T>& Q) {
     // create matrix R
