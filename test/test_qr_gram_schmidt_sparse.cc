@@ -17,6 +17,7 @@ public:
 
 };
 
+// Test qr_gram_schmidt and qr_gram_schmidt_simple for a square matrix
 TEST_F(TestQRGramSchmidtSparse, TestQRSquareMatrix) {
     DenseMatrix<double> A;
     hdnum::readMatrixFromFileMatrixMarket(filename_square_full_rank, A);
@@ -47,6 +48,7 @@ TEST_F(TestQRGramSchmidtSparse, TestQRSquareMatrix) {
     }
 }
 
+// Test qr_gram_schmidt and qr_gram_schmidt_simple for a small matrix
 TEST_F(TestQRGramSchmidtSparse, TestQRSmallMatrix) {
     DenseMatrix<double> A;
 
