@@ -189,8 +189,11 @@ DenseMatrix<T> qr_gram_schmidt_pivoting(DenseMatrix<T>& Q, Vector<int>& p, int& 
     // initialize rank
     rank = 0;
 
-    // create matrix R
-    DenseMatrix<T> R(Q.colsize(), Q.colsize());
+    // save matrix A, before it's replaced with Q
+    DenseMatrix<T> A(Q);
+
+    // create Matrix R
+    hdnum::DenseMatrix<T> R(A.colsize(), A.colsize());
 
     // start orthogonalizing
     for (int k = 0; k < Q.colsize(); k++) {
@@ -222,6 +225,7 @@ DenseMatrix<T> qr_gram_schmidt_pivoting(DenseMatrix<T>& Q, Vector<int>& p, int& 
                 Q(r, k) = Q(r, p[k]);
                 Q(r, p[k]) = temp_Q;
             }
+            p[p[k]] = k;
 
             // compute norm of the new column k
             norm_k = 0;
@@ -238,36 +242,54 @@ DenseMatrix<T> qr_gram_schmidt_pivoting(DenseMatrix<T>& Q, Vector<int>& p, int& 
             break;
         }
 
-        // fill the main diagonal of R with elements
-        R(k, k) = norm_k;
-
-        // scale column k to the main diagonal
-        for (int i = 0; i < Q.rowsize(); i++) {
-            Q(i, k) /= R(k, k);
-        }
-
         // modify all later columns with column k
         for (int j = k + 1; j < Q.colsize(); j++) {
-            // compute norm of column j
+            // compute factor
             T sum_nom(0.0);
+            T sum_denom(0.0);
             for (int i = 0; i < Q.rowsize(); i++) {
-                sum_nom += Q(i, k) * Q(i, j);
+                sum_nom += Q(i, j) * Q(i, k);
+                sum_denom += Q(i, k) * Q(i, k);
             }
-            // insert missing elements to R
-            R(k, j) = sum_nom;
 
-            // orthogonalize column j
-            for (int i = 0; i < Q.rowsize(); i++) {
-                Q(i, j) -= Q(i, k) * R(k, j);
-            }
+            T alpha = sum_nom / sum_denom;
+            for (int i = 0; i < Q.rowsize(); i++) Q(i, j) -= alpha * Q(i, k);
         }
     }
+
+    // add values to R, except main diagonal
+    for (int i = 1; i < R.colsize(); i++) {
+        for (int j = 0; j < i; j++) {
+            T sum_nom(0.0);
+            T sum_l2nom(0.0);
+            for (int k = 0; k < Q.rowsize(); k++) {
+                sum_nom += A(k, p[i]) * Q(k, j);
+                sum_l2nom += Q(k, j) * Q(k, j);
+            }
+            sum_l2nom = sqrt(sum_l2nom);
+            // add element
+            R(j, i) = sum_nom / sum_l2nom;
+        }
+    }
+
+    // add missing values and scale
+    for (int j = 0; j < Q.colsize(); j++) {
+        // compute norm of column j
+        T sum(0.0);
+        for (int i = 0; i < Q.rowsize(); i++) sum += Q(i, j) * Q(i, j);
+        sum = sqrt(sum);
+        // add main diagonal to R
+        R(j, j) = sum;
+        // scale Q
+        for (int i = 0; i < Q.rowsize(); i++) Q(i, j) = Q(i, j) / sum;
+    }
+
     return R;
 }
 
 //! applies a permutation vector to a matrix
 template<typename T>
-void apply_permutation(DenseMatrix<T>& A, const Vector<int>& p) {
+void apply_permutation(DenseMatrix<T>& A, Vector<int>& p) {
     // check if permutation vector has the right size
     if (p.size() != A.colsize()) {
         HDNUM_ERROR("Permutation Vector incompatible with Matrix!");
@@ -282,9 +304,14 @@ void apply_permutation(DenseMatrix<T>& A, const Vector<int>& p) {
                 A(j, k) = A(j, p[k]);
                 A(j, p[k]) = temp_A;
             }
+            // swap inside permutation vector
+            int temp_p = p[k];
+            p[k] = p[temp_p];
+            p[temp_p] = temp_p;
         }
     }
 }
+
 }  // namespace hdnum
 
 #endif
