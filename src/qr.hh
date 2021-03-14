@@ -9,7 +9,7 @@
 #include "vector.hh"
 
 /** @file
- *  @brief This file implements QR decomposition
+ *  @brief This file implements QR decomposition using Gram-Schmidt method
  */
 
 namespace hdnum {
