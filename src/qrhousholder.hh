@@ -44,7 +44,7 @@ namespace hdnum {
       */
 
      template<class REAL>
-  void qrhousholder (DenseMatrix<REAL>& A, std::vector<REAL>& v)
+  void qrhousholder (DenseMatrix<REAL>& A, hdnum::Vector<REAL>& v)
   {
     auto m = A.rowsize();
     auto n = A.colsize();
@@ -83,7 +83,7 @@ namespace hdnum {
      }
   }
   template<class REAL>
-  DenseMatrix<REAL>qrhousholderexplizitQ(DenseMatrix<REAL>& A, std::vector<REAL>& v,bool show_Hi=false)
+  DenseMatrix<REAL>qrhousholderexplizitQ(DenseMatrix<REAL>& A,  hdnum::Vector<REAL>& v,bool show_Hi=false)
   {
     auto m = A.rowsize();
     auto n = A.colsize();
