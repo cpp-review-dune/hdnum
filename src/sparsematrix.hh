@@ -250,7 +250,7 @@ public:
 
         row_iterator(std::vector<size_type>::iterator rowPtrIter,
                      std::vector<size_type>::iterator colIndicesIter,
-                     std::vector<REAL> valIter)
+                     typename std::vector<REAL>::iterator valIter)
             : _rowPtrIter(rowPtrIter), _colIndicesIter(colIndicesIter),
               _valIter(valIter) {}
 
@@ -278,7 +278,7 @@ public:
         }
 
         // postfix
-        self_type &operator++(int junk) {
+        self_type operator++(int junk) {
             self_type cached = *this;
             _rowPtrIter++;
             return cached;
@@ -820,18 +820,19 @@ const REAL SparseMatrix<REAL>::_zero {};
 
 template <typename REAL>
 std::ostream &operator<<(std::ostream &s, const SparseMatrix<REAL> &A) {
+    using size_type = typename SparseMatrix<REAL>::size_type;
+
     s << std::endl;
     s << " " << std::setw(A.iwidth()) << " "
       << "  ";
-    for (typename SparseMatrix<REAL>::size_type j = 0; j < A.colsize(); ++j) {
+    for (size_type j = 0; j < A.colsize(); ++j) {
         s << std::setw(A.width()) << j << " ";
     }
     s << std::endl;
 
-    for (typename SparseMatrix<REAL>::size_type i = 0; i < A.rowsize(); ++i) {
+    for (size_type i = 0; i < A.rowsize(); ++i) {
         s << " " << std::setw(A.iwidth()) << i << "  ";
-        for (typename SparseMatrix<REAL>::size_type j = 0; j < A.colsize();
-             ++j) {
+        for (size_type j = 0; j < A.colsize(); ++j) {
             if (A.scientific()) {
                 s << std::setw(A.width()) << std::scientific << std::showpoint
                   << std::setprecision(A.precision()) << A(i, j) << " ";
