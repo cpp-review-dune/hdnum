@@ -1401,7 +1401,7 @@ inline void gnuplot(const std::string& fname, const DenseMatrix<REAL>& A) {
 */
 template <typename REAL>
 inline void readMatrixFromFileDat(const std::string& filename,
-                               DenseMatrix<REAL>& A) {
+                                  DenseMatrix<REAL>& A) {
     std::string buffer;
     std::ifstream fin(filename.c_str());
     std::size_t i = 0;
@@ -1469,7 +1469,7 @@ inline void readMatrixFromFileDat(const std::string& filename,
 */
 template <typename REAL>
 inline void readMatrixFromFileMatrixMarket(const std::string& filename,
-                               DenseMatrix<REAL>& A) {
+                                           DenseMatrix<REAL>& A) {
     std::string buffer;
     std::ifstream fin(filename.c_str());
     std::size_t i = 0;
@@ -1489,7 +1489,7 @@ inline void readMatrixFromFileMatrixMarket(const std::string& filename,
             REAL value {};
             iss >> i >> j >> value;
             // i-1, j-1, because matrix market does not use zero based indexing
-            A_temp(i-1, j-1) = value;
+            A_temp(i - 1, j - 1) = value;
         }
         A = A_temp;
         fin.close();

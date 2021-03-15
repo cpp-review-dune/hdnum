@@ -98,19 +98,63 @@ private:
     }
 
 public:
-    //! default constructor (empty Matrix)
+    /*!
+      \brief default constructor (empty SparseMatrix)
+
+      \b Example:
+      \code
+      hdnum::SparseMatrix<double> A();
+      auto nRows = A.rowsize();
+      std::cout << "Matrix A has " << nRows << " rows." << std::endl;
+      \endcode
+
+      \b Output:
+      \verbatim
+      Matrix A has 0 rows.
+      \endverbatim
+    */
     SparseMatrix() = default;
 
     //! constructor with added dimensions and columns
     SparseMatrix(const size_type _rows, const size_type _cols)
         : _rowPtr(_rows + 1), m_rows(_rows), m_cols(_cols) {}
 
-    //! returns the amount of rows
+    /*!
+      \brief get number of rows of the matrix
+
+      \b Example:
+      \code
+      hdnum::SparseMatrix<double> A(4,5);
+      auto nRows = A.rowsize();
+      std::cout << "Matrix A has " << nRows << " rows." << std::endl;
+      \endcode
+
+      \b Output:
+      \verbatim
+      Matrix A has 4 rows.
+      \endverbatim
+    */
+
     [[nodiscard]] size_type rowsize() const { return m_rows; }
-    //! returns the amount of columns
+
+    /*!
+      \brief get number of columns of the matrix
+
+      \b Example:
+      \code
+      hdnum::SparseMatrix<double> A(4,5);
+      auto nRows = A.colsize();
+      std::cout << "Matrix A has " << nRows << " rows." << std::endl;
+      \endcode
+
+      \b Output:
+      \verbatim
+      Matrix A has 4 rows.
+      \endverbatim
+    */
     [[nodiscard]] size_type colsize() const { return m_cols; }
 
-    // pretty-print output properties
+    //! \brief pretty-print output properties
     [[nodiscard]] bool scientific() const { return bScientific; }
 
     class column_index_iterator {
@@ -458,26 +502,75 @@ public:
         typename std::vector<REAL>::const_iterator _valIter;
     };
 
-    // regular (possibly modifying) Iterators
+    /*!
+      \brief get a (possibly modifying) row iterator for the sparse matrix
+
+      The iterator points to the first row in the matrix.
+
+      \b Example:
+      \code
+      // A is of type hdnum::SparseMatrix<int> and contains some values
+      // the deduced variable type for row_it is
+      // hdnum::SparseMatrix<int>::row_iterator
+      // but thats way to long to type out ;)
+      for(auto row_it = A.begin(); row_it != A.end(); row_it++) {
+          for(auto val_it = row_it.begin(); val_it != row_it.end(); val_it++) {
+              *val_it = 1;
+          }
+      }
+      \endcode
+    */
     [[nodiscard]] row_iterator begin() {
         return row_iterator(_rowPtr.begin(), _colIndices.begin(),
                             _data.begin());
     }
+
+    /*!
+      \brief get a (possibly modifying) row iterator for the sparse matrix
+
+      The iterator points to the row one after the last one.
+
+      \b Example:
+      \code
+      // A is of type hdnum::SparseMatrix<int> and contains some values
+      // the deduced variable type for row_it is
+      // hdnum::SparseMatrix<int>::row_iterator
+      // but thats way to long to type out ;)
+      for(auto row_it = A.begin(); row_it != A.end(); row_it++) {
+          for(auto val_it = row_it.begin(); val_it != row_it.end(); val_it++) {
+              *val_it = 1;
+          }
+      }
+      \endcode
+    */
     [[nodiscard]] row_iterator end() {
         return row_iterator(_rowPtr.end() - 1, _colIndices.begin(),
                             _data.begin());
     }
 
-    // const Iterators
+    /*!
+      \brief get a (non modifying) row iterator for the sparse matrix
+
+      The iterator points to the first row in the matrix.
+    */
     [[nodiscard]] const_row_iterator cbegin() const {
         return const_row_iterator(_rowPtr.cbegin(), _colIndices.cbegin(),
                                   _data.cbegin());
     }
+
+    /*!
+      \brief get a (non modifying) row iterator for the sparse matrix
+
+      The iterator points to the row one after the last one.
+    */
     [[nodiscard]] const_row_iterator cend() const {
         return const_row_iterator(_rowPtr.cend() - 1, _colIndices.cbegin(),
                                   _data.cbegin());
     }
+
+    //! \sa cbegin() const
     [[nodiscard]] const_row_iterator begin() const { return this->cbegin(); }
+    //! \sa cend() const
     [[nodiscard]] const_row_iterator end() const { return this->cend(); }
 
     /*!
@@ -486,10 +579,13 @@ public:
 
       \b Example:
       \code
-      hdnum::DenseMatrix<double> A(4,4);
-      A.scientific(false); // fixed point representation for all DenseMatrix
-      objects A.width(8); A.precision(3); identity(A);  // Defines the identity
-      matrix of the same dimension std::cout << "A=" << A << std::endl; \endcode
+      hdnum::SparseMatrix<double> A(4,4);
+      // fixed point representation for all SparseMatrix objects objects
+      A.scientific(false);
+      A.width(8); A.precision(3); identity(A);
+      // Defines the identity matrix of the same dimension
+      std::cout << "A=" << A << std::endl;
+      \endcode
 
       \b Output:
       \verbatim
@@ -521,7 +617,7 @@ public:
     //! set data precision for pretty-printing
     void precision(size_type i) const { nValuePrecision = i; }
 
-    // write access on matrix element A_ij using A.get(i,j)
+    //! write access on matrix element A_ij using A.get(i,j)
     REAL &get(const size_type row_index, const size_type col_index) {
         checkIfAccessIsInBounds(row_index, col_index);
         // look for the entry
@@ -563,6 +659,7 @@ public:
         return _zero;
     }
 
+    //! checks whether two matricies are equal based on values and dimension
     [[nodiscard]] bool operator==(const SparseMatrix &other) const {
         return (_data == other._data) and              //
                (_rowPtr == other._rowPtr) and          //
@@ -570,6 +667,8 @@ public:
                (m_cols == other.m_cols) and            //
                (m_rows == other.m_rows);
     }
+
+    //! checks whether two matricies are unequal based on values and dimension
     [[nodiscard]] bool operator!=(const SparseMatrix &other) const {
         return not (*this == other);
     }
@@ -581,6 +680,7 @@ public:
     bool operator>=(const SparseMatrix &other) = delete;
 
     SparseMatrix transpose() const {
+        // TODO: remove / find bug here!
         SparseMatrix::builder builder(m_cols, m_rows);
         SparseMatrix::size_type curr_row = 0;
         for (auto &row : (*this)) {
@@ -593,18 +693,30 @@ public:
         return builder.build();
     }
 
+    //! Element-wise multiplication of the matrix
+    //! \param[in] scalar with same type as the matrix elements
     [[nodiscard]] SparseMatrix operator*=(const REAL scalar) {
         // This could also be done out of order
         std::transform(_data.cbegin(), _data.cend(), _data.begin(),
                        [&](REAL value) { return value * scalar; });
     }
 
+    //! Element-wise division of the matrix
+    //! \param[in] scalar with same type as the matrix elements
     [[nodiscard]] SparseMatrix operator/=(const REAL scalar) {
         // This could also be done out of order
         std::transform(_data.cbegin(), _data.cend(), _data.begin(),
                        [&](REAL value) { return value / scalar; });
     }
 
+    /*!
+      \brief matrix vector product y = A*x
+
+      Implements y = A*x where x and y are a vectors and A is a matrix
+
+      \param[in] result reference to the resulting Vector
+      \param[in] x constant reference to a Vector
+    */
     template <class V>
     void mv(Vector<V> &result, const Vector<V> &x) const {
         static_assert(std::is_convertible<V, REAL>::value,
@@ -635,6 +747,27 @@ public:
         }
     }
 
+    /*!
+      \brief matrix vector product A*x
+
+      Implements A*x where x is a vectors and A is a matrix
+
+      \param[in] x constant reference to a Vector
+    */
+    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL> &x) const {
+        hdnum::Vector<REAL> result(this->colsize(), 0);
+        this->mv(result, x);
+        return result;
+    }
+
+    /*!
+      \brief update matrix vector product y += A*x
+
+      Implements y += A*x where x and y are a vectors and A is a matrix
+
+      \param[in] result reference to the resulting Vector
+      \param[in] x constant reference to a Vector
+    */
     template <class V>
     void umv(Vector<V> &result, const Vector<V> &x) const {
         static_assert(std::is_convertible<V, REAL>::value,
@@ -665,12 +798,7 @@ public:
         }
     }
 
-    [[nodiscard]] Vector<REAL> operator*(const Vector<REAL> &x) const {
-        hdnum::Vector<REAL> result(this->colsize(), 0);
-        this->mv(result, x);
-        return result;
-    }
-
+private:
     template <typename norm_type>
     norm_type norm_infty_impl() const {
         norm_type norm {};
@@ -687,7 +815,14 @@ public:
         return norm;
     }
 
-    //! compute row sum norm
+public:
+    /*!
+      \brief calculate row sum norm
+
+      \f[
+        ||A||_{\infty} = max_{i = 1...m} \sum_{j=1}^n |a_{ij}|
+      \f]
+    */
     auto norm_infty() const {
         if constexpr (is_specialization<REAL, std::complex> {}) {
             return norm_infty_impl<double>();
@@ -704,6 +839,29 @@ public:
 
     void print() const noexcept { std::cout << *this; }
 
+    /*!
+      \brief   identity for the matrix
+
+      \b Example:
+      \code
+      auto A = hdnum::SparseMatrix<double>::identity(4);
+      // fixed point representation for all SparseMatrix objects
+      A.scientific(false);
+      A.width(8);
+      A.precision(3);
+      std::cout << "A=" << A << std::endl;
+      \endcode
+
+      \b Output:
+      \verbatim
+      A=
+      0        1        2        3
+      0     1.000    0.000    0.000    0.000
+      1     0.000    1.000    0.000    0.000
+      2     0.000    0.000    1.000    0.000
+      3     0.000    0.000    0.000    1.000
+      \endverbatim
+    */
     static SparseMatrix identity(const size_type dimN) {
         auto builder = typename SparseMatrix<REAL>::builder(dimN, dimN);
         for (typename SparseMatrix<REAL>::size_type i = 0; i < dimN; ++i) {
@@ -712,6 +870,30 @@ public:
         return builder.build();
     }
 
+    /*!
+      \brief   creates a matching identity
+
+      \b Example:
+      \code
+      auto A = hdnum::SparseMatrix<double>(4, 5);
+      auto B = A.matchingIdentity();
+      // fixed point representation for all SparseMatrix objects
+      A.scientific(false);
+      A.width(8);
+      A.precision(3);
+      std::cout << "A=" << A << std::endl;
+      \endcode
+
+      \b Output:
+      \verbatim
+      A=
+      0        1        2        3
+      0     1.000    0.000    0.000    0.000
+      1     0.000    1.000    0.000    0.000
+      2     0.000    0.000    1.000    0.000
+      3     0.000    0.000    0.000    1.000
+      \endverbatim
+    */
     SparseMatrix<REAL> matchingIdentity() const { return identity(m_cols); }
 
     class builder {
