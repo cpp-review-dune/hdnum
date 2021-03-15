@@ -83,16 +83,16 @@ namespace hdnum {
      }
   }
   template<class REAL>
-  DenseMatrix<REAL>qrhousholderexplizitQ (DenseMatrix<REAL>& A, std::vector<REAL>& v,bool show_Hi=false)
+  DenseMatrix<REAL>qrhousholderexplizitQ(DenseMatrix<REAL>& A, std::vector<REAL>& v,bool show_Hi=false)
   {
     auto m = A.rowsize();
     auto n = A.colsize();
     auto I = creat_I_matrix<REAL>(std::max(m,n));
 
     DenseMatrix<REAL> Q(m,m,0);
-        if(n>m){
-      throw std::invalid_argument( "In the QR decompesition Rang(A) = rowssize but here colsize > rowsize try another matrix or you can get only the R matrix and Vi vector by calling the function void qrhousholder (DenseMatrix<REAL>& A, std::vector<REAL>& v)" );
-    }
+       // if(n>m){
+      //throw std::invalid_argument( "In the QR decompesition Rang(A) = rowssize but here colsize > rowsize try another matrix or you can get only the R matrix and Vi vector by calling the function void qrhousholder (DenseMatrix<REAL>& A, std::vector<REAL>& v)" );
+    //}
      for (size_t j=0;j<n;j++){
        REAL s=0;
        for(size_t i=j;i<m;i++){
@@ -123,6 +123,7 @@ namespace hdnum {
        }
      }
      //create qi and multiply them
+     if (m>=n){
      for(size_t j=0;j<n;j++){
         
        DenseMatrix<REAL> TempQ(m,m,0.0);
@@ -151,7 +152,7 @@ namespace hdnum {
        
        TempQ += I ;
        if(show_Hi){
-         std::cout<<TempQ;
+         std::cout<< "H[" <<j+1<< "]" << TempQ;
        }
        if (j==0){
          Q = TempQ ;
@@ -163,6 +164,49 @@ namespace hdnum {
        }
        
      }
+  }
+  if(n>m){
+         for(size_t j=0;j<m;j++){
+        
+       DenseMatrix<REAL> TempQ(m,m,0.0);
+       DenseMatrix<REAL>v1 (m,1,0.0);
+       DenseMatrix<REAL>v1t (1,m,0.0);
+       hdnum::Vector<double> v__i(m,0); 
+       for (size_t i = 0;i<m;i++){
+         if(i<j){
+         v1(i,0)=0;
+         
+         v__i[i]=0;   
+         continue ;      
+         }         
+         v1(i,0)=A(i,j);
+         
+         v__i[i]=A(i,j); 
+         
+       } 
+       v1t = v1.transpose();
+       
+       TempQ=(v1 * v1t);
+       
+       TempQ *= (-2.0);
+       
+       TempQ /= v__i.two_norm_2();
+       
+       TempQ += I ;
+       if(show_Hi){
+         std::cout<< "H[" <<j+1<< "]" << TempQ;
+       }
+       if (j==0){
+         Q = TempQ ;
+         
+       }
+       if(j>0) {
+         Q= Q * TempQ;
+         
+       }
+       
+     }
+  }
      return Q;
   }
 }
