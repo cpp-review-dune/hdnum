@@ -35,9 +35,5 @@ package_add_test(ReadMatrixFromFile read_matrix_from_file.cc)
 package_add_test(DenseMatrixSparseMatrix densematrix_sparse_matrix.cc)
 package_add_test(TestQRDecomposition test_qr_gram_schmidt.cc)
 package_add_test(TestQRDecompositionPivoting test_qr_gram_schmidt_pivoting.cc)
-<<<<<<< HEAD
 package_add_test(TestQRDecompositionSparse test_qr_gram_schmidt_sparse.cc)
-package_add_test(TestQRhousholder Test_qrhousholder.cc)
-=======
-package_add_test(TestQRDecompositionMatrixMarket test_qr_gram_schmidt_matrix_market.cc)
->>>>>>> 8ba151c56052596be190fde8d582f93c179530ae
+package_add_test(TestQRhousholder test_qrhousholder.cc)
