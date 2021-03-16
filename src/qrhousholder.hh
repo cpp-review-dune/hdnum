@@ -38,20 +38,19 @@ namespace hdnum {
     template <typename REAL> size_t sgn(REAL val) {
     return (REAL(0) < val) - (val < REAL(0));
 }
-      /*! \brief Funktion that calculate the QR decoposition in place 
-      the elements of A will be replaced with the elements of R and the under diagonals elements of
-      vectors V1-V2...Vi and the diagonal elements of vectors Vi will be saved in vectro B.
-      */
+      /*! @brief Funktion that calculate the QR decoposition in place 
+      the elements of A will be replaced with the elements of v_{i}vectors and the upper 
+      diagonals elements of R and the diagonal elements of R will be saved in vectro v.
 
+
+      \tparam A the Matrix 
+      \tparam v oa vector of hdnum::Vector
+  */
      template<class REAL>
   void qrhousholder (DenseMatrix<REAL>& A, hdnum::Vector<REAL>& v)
   {
     auto m = A.rowsize();
     auto n = A.colsize();
-    //std::vector<REAL>temp(n,0);
-    //for (size_t i=0;i<n;i++){
-     // temp[i]=A(i,i);
-    //}
      for (size_t j=0;j<n;j++){
        REAL s=0;
        for(size_t i=j;i<m;i++){
@@ -82,6 +81,15 @@ namespace hdnum {
        }
      }
   }
+        /*! @brief Funktion that calculate the QR decoposition in place and return Q
+      the elements of A will be replaced with the elements of v_{i}vectors and the upper 
+      diagonals elements of R and the diagonal elements of R will be saved in vectro v.
+
+
+      \tparam A the Matrix 
+      \tparam v oa vector of hdnum::Vector
+      \return Q matrix 
+  */
   template<class REAL>
   DenseMatrix<REAL>qrhousholderexplizitQ(DenseMatrix<REAL>& A,  hdnum::Vector<REAL>& v,bool show_Hi=false)
   {
@@ -90,9 +98,6 @@ namespace hdnum {
     auto I = creat_I_matrix<REAL>(std::max(m,n));
 
     DenseMatrix<REAL> Q(m,m,0);
-       // if(n>m){
-      //throw std::invalid_argument( "In the QR decompesition Rang(A) = rowssize but here colsize > rowsize try another matrix or you can get only the R matrix and Vi vector by calling the function void qrhousholder (DenseMatrix<REAL>& A, std::vector<REAL>& v)" );
-    //}
      for (size_t j=0;j<n;j++){
        REAL s=0;
        for(size_t i=j;i<m;i++){
