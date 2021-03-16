@@ -24,13 +24,14 @@ namespace hdnum {
 /*!
     \brief computes orthonormal basis of Im(A) using classical Gram-Schmidt
 
-    \tparam matrix A
+    \tparam hdnum::DenseMatrix<T> A
 
     \b Example:
     \code
     hdnum::DenseMatrix<double> A({{2, 9},
                                   {1, -5}});
     hdnum::DenseMatrix<double> Q(hdnum::gram_schmidt(A));
+
     std::cout << "A = " << A << std::endl;
     std::cout << "Q = " << Q << std::endl;
     \endcode
@@ -82,13 +83,14 @@ DenseMatrix<T> gram_schmidt(const DenseMatrix<T>& A) {
 /*!
     \brief computes orthonormal basis of Im(A) using modified Gram-Schmidt
 
-    \tparam matrix A
+    \tparam hdnum::DenseMatrix<T> A
 
     \b Example:
     \code
     hdnum::DenseMatrix<double> A({{2, 9},
                                   {1, -5}});
     hdnum::DenseMatrix<double> Q(hdnum::modified_gram_schmidt(A));
+
     std::cout << "A = " << A << std::endl;
     std::cout << "Q = " << Q << std::endl;
     \endcode
@@ -139,7 +141,7 @@ DenseMatrix<T> modified_gram_schmidt(const DenseMatrix<T>& A) {
 /*!
     \brief computes qr decomposition using modified Gram-Schmidt - works only with small (m>n) and square matrices
 
-    \tparam matrix Q
+    \tparam hdnum::DenseMatrix<T> Q
 
     \b Example:
     \code
@@ -234,7 +236,7 @@ DenseMatrix<T> qr_gram_schmidt_simple(DenseMatrix<T>& Q) {
 /*!
     \brief computes qr decomposition using modified Gram-Schmidt - works only with small (m>n) and square matrices
 
-    \tparam matrix Q
+    \tparam hdnum::DenseMatrix<T> Q
 
     \b Example:
     \code
@@ -316,10 +318,10 @@ DenseMatrix<T> qr_gram_schmidt(DenseMatrix<T>& Q) {
 /*!
     \brief computes qr decomposition using modified Gram-Schmidt and pivoting - works with all types of matrices
 
-    \tparam matrix Q
-    \tparam permutationvector p
-    \tparam integer rank to save the rank
-    \tparam optional threshold
+    \tparam hdnum::DenseMatrix<T> Q
+    \tparam T threshold (optional)
+    \param hdnum::Vector<int> p
+    \param int rank
 
     \b Example:
     \code
@@ -492,8 +494,8 @@ DenseMatrix<T> qr_gram_schmidt_pivoting(DenseMatrix<T>& Q, Vector<int>& p, int& 
 /*!
     \brief applies a permutation vector to a matrix
 
-    \tparam matrix A
-    \tparam permutationvector p
+    \tparam hdnum::DenseMatrix<T> A
+    \param hdnum::Vector<int> p
 
     \b Example:
     \code
@@ -514,8 +516,8 @@ DenseMatrix<T> qr_gram_schmidt_pivoting(DenseMatrix<T>& Q, Vector<int>& p, int& 
           1  -5.000e+00  1.000e+00 
 
     p = 
-[ 0]              0
-[ 1]              1
+            [ 0]              0
+            [ 1]              1
 
     \endverbatim
 */
