@@ -182,8 +182,8 @@ TEST(TestQRDecompositionPivoting, TestSmallMatrix) {
     // A = Q*R - maybe permutation needed
     hdnum::DenseMatrix<double> QR1(Q1 * R1);
     hdnum::DenseMatrix<double> QR2(Q2 * R2);
-    hdnum::apply_permutation(QR1, p1);
-    hdnum::apply_permutation(QR2, p2);
+    hdnum::permute_forward(QR1, p1);
+    hdnum::permute_forward(QR2, p2);
     ASSERT_EQ(QR1.rowsize(), A1.rowsize());
     ASSERT_EQ(QR1.colsize(), A1.colsize());
     ASSERT_EQ(QR2.rowsize(), A2.rowsize());
@@ -315,8 +315,8 @@ TEST(TestQRDecompositionPivoting, TestSquareMatrix) {
     // A = Q*R - maybe permutation needed
     hdnum::DenseMatrix<double> QR1(Q1 * R1);
     hdnum::DenseMatrix<double> QR2(Q2 * R2);
-    hdnum::apply_permutation(QR1, p1);
-    hdnum::apply_permutation(QR2, p2);
+    hdnum::permute_forward(QR1, p1);
+    hdnum::permute_forward(QR2, p2);
     ASSERT_EQ(QR1.rowsize(), A1.rowsize());
     ASSERT_EQ(QR1.colsize(), A1.colsize());
     ASSERT_EQ(QR2.rowsize(), A2.rowsize());
@@ -407,7 +407,7 @@ TEST(TestQRDecompositionPivoting, TestWideMatrix) {
 
     // A = Q*R - maybe permutation needed
     hdnum::DenseMatrix<double> QR1(Q1 * R1);
-    hdnum::apply_permutation(QR1, p1);
+    hdnum::permute_forward(QR1, p1);
     ASSERT_EQ(QR1.rowsize(), A1.rowsize());
     ASSERT_EQ(QR1.colsize(), A1.colsize());
     for (int i = 0; i < QR1.rowsize(); i++) {

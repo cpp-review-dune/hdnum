@@ -1,4 +1,11 @@
-// -*- tab-width: 4; indent-tabs-mode: nil -*-
+// -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+/*
+ * File:   qr.hh
+ * Author: Raphael Vogt <cx238@stud.uni-heidelberg.de>
+ *
+ * Created on August 30, 2020
+ */
+
 #ifndef HDNUM_QR_HH
 #define HDNUM_QR_HH
 
@@ -13,7 +20,34 @@
  */
 
 namespace hdnum {
-//! computes orthonormal basis of Im(A) using classical Gram-Schmidt
+
+/*!
+    \brief computes orthonormal basis of Im(A) using classical Gram-Schmidt
+
+    \tparam matrix A
+
+    \b Example:
+    \code
+    hdnum::DenseMatrix<double> A({{2, 9},
+                                  {1, -5}});
+    hdnum::DenseMatrix<double> Q(hdnum::gram_schmidt(A));
+    std::cout << "A = " << A << std::endl;
+    std::cout << "Q = " << Q << std::endl;
+    \endcode
+
+    \b Output:
+    \verbatim
+    A = 
+                      0          1 
+          0   2.000e+00  9.000e+00 
+          1   1.000e+00 -5.000e+00 
+
+    Q = 
+                      0          1 
+          0   8.944e-01  4.472e-01 
+          1   4.472e-01 -8.944e-01 
+    \endverbatim
+*/
 template <class T>
 DenseMatrix<T> gram_schmidt(const DenseMatrix<T>& A) {
     DenseMatrix<T> Q(A);
@@ -45,7 +79,33 @@ DenseMatrix<T> gram_schmidt(const DenseMatrix<T>& A) {
     return Q;
 }
 
-//! computes orthonormal basis of Im(A) using modified Gram-Schmidt
+/*!
+    \brief computes orthonormal basis of Im(A) using modified Gram-Schmidt
+
+    \tparam matrix A
+
+    \b Example:
+    \code
+    hdnum::DenseMatrix<double> A({{2, 9},
+                                  {1, -5}});
+    hdnum::DenseMatrix<double> Q(hdnum::modified_gram_schmidt(A));
+    std::cout << "A = " << A << std::endl;
+    std::cout << "Q = " << Q << std::endl;
+    \endcode
+
+    \b Output:
+    \verbatim
+    A = 
+                      0          1 
+          0   2.000e+00  9.000e+00 
+          1   1.000e+00 -5.000e+00 
+
+    Q = 
+                      0          1 
+          0   8.944e-01  4.472e-01 
+          1   4.472e-01 -8.944e-01 
+    \endverbatim
+*/
 template <class T>
 DenseMatrix<T> modified_gram_schmidt(const DenseMatrix<T>& A) {
     DenseMatrix<T> Q(A);
@@ -76,7 +136,47 @@ DenseMatrix<T> modified_gram_schmidt(const DenseMatrix<T>& A) {
     return Q;
 }
 
-//! computes qr decomposition using modified Gram-Schmidt - works only with small (m>n) and square matrices
+/*!
+    \brief computes qr decomposition using modified Gram-Schmidt - works only with small (m>n) and square matrices
+
+    \tparam matrix Q
+
+    \b Example:
+    \code
+    hdnum::DenseMatrix<double> A({{2, 9},
+                                  {1, -5}});
+    hdnum::DenseMatrix<double> Q(A);
+    hdnum::DenseMatrix<double> R(hdnum::qr_gram_schmidt_simple(Q));
+
+    std::cout << "A = " << A << std::endl;
+    std::cout << "Q = " << Q << std::endl;
+    std::cout << "R = " << R << std::endl;
+    std::cout << "QR = " << Q*R << std::endl;
+    \endcode
+
+    \b Output:
+    \verbatim
+    A = 
+                      0          1 
+          0   2.000e+00  9.000e+00 
+          1   1.000e+00 -5.000e+00 
+
+    Q = 
+                      0          1 
+          0   8.944e-01  4.472e-01 
+          1   4.472e-01 -8.944e-01 
+
+    R = 
+                      0          1 
+          0   2.236e+00  5.814e+00 
+          1   0.000e+00  8.497e+00 
+
+    QR = 
+                      0          1 
+          0   2.000e+00  9.000e+00 
+          1   1.000e+00 -5.000e+00 
+    \endverbatim
+*/
 template <class T>
 DenseMatrix<T> qr_gram_schmidt_simple(DenseMatrix<T>& Q) {
     // save matrix A, before it's replaced with Q
@@ -131,7 +231,47 @@ DenseMatrix<T> qr_gram_schmidt_simple(DenseMatrix<T>& Q) {
     return R;
 }
 
-//! computes qr decomposition using modified Gram-Schmidt - works only with small (m>n) and square matrices
+/*!
+    \brief computes qr decomposition using modified Gram-Schmidt - works only with small (m>n) and square matrices
+
+    \tparam matrix Q
+
+    \b Example:
+    \code
+    hdnum::DenseMatrix<double> A({{2, 9},
+                                  {1, -5}});
+    hdnum::DenseMatrix<double> Q(A);
+    hdnum::DenseMatrix<double> R(hdnum::qr_gram_schmidt(Q));
+
+    std::cout << "A = " << A << std::endl;
+    std::cout << "Q = " << Q << std::endl;
+    std::cout << "R = " << R << std::endl;
+    std::cout << "QR = " << Q*R << std::endl;
+    \endcode
+
+    \b Output:
+    \verbatim
+    A = 
+                      0          1 
+          0   2.000e+00  9.000e+00 
+          1   1.000e+00 -5.000e+00 
+
+    Q = 
+                      0          1 
+          0   8.944e-01  4.472e-01 
+          1   4.472e-01 -8.944e-01 
+
+    R = 
+                      0          1 
+          0   2.236e+00  5.814e+00 
+          1   0.000e+00  8.497e+00 
+
+    QR = 
+                      0          1 
+          0   2.000e+00  9.000e+00 
+          1   1.000e+00 -5.000e+00 
+    \endverbatim
+*/
 template <class T>
 DenseMatrix<T> qr_gram_schmidt(DenseMatrix<T>& Q) {
     // create matrix R
@@ -173,9 +313,71 @@ DenseMatrix<T> qr_gram_schmidt(DenseMatrix<T>& Q) {
     return R;
 }
 
-//! computes qr decomposition using modified Gram-Schmidt and pivoting - works with all types of matrices
+/*!
+    \brief computes qr decomposition using modified Gram-Schmidt and pivoting - works with all types of matrices
+
+    \tparam matrix Q
+    \tparam permutationvector p
+    \tparam integer rank to save the rank
+    \tparam optional threshold
+
+    \b Example:
+    \code
+    hdnum::DenseMatrix<double> A({{5, 2, 3},
+                                  {11, 9, 2}});
+    hdnum::DenseMatrix<double> Q(A);
+    hdnum::Vector<int> p(A.colsize());
+    int rank;
+    hdnum::DenseMatrix<double> R(hdnum::qr_gram_schmidt_pivoting(Q, p, rank));
+
+    hdnum::DenseMatrix<double> Q_right_dimension(A.rowsize(), rank);
+    hdnum::DenseMatrix<double> R_right_dimension(rank, A.colsize());
+
+    for (int i = 0; i < Q_right_dimension.rowsize(); i++) {
+        for (int j = 0; j < Q_right_dimension.colsize(); j++) {
+            Q_right_dimension(i, j) = Q(i, j);
+        }
+    }
+    for (int i = 0; i < R_right_dimension.rowsize(); i++) {
+        for (int j = 0; j < R_right_dimension.colsize(); j++) {
+            R_right_dimension(i, j) = R(i, j);
+        }
+    }
+
+    hdnum::DenseMatrix<double> QR(Q_right_dimension*R_right_dimension);
+    hdnum::permute_forward(QR, p);
+
+    std::cout << "A = " << A << std::endl;
+    std::cout << "Q = " << Q_right_dimension << std::endl;
+    std::cout << "R = " << R_right_dimension << std::endl;
+    std::cout << "QR = " << QR << std::endl;
+    \endcode
+
+    \b Output:
+    \verbatim
+    A = 
+                      0          1          2 
+          0   5.000e+00  2.000e+00  3.000e+00 
+          1   1.100e+01  9.000e+00  2.000e+00 
+
+    Q = 
+                      0          1 
+          0   4.138e-01 -9.104e-01 
+          1   9.104e-01  4.138e-01 
+
+    R = 
+                      0          1          2 
+          0   1.208e+01  9.021e+00  3.062e+00 
+          1   0.000e+00  1.903e+00 -1.903e+00 
+
+    QR = 
+                      0          1          2 
+          0   5.000e+00  2.000e+00  3.000e+00 
+          1   1.100e+01  9.000e+00  2.000e+00
+    \endverbatim
+*/
 template <class T>
-DenseMatrix<T> qr_gram_schmidt_pivoting(DenseMatrix<T>& Q, Vector<int>& p, int& rank, double threshold=0.00000000001) {
+DenseMatrix<T> qr_gram_schmidt_pivoting(DenseMatrix<T>& Q, Vector<int>& p, int& rank, T threshold=0.00000000001) {
     // check if permutation vector has the right size
     if (p.size() != Q.colsize()) {
         HDNUM_ERROR("Permutation Vector incompatible with Matrix!");
@@ -287,9 +489,38 @@ DenseMatrix<T> qr_gram_schmidt_pivoting(DenseMatrix<T>& Q, Vector<int>& p, int& 
     return R;
 }
 
-//! applies a permutation vector to a matrix
+/*!
+    \brief applies a permutation vector to a matrix
+
+    \tparam matrix A
+    \tparam permutationvector p
+
+    \b Example:
+    \code
+    hdnum::DenseMatrix<double> A({{2, 9},
+                                  {1, -5}});
+    hdnum::Vector<int> p({1, 0});
+    hdnum::permute_forward(A, p);
+
+    std::cout << "A = " << A << std::endl;
+    std::cout << "p = " << p << std::endl;
+    \endcode
+
+    \b Output:
+    \verbatim
+    A = 
+                      0          1 
+          0   9.000e+00  2.000e+00 
+          1  -5.000e+00  1.000e+00 
+
+    p = 
+[ 0]              0
+[ 1]              1
+
+    \endverbatim
+*/
 template<typename T>
-void apply_permutation(DenseMatrix<T>& A, Vector<int>& p) {
+void permute_forward(DenseMatrix<T>& A, Vector<int>& p) {
     // check if permutation vector has the right size
     if (p.size() != A.colsize()) {
         HDNUM_ERROR("Permutation Vector incompatible with Matrix!");
