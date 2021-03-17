@@ -617,6 +617,27 @@ public:
     //! set data precision for pretty-printing
     void precision(size_type i) const { nValuePrecision = i; }
 
+    column_iterator find(const size_type row_index,
+                         const size_type col_index) const {
+        checkIfAccessIsInBounds(row_index, col_index);
+
+        using value_pair = typename const_column_index_iterator::value_type;
+        auto row = const_row_iterator(_rowPtr.begin() + row_index,
+                                      _colIndices.begin(), _data.begin());
+        return std::find_if(row.ibegin(), row.iend(),
+                            [col_index](value_pair el) {
+                                // only care for the index here since the value
+                                // is unknown
+                                return el.second == col_index;
+                            });
+    }
+
+    bool exists(const size_type row_index, const size_type col_index) const {
+        auto row = const_row_iterator(_rowPtr.begin() + row_index,
+                                      _colIndices.begin(), _data.begin());
+        return find(row_index, col_index) != row.iend();
+    }
+
     //! write access on matrix element A_ij using A.get(i,j)
     REAL &get(const size_type row_index, const size_type col_index) {
         checkIfAccessIsInBounds(row_index, col_index);
