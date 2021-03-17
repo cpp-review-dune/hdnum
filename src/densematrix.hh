@@ -334,10 +334,11 @@ public:
     DenseMatrix sub(size_type i, size_type j, size_type rows, size_type cols) {
         DenseMatrix A(rows, cols);
         DenseMatrix& self = *this;
-        for (size_type k1 = 0; k1 < rows; k1++)
+        for (size_type k1 = 0; k1 < rows; k1++) {
             for (size_type k2 = 0; k2 < cols; k2++) {
                 A[k1][k2] = self[k1 + i][k2 + j];
             }
+        }
         return A;
     }
 
@@ -346,11 +347,13 @@ public:
 
       Return the transposed as a new matrix.
     */
-    DenseMatrix transpose() {
+    DenseMatrix transpose() const {
         DenseMatrix A(m_cols, m_rows);
-        DenseMatrix& self = *this;
-        for (size_type i = 0; i < m_rows; i++)
-            for (size_type j = 0; j < m_cols; j++) A[j][i] = self[i][j];
+        for (size_type i = 0; i < m_rows; i++) {
+            for (size_type j = 0; j < m_cols; j++) {
+                A[j][i] = this->operator[](i)[j];
+            }
+        }
         return A;
     }
 
@@ -364,9 +367,11 @@ public:
       \param[in] B another Matrix
     */
     DenseMatrix& operator+=(const DenseMatrix& B) {
-        for (std::size_t i = 0; i < rowsize(); ++i)
-            for (std::size_t j = 0; j < colsize(); ++j)
+        for (size_type i = 0; i < rowsize(); ++i) {
+            for (size_type j = 0; j < colsize(); ++j) {
                 (*this)(i, j) += B(i, j);
+            }
+        }
         return *this;
     }
 
