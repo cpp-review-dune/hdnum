@@ -1121,6 +1121,139 @@ bool Banach::has_converged () const
 \end{itemize}
 
 
+\subsection{QR Zerlegung mittels Gram-Schmidt Orthogonalisierung}
+
+\subsubsection{Gram-Schmidt Verfahren}
+
+Das Orthogonalisierungsverfahren von Gram-Schmidt wird verwendet um eine
+Orthonormalbasis $Q$ von Bild($A$) zu berechnen. Die dabei entstandene Matrix erfüllt
+die Eigenschaft $Q$\textsuperscript{T} * $Q$ = $I$ bzw. $Q$\textsuperscript{T} =
+$Q$\textsuperscript{-1}. Zur Berechnung dieser stehen in HDNUM zwei Varianten zur
+Verfügung:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> A(3, 3);
+A(0, 0) = 1; A(0, 1) = 2;
+A(1, 0) = 1; A(1, 1) = 3;
+
+DenseMatrix<number> Q1(gram_schmidt(A))
+DenseMatrix<number> Q2(modified_gram_schmidt(A))
+\end{lstlisting}}}
+
+\noindent Der modified\_gram\_schmidt Algorithmus besitzt dabei den Vorteil, dass er
+nicht so  anfällig für Rundungsfehler ist, wie der gram\_schmidt Algorithmus. Dies
+spielt besonders bei Matrizen mit einer hohen Konditionszahl eine Rolle.
+
+\subsubsection{Kurze Einleitung zur QR-Zerlegung}
+
+Die QR-Zerlegung wird angewandt um $A$ in eine Orthonormalbasis $Q$ und eine rechte
+obere Dreiecksmatrix $R$ zu zerlegen, sodass gilt: $A$ = $Q$*$R$. Bei Matrizen, die
+mehr Spalten als Zeilen aufweisen, oder keinen vollen numerischen Rang haben, ist
+zusätzlich eine Pivotisierung mit Spaltentauschen notwendig. Diese wirkt darüber
+hinaus auch rank-revealing, kann also benutzt werden um den Rang einer Matrix zu
+bestimmen.
+
+\subsubsection{QR-Zerlegung - Erklärung der Funktionen}
+
+Die einfache Zerlegung ohne Pivotisierung kann folgendermaßen in einem Programm
+umgesetzt werden:
+\begin{itemize}
+\item Zu Beginn erstellt man die Matrix $A$ die zerlegt werden soll und speichert sie
+ab, da diese im Laufe der Zerlegung überschrieben wird:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> A(3, 3);
+A(0, 0) = 1; A(0, 1) = 2; A(0, 2) = 3;
+A(1, 0) = 1; A(1, 1) = 3; A(1, 2) = -5;
+A(2, 0) = 2; A(2, 1) = 4; A(2, 2) = 19;
+
+DenseMatrix<number> Q(A);
+\end{lstlisting}}}
+
+\item Die Zerlegungsfunktion gibt die Matrix $R$ als Rückgabewert zurück, am besten
+fängt man diesen mit dem copy constructor der DenseMatrix ab. Dabei sind die
+Funktionen qr\_gram\_schmidt und qr\_gram\_schmidt\_simple nahezu identisch. Da
+qr\_gram\_schmidt\_simple am Anfang jedoch die übergebene Matrix abspeichert, während
+qr\_gram\_schmidt rein in-place arbeitet, ist qr\_gram\_schmidt immer priorisiert zu
+verwenden. Da die Matrix während der Funktion überschrieben wird, sollte sie davor
+abgespeichert werden:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> Q1(A);
+DenseMatrix<number> Q2(A);
+    
+DenseMatrix<number> R1(qr_gram_schmidt(Q1));
+DenseMatrix<number> R2(qr_gram_schmidt(Q2));
+\end{lstlisting}}}
+
+Nun sind die beiden Matrizen $Q$ und $R$ erstellt, aus ihnen kann man sich einfach
+die Matrix $A$ wieder zurückrechnen:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> A1(Q1*R1);
+DenseMatrix<number> A2(Q2*R2);
+\end{lstlisting}}}
+
+\item Die Zerlegung mittels Pivotisierung akzeptiert alle Typen von Matrizen, ein
+Beispiel mit n > m und keinem vollen Rang wäre:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> A(3, 4);
+A(0, 0) = 1;  A(0, 1) = 2;  A(0, 2) = 3;  A(0, 3) = 4;
+A(1, 0) = -5; A(1, 1) = 9;  A(1, 2) = 2;  A(1, 3) = 5;
+A(2, 0) = 3;  A(2, 1) = -9; A(2, 2) = 12; A(2, 3) = -22
+\end{lstlisting}}}
+
+\item Ergänzend wird eine Variable um den Rang abzuspeichern und ein
+Permutationsvektor benötigt. Zudem ist es sinnvoll wieder die Matrix $A$
+abzuspeichern, da diese im Laufe der Funktion überschrieben wird:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> Q(A);
+int rank;
+Vector<int> p(A.colsize());
+\end{lstlisting}}}
+    
+\item Wie bei den anderen Varianten wird Matrix $R$ zurückgegeben:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> R(qr_gram_schmidt_pivoting(Q, p, rank));
+\end{lstlisting}}}
+
+\item Hat Matrix $A$ keinen vollen Rang verändert sich bei der Zerlegung die
+Dimension von $Q$ und $R$, in solch einem Fall müssen diese noch nachträglich
+modifiziert werden:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> Q_right_dimension(A.rowsize(), rank);
+DenseMatrix<number> R_right_dimension(rank, A.colsize());
+
+for (int i = 0; i < Q_right_dimension.rowsize(); i++) {
+        for (int j = 0; j < Q_right_dimension.colsize(); j++) {
+            Q_right_dimension(i, j) = Q(i, j);
+        }
+    }
+    for (int i = 0; i < R_right_dimension.rowsize(); i++) {
+        for (int j = 0; j < R_right_dimension.colsize(); j++) {
+            R_right_dimension(i, j) = R(i, j);
+        }
+    }
+\end{lstlisting}}}
+
+\item Aus diesen kann die Ursprungsmatrix $A$ zurückgerechnet werden:
+
+    {\footnotesize{\begin{lstlisting}{}
+DenseMatrix<number> QR(Q_right_dimension*R_right_dimension);
+\end{lstlisting}}}
+
+\item Durch die Pivotisierung während der Funktion hat $QR$ aber noch vertauschte
+Spalten, mit Hilfe des Permutationsvektors können diese aber zurückgetauscht werden:
+
+    {\footnotesize{\begin{lstlisting}{}
+permute_forward(QR, p);
+\end{lstlisting}}}
+
+\end{itemize}
 
 \section{Gewöhnliche Differentialgleichungen}
 
