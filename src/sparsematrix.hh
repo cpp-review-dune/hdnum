@@ -1130,7 +1130,7 @@ inline void readMatrixFromFile(const std::string &filename,
         A = builder.build();
         fin.close();
     } else {
-        HDNUM_ERROR("Could not open file!");
+        HDNUM_ERROR(("Could not osspen file! \"" + filename + "\""));
     }
 }
 

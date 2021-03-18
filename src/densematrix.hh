@@ -1499,7 +1499,7 @@ inline void readMatrixFromFileMatrixMarket(const std::string& filename,
         A = A_temp;
         fin.close();
     } else {
-        HDNUM_ERROR("Could not open file!");
+        HDNUM_ERROR("Could not open file! \"" + filename + "\"");
     }
 }
 
