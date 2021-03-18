@@ -10,7 +10,7 @@ Install the necessary dependencies (Debian):
 
 ```
 $ cmake . -B "release" -DCMAKE_BUILD_TYPE=Release
-$ cd build
+$ cd release
 $ make
 $ python3 /usr/share/benchmark/compare.py benchmarks BenchA BenchB
 ```
