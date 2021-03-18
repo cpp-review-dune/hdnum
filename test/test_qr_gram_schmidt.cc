@@ -138,10 +138,8 @@ TEST(TestQRDecomposition, TestPostconditionsSmallMatrix) {
     hdnum::DenseMatrix<mpf_class> Q1_gmp(A_gmp);
     hdnum::DenseMatrix<mpf_class> Q2_gmp(A_gmp);
 
-    hdnum::DenseMatrix<mpf_class> R1_gmp(
-        hdnum::qr_gram_schmidt(Q1_gmp));
-    hdnum::DenseMatrix<mpf_class> R2_gmp(
-        hdnum::qr_gram_schmidt(Q2_gmp));
+    hdnum::DenseMatrix<mpf_class> R1_gmp(hdnum::qr_gram_schmidt(Q1_gmp));
+    hdnum::DenseMatrix<mpf_class> R2_gmp(hdnum::qr_gram_schmidt(Q2_gmp));
 
     // check that norm(qi) = 1
     for (int i = 0; i < Q1_gmp.colsize(); i++) {
@@ -155,14 +153,12 @@ TEST(TestQRDecomposition, TestPostconditionsSmallMatrix) {
         }
         normQ1 = sqrt(normQ1);
         normQ2 = sqrt(normQ2);
-        ASSERT_TRUE(
-            (normQ1 > expected_norm - threshold_gmp) &&
-            (normQ1 < expected_norm +
-                        threshold_gmp));  // 1-threshold < norm < 1+threshold
-        ASSERT_TRUE(
-            (normQ2 > expected_norm - threshold_gmp) &&
-            (normQ2 < expected_norm +
-                        threshold_gmp));  // 1-threshold < norm < 1+threshold
+        // 1-threshold < norm < 1+threshold
+        ASSERT_TRUE((normQ1 > expected_norm - threshold_gmp) &&
+                    (normQ1 < expected_norm + threshold_gmp));
+        // 1-threshold < norm < 1+threshold
+        ASSERT_TRUE((normQ2 > expected_norm - threshold_gmp) &&
+                    (normQ2 < expected_norm + threshold_gmp));
     }
 
     // check that Q_gmp^T * Q_gmp = I
@@ -172,23 +168,19 @@ TEST(TestQRDecomposition, TestPostconditionsSmallMatrix) {
         for (int j = 0; j < I1_gmp.colsize(); j++) {
             // main diagonal
             if (j == i) {
-                ASSERT_TRUE(
-                    (I1_gmp(i, i) > 1 - threshold_gmp) &&
-                    (I1_gmp(i, i) < 1 + threshold_gmp));
-                ASSERT_TRUE(
-                    (I2_gmp(i, i) > 1 - threshold_gmp) &&
-                    (I2_gmp(i, i) < 1 + threshold_gmp));
+                ASSERT_TRUE((I1_gmp(i, i) > 1 - threshold_gmp) &&
+                            (I1_gmp(i, i) < 1 + threshold_gmp));
+                ASSERT_TRUE((I2_gmp(i, i) > 1 - threshold_gmp) &&
+                            (I2_gmp(i, i) < 1 + threshold_gmp));
                 continue;
             }
             // other elements
-            ASSERT_TRUE(
-                (I1_gmp(i, j) > 0 - threshold_gmp) &&
-                (I1_gmp(i, j) <
-                 0 + threshold_gmp));  // 0-threshold < I(i, j) < 0+threshold
-            ASSERT_TRUE(
-                (I2_gmp(i, j) > 0 - threshold_gmp) &&
-                (I2_gmp(i, j) <
-                 0 + threshold_gmp));  // 0-threshold < I(i, j) < 0+threshold
+            // 0-threshold < I(i, j) < 0+threshold
+            ASSERT_TRUE((I1_gmp(i, j) > 0 - threshold_gmp) &&
+                        (I1_gmp(i, j) < 0 + threshold_gmp));
+            // 0-threshold < I(i, j) < 0+threshold
+            ASSERT_TRUE((I2_gmp(i, j) > 0 - threshold_gmp) &&
+                        (I2_gmp(i, j) < 0 + threshold_gmp));
         }
     }
 
@@ -201,14 +193,12 @@ TEST(TestQRDecomposition, TestPostconditionsSmallMatrix) {
     // R_gmp is an upper triangular matrix
     for (int i = 0; i < R1_gmp.colsize(); i++) {
         for (int j = i + 1; j < R1_gmp.rowsize(); j++) {
-            ASSERT_TRUE(
-                (R1_gmp(j, i) > 0 - threshold_gmp) &&
-                (R1_gmp(j, i) <
-                 0 + threshold_gmp));  // 0-threshold < I(i, j) < 0+threshold
-            ASSERT_TRUE(
-                (R2_gmp(j, i) > 0 - threshold_gmp) &&
-                (R2_gmp(j, i) <
-                 0 + threshold_gmp));  // 0-threshold < I(i, j) < 0+threshold
+            // 0-threshold < I(i, j) < 0+threshold
+            ASSERT_TRUE((R1_gmp(j, i) > 0 - threshold_gmp) &&
+                        (R1_gmp(j, i) < 0 + threshold_gmp));
+            // 0-threshold < I(i, j) < 0+threshold
+            ASSERT_TRUE((R2_gmp(j, i) > 0 - threshold_gmp) &&
+                        (R2_gmp(j, i) < 0 + threshold_gmp));
         }
     }
 
@@ -221,16 +211,10 @@ TEST(TestQRDecomposition, TestPostconditionsSmallMatrix) {
     ASSERT_EQ(QR2_gmp.colsize(), A_gmp.colsize());
     for (int i = 0; i < QR1_gmp.rowsize(); i++) {
         for (int j = 0; j < QR1_gmp.colsize(); j++) {
-            ASSERT_TRUE(
-                (QR1_gmp(i, j) > A_gmp(i, j) - threshold_gmp) &&
-                (QR1_gmp(i, j) <
-                 A_gmp(i, j) +
-                     threshold_gmp));
-            ASSERT_TRUE(
-                (QR2_gmp(i, j) > A_gmp(i, j) - threshold_gmp) &&
-                (QR2_gmp(i, j) <
-                 A_gmp(i, j) +
-                     threshold_gmp));
+            ASSERT_TRUE((QR1_gmp(i, j) > A_gmp(i, j) - threshold_gmp) &&
+                        (QR1_gmp(i, j) < A_gmp(i, j) + threshold_gmp));
+            ASSERT_TRUE((QR2_gmp(i, j) > A_gmp(i, j) - threshold_gmp) &&
+                        (QR2_gmp(i, j) < A_gmp(i, j) + threshold_gmp));
         }
     }
 }
@@ -347,10 +331,8 @@ TEST(TestQRDecomposition, TestPostconditionsSquareMatrix) {
     hdnum::DenseMatrix<mpf_class> Q1_gmp(A_gmp);
     hdnum::DenseMatrix<mpf_class> Q2_gmp(A_gmp);
 
-    hdnum::DenseMatrix<mpf_class> R1_gmp(
-        hdnum::qr_gram_schmidt(Q1_gmp));
-    hdnum::DenseMatrix<mpf_class> R2_gmp(
-        hdnum::qr_gram_schmidt(Q2_gmp));
+    hdnum::DenseMatrix<mpf_class> R1_gmp(hdnum::qr_gram_schmidt(Q1_gmp));
+    hdnum::DenseMatrix<mpf_class> R2_gmp(hdnum::qr_gram_schmidt(Q2_gmp));
 
     // check that norm(qi) = 1
     for (int i = 0; i < Q1_gmp.colsize(); i++) {
@@ -364,14 +346,12 @@ TEST(TestQRDecomposition, TestPostconditionsSquareMatrix) {
         }
         normQ1 = sqrt(normQ1);
         normQ2 = sqrt(normQ2);
-        ASSERT_TRUE(
-            (normQ1 > expected_norm - threshold_gmp) &&
-            (normQ1 < expected_norm +
-                        threshold_gmp));  // 1-threshold < norm < 1+threshold
-        ASSERT_TRUE(
-            (normQ2 > expected_norm - threshold_gmp) &&
-            (normQ2 < expected_norm +
-                        threshold_gmp));  // 1-threshold < norm < 1+threshold
+        // 1-threshold < norm < 1+threshold
+        ASSERT_TRUE((normQ1 > expected_norm - threshold_gmp) &&
+                    (normQ1 < expected_norm + threshold_gmp));
+        // 1-threshold < norm < 1+threshold
+        ASSERT_TRUE((normQ2 > expected_norm - threshold_gmp) &&
+                    (normQ2 < expected_norm + threshold_gmp));
     }
 
     // check that Q_gmp^T * Q_gmp = I
@@ -381,23 +361,19 @@ TEST(TestQRDecomposition, TestPostconditionsSquareMatrix) {
         for (int j = 0; j < I1_gmp.colsize(); j++) {
             // main diagonal
             if (j == i) {
-                ASSERT_TRUE(
-                    (I1_gmp(i, i) > 1 - threshold_gmp) &&
-                    (I1_gmp(i, i) < 1 + threshold_gmp));
-                ASSERT_TRUE(
-                    (I2_gmp(i, i) > 1 - threshold_gmp) &&
-                    (I2_gmp(i, i) < 1 + threshold_gmp));
+                ASSERT_TRUE((I1_gmp(i, i) > 1 - threshold_gmp) &&
+                            (I1_gmp(i, i) < 1 + threshold_gmp));
+                ASSERT_TRUE((I2_gmp(i, i) > 1 - threshold_gmp) &&
+                            (I2_gmp(i, i) < 1 + threshold_gmp));
                 continue;
             }
             // other elements
-            ASSERT_TRUE(
-                (I1_gmp(i, j) > 0 - threshold_gmp) &&
-                (I1_gmp(i, j) <
-                 0 + threshold_gmp));  // 0-threshold < I(i, j) < 0+threshold
-            ASSERT_TRUE(
-                (I2_gmp(i, j) > 0 - threshold_gmp) &&
-                (I2_gmp(i, j) <
-                 0 + threshold_gmp));  // 0-threshold < I(i, j) < 0+threshold
+            // 0-threshold < I(i, j) < 0+threshold
+            ASSERT_TRUE((I1_gmp(i, j) > 0 - threshold_gmp) &&
+                        (I1_gmp(i, j) < 0 + threshold_gmp));
+            // 0-threshold < I(i, j) < 0+threshold
+            ASSERT_TRUE((I2_gmp(i, j) > 0 - threshold_gmp) &&
+                        (I2_gmp(i, j) < 0 + threshold_gmp));
         }
     }
 
@@ -410,14 +386,12 @@ TEST(TestQRDecomposition, TestPostconditionsSquareMatrix) {
     // R_gmp is an upper triangular matrix
     for (int i = 0; i < R1_gmp.colsize(); i++) {
         for (int j = i + 1; j < R1_gmp.rowsize(); j++) {
-            ASSERT_TRUE(
-                (R1_gmp(j, i) > 0 - threshold_gmp) &&
-                (R1_gmp(j, i) <
-                 0 + threshold_gmp));  // 0-threshold < I(i, j) < 0+threshold
-            ASSERT_TRUE(
-                (R2_gmp(j, i) > 0 - threshold_gmp) &&
-                (R2_gmp(j, i) <
-                 0 + threshold_gmp));  // 0-threshold < I(i, j) < 0+threshold
+            // 0-threshold < I(i, j) < 0+threshold
+            ASSERT_TRUE((R1_gmp(j, i) > 0 - threshold_gmp) &&
+                        (R1_gmp(j, i) < 0 + threshold_gmp));
+            // 0-threshold < I(i, j) < 0+threshold
+            ASSERT_TRUE((R2_gmp(j, i) > 0 - threshold_gmp) &&
+                        (R2_gmp(j, i) < 0 + threshold_gmp));
         }
     }
 
@@ -430,18 +404,12 @@ TEST(TestQRDecomposition, TestPostconditionsSquareMatrix) {
     ASSERT_EQ(QR2_gmp.colsize(), A_gmp.colsize());
     for (int i = 0; i < QR1_gmp.rowsize(); i++) {
         for (int j = 0; j < QR1_gmp.colsize(); j++) {
-            ASSERT_TRUE(
-                (QR1_gmp(i, j) > A_gmp(i, j) - threshold_gmp) &&
-                (QR1_gmp(i, j) <
-                 A_gmp(i, j) +
-                     threshold_gmp));
-            ASSERT_TRUE(
-                (QR2_gmp(i, j) > A_gmp(i, j) - threshold_gmp) &&
-                (QR2_gmp(i, j) <
-                 A_gmp(i, j) +
-                     threshold_gmp));
+            ASSERT_TRUE((QR1_gmp(i, j) > A_gmp(i, j) - threshold_gmp) &&
+                        (QR1_gmp(i, j) < A_gmp(i, j) + threshold_gmp));
+            ASSERT_TRUE((QR2_gmp(i, j) > A_gmp(i, j) - threshold_gmp) &&
+                        (QR2_gmp(i, j) < A_gmp(i, j) + threshold_gmp));
         }
-    } 
+    }
 }
 
 int main(int argc, char** argv) {

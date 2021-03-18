@@ -15,32 +15,32 @@
 
 TEST(TestQRDecompositionPivoting, TestRankReveal) {
     // declare two sample small matrices with different rank
-    hdnum::DenseMatrix<double> M1({{1, 2, 3},
-                                   {1, 3, -5},
-                                   {1, 5, 9},
+    hdnum::DenseMatrix<double> M1({{1, 2, 3},       //
+                                   {1, 3, -5},      //
+                                   {1, 5, 9},       //
                                    {-2, 10, 15}});  // rank = 3
 
-    hdnum::DenseMatrix<double> M2({{1, 3, 4},
-                                   {1, 3, 4},
-                                   {1, 1, 2},
+    hdnum::DenseMatrix<double> M2({{1, 3, 4},      //
+                                   {1, 3, 4},      //
+                                   {1, 1, 2},      //
                                    {-2, 10, 8}});  // rank = 2
 
     // declare two sample square matrices with different rank
-    hdnum::DenseMatrix<double> M3({{1, 2, 3},
-                                   {1, 3 ,-5},
-                                   {2, 4, 19}});     // rank = 3
+    hdnum::DenseMatrix<double> M3({{1, 2, 3},     //
+                                   {1, 3, -5},    //
+                                   {2, 4, 19}});  // rank = 3
 
-    hdnum::DenseMatrix<double> M4({{5, 2, 3},
-                                   {-2, 3 ,-5},
-                                   {10, 4, 6}});    // rank = 2
+    hdnum::DenseMatrix<double> M4({{5, 2, 3},     //
+                                   {-2, 3, -5},   //
+                                   {10, 4, 6}});  // rank = 2
 
     // declare a sample wide matrix
-    hdnum::DenseMatrix<double> M5({{1, 2, 3, 4},
-                                   {-5, 9, 2, 5},
-                                   {3, -9, 12, -22}});  // rank = 3 
+    hdnum::DenseMatrix<double> M5({{1, 2, 3, 4},        //
+                                   {-5, 9, 2, 5},       //
+                                   {3, -9, 12, -22}});  // rank = 3
 
     // declare an empty matrix
-    hdnum::DenseMatrix<double> M6;    // rank = 0                       
+    hdnum::DenseMatrix<double> M6;  // rank = 0
 
     int rank;
     hdnum::Vector<int> p1(3);
@@ -68,14 +68,14 @@ TEST(TestQRDecompositionPivoting, TestRankReveal) {
 
 TEST(TestQRDecompositionPivoting, TestSmallMatrix) {
     // declare two sample small matrices with different rank
-    hdnum::DenseMatrix<double> A1({{1, 2, 3},
-                                   {1, 3, -5},
-                                   {1, 5, 9},
+    hdnum::DenseMatrix<double> A1({{1, 2, 3},       //
+                                   {1, 3, -5},      //
+                                   {1, 5, 9},       //
                                    {-2, 10, 15}});  // rank = 3
 
-    hdnum::DenseMatrix<double> A2({{1, 3, 4},
-                                   {1, 3, 4},
-                                   {1, 1, 2},
+    hdnum::DenseMatrix<double> A2({{1, 3, 4},      //
+                                   {1, 3, 4},      //
+                                   {1, 1, 2},      //
                                    {-2, 10, 8}});  // rank = 2
     hdnum::DenseMatrix<double> Q1(A1);
     hdnum::DenseMatrix<double> Q2_temp(A2);
@@ -84,8 +84,10 @@ TEST(TestQRDecompositionPivoting, TestSmallMatrix) {
     int rank2;
     hdnum::Vector<int> p1(3);
     hdnum::Vector<int> p2(3);
-    hdnum::DenseMatrix<double> R1(hdnum::qr_gram_schmidt_pivoting(Q1, p1, rank1));
-    hdnum::DenseMatrix<double> R2_temp(hdnum::qr_gram_schmidt_pivoting(Q2_temp, p2, rank2));
+    hdnum::DenseMatrix<double> R1(
+        hdnum::qr_gram_schmidt_pivoting(Q1, p1, rank1));
+    hdnum::DenseMatrix<double> R2_temp(
+        hdnum::qr_gram_schmidt_pivoting(Q2_temp, p2, rank2));
 
     // matrix A2 hasn't full rank so Q2 has the dimension mxk (k = rank(A2))
     hdnum::DenseMatrix<double> Q2(A2.rowsize(), rank2);
@@ -202,14 +204,14 @@ TEST(TestQRDecompositionPivoting, TestSmallMatrix) {
 
 TEST(TestQRDecompositionPivoting, TestSquareMatrix) {
     // declare two sample square matrices with different rank
-    hdnum::DenseMatrix<double> A1({{1, 2, 3},
-                                   {1, 3 ,-5},
-                                   {2, 4, 19}});     // rank = 3
+    hdnum::DenseMatrix<double> A1({{1, 2, 3},     //
+                                   {1, 3, -5},    //
+                                   {2, 4, 19}});  // rank = 3
 
-    hdnum::DenseMatrix<double> A2({{5, 2, 3},
-                                   {-2, 3 ,-5},
-                                   {10, 4, 6}});    // rank = 2
-    
+    hdnum::DenseMatrix<double> A2({{5, 2, 3},     //
+                                   {-2, 3, -5},   //
+                                   {10, 4, 6}});  // rank = 2
+
     hdnum::DenseMatrix<double> Q1(A1);
     hdnum::DenseMatrix<double> Q2_temp(A2);
 
@@ -217,8 +219,10 @@ TEST(TestQRDecompositionPivoting, TestSquareMatrix) {
     int rank2;
     hdnum::Vector<int> p1(3);
     hdnum::Vector<int> p2(3);
-    hdnum::DenseMatrix<double> R1(hdnum::qr_gram_schmidt_pivoting(Q1, p1, rank1));
-    hdnum::DenseMatrix<double> R2_temp(hdnum::qr_gram_schmidt_pivoting(Q2_temp, p2, rank2));
+    hdnum::DenseMatrix<double> R1(
+        hdnum::qr_gram_schmidt_pivoting(Q1, p1, rank1));
+    hdnum::DenseMatrix<double> R2_temp(
+        hdnum::qr_gram_schmidt_pivoting(Q2_temp, p2, rank2));
 
     // matrix A2 hasn't full rank so Q2 has the dimension mxk (k = rank(A2))
     hdnum::DenseMatrix<double> Q2(A2.rowsize(), rank2);
@@ -335,15 +339,16 @@ TEST(TestQRDecompositionPivoting, TestSquareMatrix) {
 
 TEST(TestQRDecompositionPivoting, TestWideMatrix) {
     // declare a sample wide matrix
-    hdnum::DenseMatrix<double> A1({{1, 2, 3, 4},
-                                   {-5, 9, 2, 5},
-                                   {3, -9, 12, -22}});  // rank = 3 
+    hdnum::DenseMatrix<double> A1({{1, 2, 3, 4},        //
+                                   {-5, 9, 2, 5},       //
+                                   {3, -9, 12, -22}});  // rank = 3
 
     hdnum::DenseMatrix<double> Q1_temp(A1);
 
     int rank1;
     hdnum::Vector<int> p1(4);
-    hdnum::DenseMatrix<double> R1_temp(hdnum::qr_gram_schmidt_pivoting(Q1_temp, p1, rank1));
+    hdnum::DenseMatrix<double> R1_temp(
+        hdnum::qr_gram_schmidt_pivoting(Q1_temp, p1, rank1));
 
     // matrix A1 hasn't full rank so Q1 has the dimension mxk (k = rank(A2))
     hdnum::DenseMatrix<double> Q1(A1.rowsize(), rank1);
@@ -417,10 +422,8 @@ TEST(TestQRDecompositionPivoting, TestWideMatrix) {
     }
 }
 
-
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();
 }
-

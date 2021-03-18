@@ -1,20 +1,21 @@
 #include "../hdnum.hh"
 #include "gtest/gtest.h"
 
-
 namespace {
-// In this example, we test the qr decomposition via gram-schmidt process for sparse matrices
+// In this example, we test the qr decomposition via gram-schmidt process for
+// sparse matrices
 
 using hdnum::DenseMatrix;
 
 class TestQRGramSchmidtSparse : public ::testing::Test {
 public:
-    const std::string filename_small_full_rank = "../matrix_market_files/example_small_full_rank.mtx";
+    const std::string filename_small_full_rank =
+        "../matrix_market_files/example_small_full_rank.mtx";
 
-    const std::string filename_square_full_rank = "../matrix_market_files/example_square_full_rank.mtx";
+    const std::string filename_square_full_rank =
+        "../matrix_market_files/example_square_full_rank.mtx";
 
     const double threshold = 0.000000001;
-
 };
 
 // Test qr_gram_schmidt and qr_gram_schmidt_simple for a square matrix
@@ -24,11 +25,11 @@ TEST_F(TestQRGramSchmidtSparse, TestQRSquareMatrix) {
 
     DenseMatrix<double> Q(A);
     DenseMatrix<double> R(hdnum::qr_gram_schmidt(Q));
-    DenseMatrix<double> QR(Q*R);
+    DenseMatrix<double> QR(Q * R);
 
     DenseMatrix<double> Q_simple(A);
     DenseMatrix<double> R_simple(hdnum::qr_gram_schmidt_simple(Q_simple));
-    DenseMatrix<double> QR_simple(Q_simple*R_simple);
+    DenseMatrix<double> QR_simple(Q_simple * R_simple);
 
     ASSERT_EQ(A.colsize(), QR.colsize());
     ASSERT_EQ(A.rowsize(), QR.rowsize());
@@ -56,11 +57,11 @@ TEST_F(TestQRGramSchmidtSparse, TestQRSmallMatrix) {
 
     DenseMatrix<double> Q(A);
     DenseMatrix<double> R(hdnum::qr_gram_schmidt(Q));
-    DenseMatrix<double> QR(Q*R);
+    DenseMatrix<double> QR(Q * R);
 
     DenseMatrix<double> Q_simple(A);
     DenseMatrix<double> R_simple(hdnum::qr_gram_schmidt_simple(Q_simple));
-    DenseMatrix<double> QR_simple(Q_simple*R_simple);
+    DenseMatrix<double> QR_simple(Q_simple * R_simple);
 
     ASSERT_EQ(A.colsize(), QR.colsize());
     ASSERT_EQ(A.rowsize(), QR.rowsize());
@@ -79,4 +80,4 @@ TEST_F(TestQRGramSchmidtSparse, TestQRSmallMatrix) {
         }
     }
 }
-}
+}  // namespace

@@ -6,20 +6,23 @@
 #include "gtest/gtest.h"
 
 namespace {
-// In this example, we test the read Matrix function from densematrix and sparsematrix
+// In this example, we test the read Matrix function from densematrix and
+// sparsematrix
 
-using hdnum::SparseMatrix;
 using hdnum::DenseMatrix;
+using hdnum::SparseMatrix;
 
 class TestReadMatrixFromFile : public ::testing::Test {
 public:
     const SparseMatrix<double> A_sparse;
-    const std::string filename = "../matrix_market_files/example_matrix_market.mtx";
+    const std::string filename =
+        "../matrix_market_files/example_matrix_market.mtx";
 
     const DenseMatrix<double> A_dense;
 
     const SparseMatrix<double> A_sparse_empty;
-    const std::string filename_empty = "../matrix_market_files/example_empty_matrix_market.mtx";
+    const std::string filename_empty =
+        "../matrix_market_files/example_empty_matrix_market.mtx";
 
     const DenseMatrix<double> A_dense_empty;
 
