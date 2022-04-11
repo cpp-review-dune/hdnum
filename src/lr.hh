@@ -78,7 +78,7 @@ namespace hdnum {
       {
         // find pivot element
         for (std::size_t r=k+1; r<A.rowsize(); ++r)
-          if (abs(A[r][k])>abs(A[k][k]))
+          if (abs(A[r][k])>abs(A[p[k]][k]))
             p[k] = r; // store permutation in step k
 
         if (p[k]>k) // exchange complete row if r!=k
@@ -121,7 +121,7 @@ namespace hdnum {
         // find pivot element
         for (std::size_t r=k; r<A.rowsize(); ++r)
           for (std::size_t s=k; s<A.colsize(); ++s)
-            if (abs(A[r][s])>abs(A[k][k]))
+            if (abs(A[r][s])>abs(A[p[k]][q[k]]))
               {
                 p[k] = r; // store permutation in step k
                 q[k] = s;
