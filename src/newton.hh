@@ -194,7 +194,7 @@ namespace hdnum {
       Vector<size_type> q(model.size());                 // column permutations
 
       model.F(x,r);                                     // compute nonlinear residual
-      Real R0(std::abs(norm(r)));                          // norm of initial residual
+      Real R0(abs(norm(r)));                          // norm of initial residual
       Real R(R0);                                // current residual norm
       if (verbosity>=1)
         {
@@ -232,7 +232,7 @@ namespace hdnum {
               y = x;                                    
               y.update(-lambda,z);                       // y = x+lambda*z
               model.F(y,r);                             // r = F(y)
-              Real newR(std::abs(norm(r)));                // compute norm
+              Real newR(abs(norm(r)));                // compute norm
               if (verbosity>=3)
                 {
                   std::cout << "    line search "  << std::setw(2) << k 
