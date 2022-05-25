@@ -123,7 +123,7 @@ namespace hdnum {
       \tparam X  the type for the Vector
   */
   template<typename F, typename X>
-  GenericNonlinearProblem<F,X> getNonlinearProblem (const F& f, const X& x, typename X::value_type eps = 1e-7)
+  GenericNonlinearProblem<F,X> getNonlinearProblem (const F f, const X& x, typename X::value_type eps = 1e-7)
   {
     return GenericNonlinearProblem<F,X>(f,x,eps);
   }
@@ -234,7 +234,7 @@ namespace hdnum {
    * @return GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> 
    */
   template<typename Objective,typename Gradient, typename X>
-  GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> getNonlinearMinimizationProblem_Constrained(const Objective& o, const Gradient& g, const DenseMatrix<double> constraints, const Vector<double> lb, const Vector<double> up, const  X& x, typename X::value_type eps = 1e-7)
+  GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> getNonlinearMinimizationProblem_Constrained(const Objective o, const Gradient g, const DenseMatrix<double> constraints, const Vector<double> lb, const Vector<double> up, const  X& x, typename X::value_type eps = 1e-7)
   {
     return GenericNonlinearMinimizationProblem_Constrained<Objective, Gradient,X>(o,g,constraints, lb, up, x,eps);
   }
@@ -243,31 +243,13 @@ namespace hdnum {
 
       The Newton solver is parametrized by a model. The model also
       exports all relevant types for types.
-
+ 
   */
   class Newton
   {
-
-  private: 
+  //protected:
+  protected:
     typedef std::size_t size_type;
-
-    template<typename N, typename Real>
-    void saveDataInFile(std::string filename, std::vector<std::vector<N>> iterationPoints, std::vector<std::vector<N>> directions, std::vector<Real> stepSizes, std::vector<Real> norms, std::vector<Real> reductions,std::vector<Real> losses){
-        std::fstream file(filename.c_str(),std::ios::out);
-        file<< "#This file contains the outputs from the newton-raphson method solver. The outputs are ordered in the following way: \n";
-        file<< "#Iteration point (X,Y)) | directions | step size | norm | reduction \n";
-        for(int i = 0; i< iterations_taken;++i){
-            Vector<N> x(2);
-            x[0] = iterationPoints[i][0]; 
-            x[1] = iterationPoints[i][1];
-
-            Vector<N> direction(2);
-            direction[0] = directions[i][0];
-            direction[1] = directions[i][1];
-            file << x[0] << "   " << x[1] << "   " << direction[0]<< "   " << direction[1] << "   "<< stepSizes[i] << "   " << norms[i] << "   " << reductions[i]<< "   " << losses[i] << "\n"; 
-
-        }
-    }
 
   public:
     //! constructor stores reference to the model
@@ -312,22 +294,21 @@ namespace hdnum {
     }
 
 
-    //! do one step
+    //! do one step. The last parameter is optional to save the results in a file
     template<class M>
     void solve (const M& model, Vector<typename M::number_type> & x, std::string filename = "") 
     {
-      //clear_data();
-
       typedef typename M::number_type N;
       // In complex case, we still need to use real valued numbers for residual norms etc.
       using Real = typename std::conditional<std::is_same<std::complex<double>, N>::value, double, N>::type;
 
-      std::vector<std::vector<N>> iteration_points;
-      std::vector<std::vector<N>> directions;
-      std::vector<Real> step_sizes;
-      std::vector<Real> norms;
-      std::vector<Real> reductions;
-      std::vector<Real> loss;
+      // for saving the data
+      Vector<Vector<N>> iteration_points;
+      Vector<Vector<N>> directions;
+      Vector<Real> stepSizes;
+      Vector<Real> norms;
+      Vector<Real> reductions;
+      Vector<Real> losses;
 
 
       Vector<N> r(model.size());              // residual
@@ -355,15 +336,14 @@ namespace hdnum {
         {
           iteration_points.push_back( {x[0], x[1]});
           norms.push_back(std::abs(norm(r)));
-          loss.push_back(0.5 * std::abs(norm(r)) * std::abs(norm(r)));
+          losses.push_back(0.5 * std::abs(norm(r)) * std::abs(norm(r)));
 
           // check absolute size of residual
           if (R<=abslimit)
             {
               converged = true;
-              if(filename.size()>0){
-                saveDataInFile(filename,iteration_points,directions, step_sizes, norms, reductions, loss);
-              }
+              if(filename.size()>0)
+                saveDataInFile(filename,iteration_points,directions, stepSizes, norms, reductions, losses);
               return;
             } 
 
@@ -405,7 +385,7 @@ namespace hdnum {
                 }
               if (newR<(1.0-0.25*lambda)*R)            // check convergence
                 {
-                  step_sizes.push_back(lambda);
+                  stepSizes.push_back(lambda);
                   reductions.push_back(newR/R);
                   if (verbosity>=2)
                     {
@@ -425,9 +405,8 @@ namespace hdnum {
                 {
                   if (verbosity>=3){
                     std::cout << "    line search not converged within " << linesearchsteps << " steps" << std::endl; 
-                    if(filename.size()>0){
-                        saveDataInFile(filename,iteration_points,directions, step_sizes, norms, reductions, loss);
-                    }
+                    if(filename.size()>0)
+                      saveDataInFile(filename,iteration_points,directions, stepSizes, norms, reductions, losses);
               }
 
                   return;
@@ -446,9 +425,8 @@ namespace hdnum {
                 }
               iterations_taken = i;
               converged = true;
-              if(filename.size()>0){
-                saveDataInFile(filename,iteration_points,directions, step_sizes, norms, reductions, loss);
-              }
+              if(filename.size()>0)
+                saveDataInFile(filename,iteration_points,directions, stepSizes, norms, reductions, losses);
               return;
             }
           if (i==maxit)
@@ -456,16 +434,13 @@ namespace hdnum {
               iterations_taken = i;
               if (verbosity>=1){
                 std::cout << "Newton not converged within " << maxit << " iterations" << std::endl;
-                                    if(filename.size()>0){
-                        saveDataInFile(filename,iteration_points,directions, step_sizes, norms, reductions, loss);
-                    }
+                if(filename.size()>0)
+                  saveDataInFile(filename,iteration_points,directions, stepSizes, norms, reductions, losses);
               }
             }
         }
     }
 
-
-    
     bool has_converged () const
     {
       return converged;
@@ -474,7 +449,7 @@ namespace hdnum {
       return iterations_taken;
     }
 
-  private:
+  protected:
     size_type maxit;
     mutable size_type iterations_taken = -1;
     size_type linesearchsteps;
@@ -482,243 +457,69 @@ namespace hdnum {
     double reduction;
     double abslimit;
     mutable bool converged;
-  };
 
- 
+    // save results in a file 
+    template<typename N, typename Real>
+    void saveDataInFile(std::string filename, Vector<Vector<N>> iterationPoints, Vector<Vector<N>> directions, Vector<Real> stepSizes, Vector<Real> norms, Vector<Real> reductions,Vector<Real> losses){
+        std::fstream file(filename.c_str(),std::ios::out);
+        file<< "#This file contains the outputs from the newton-raphson method solver. The outputs are ordered in the following way: \n";
+        file<< "#Iteration point | direction | step size | norm | reduction \n";
+        // go through iterations
+        for(int i = 0; i< iterations_taken;++i){
+            for(auto x: iterationPoints[i])
+              file << x << "   ";
+            for(auto d: directions[i])
+              file << d << "   ";
 
-
-
-  /** @brief Solve nonlinear problem using a fixed point iteration
-
-      solve F(x) = 0.
-
-      \f[ x = x - \sigma*F(x) \f]
-
-  */
-  class Banach
-  {
-    typedef std::size_t size_type;
-
-  public:
-    //! constructor stores reference to the model
-    Banach ()
-      : maxit(25), linesearchsteps(10), verbosity(0), 
-        reduction(1e-14), abslimit(1e-30),  sigma(1.0), converged(false)
-    {}
-
-    //! maximum number of iterations before giving up
-    void set_maxit (size_type n)
-    {
-      maxit = n;
-    }
-
-    //! damping parameter
-    void set_sigma (double sigma_)
-    {
-      sigma = sigma_;
-    }
-
-    //! maximum number of steps in linesearch before giving up
-    void set_linesearchsteps (size_type n)
-    {
-      linesearchsteps = n;
-    }
-
-    //! control output given 0=nothing, 1=summary, 2=every step, 3=include line search
-    void set_verbosity (size_type n)
-    {
-      verbosity = n;
-    }
-
-    //! basolute limit for defect
-    void set_abslimit (double l)
-    {
-      abslimit = l;
-    }
-
-    //! reduction factor
-    void set_reduction (double l)
-    {
-      reduction = l;
-    }
-
-    //! do one step
-    template<class M>
-    void solve (const M& model, Vector<typename M::number_type>& x) const
-    {
-      typedef typename M::number_type N;
-      Vector<N> r(model.size());              // residual
-      Vector<N> y(model.size());              // temporary solution in line search
-
-      model.F(x,r);                           // compute nonlinear residual
-      N R0(norm(r));                          // norm of initial residual
-      N R(R0);                                // current residual norm
-      if (verbosity>=1)
-        {
-          std::cout << "Banach " 
-                    << " norm=" << std::scientific << std::showpoint 
-                    << std::setprecision(4) << R0
-                    << std::endl;
-        }
-
-      converged = false;
-      for (size_type i=1; i<=maxit; i++)                // do iterations
-        {
-          // check absolute size of residual
-          if (R<=abslimit)
-            {
-              converged = true;
-              return;
-            } 
-
-          // next iterate
-          y = x;                                    
-          y.update(-sigma,r);                       // y = x+lambda*z
-          model.F(y,r);                             // r = F(y)
-          N newR(norm(r));                // compute norm
-          if (verbosity>=2)
-            {
-              std::cout << "    "  << std::setw(3) << i 
-                        << " norm=" << std::scientific << std::showpoint 
-                        << std::setprecision(4) << newR
-                        << " red=" << std::scientific << std::showpoint 
-                        << std::setprecision(4) << newR/R
-                        << std::endl;
-            }
-          x = y;                                // accept new iterate
-          R = newR;                             // remember new norm
-
-          // check convergence
-          if (R<=reduction*R0 || R<=abslimit)
-            {
-              if (verbosity>=1)
-                {
-                  std::cout << "Banach converged in "  << i << " steps"
-                            << " reduction=" << std::scientific << std::showpoint 
-                            << std::setprecision(4) << R/R0
-                            << std::endl;
-                }
-              converged = true;
-              return;
-            }
+            file << stepSizes[i] << "   " << norms[i] << "   " << reductions[i]<< "   " << losses[i] << "\n"; 
         }
     }
-    
-    bool has_converged () const
-    {
-      return converged;
-    }
-
-  private:
-    size_type maxit;
-    size_type linesearchsteps;
-    size_type verbosity;
-    double reduction;
-    double abslimit;
-    double sigma;
-    mutable bool converged;
   };
 
-/** @brief  Solve nonlinear problem F(x) = 0 by defining an eqivalent minimizing problem arg min_x f(x) = 0.5 * F(x)^T * F(x).
+/** @brief  Solve nonlinear problem F(x) = 0 by defining an eqivalent minimizing problem min_x f(x) = 0.5 * F(x)^T * F(x) 
  * (Uses Trust region method where a subproblem is solved by different direction choices:
  *  Newton direction
- *  Steepest descent direction
+ *  Cauchy point
  *  Dog leg direction)
  */
-  class NewtonDogLegCauchy{
-    private:
-    
-    typedef std::size_t size_type;
-
-    template<typename N, typename Real>
-    void saveDatainFile(std::string filename, std::vector<std::vector<N>> iteration_points, std::vector<std::vector<N>> newton_directions, std::vector<std::vector<N>> steepest_descent_directions, std::vector<std::vector<N>> dog_leg_directions, std::vector<double> trust_radius_list, std::vector<Real> norms, std::vector<Real> reductions, std::vector<Real> loss){
-      std::fstream file(filename.c_str(),std::ios::out);
-      file<< "#This file contains the outputs from the newton-dog-leg-cauchy method solver. The outputs are ordered in the following way: \n";
-      file<< "#Iteration point (X,Y)) | directions(Newton-Steepest-Dog leg) | trust radius | norm | reduction \n";
-      for(int i = 0; i< iterations_taken;++i){
-        Vector<N> x(2);
-        x[0] = iteration_points[i][0]; 
-        x[1] = iteration_points[i][1];
-
-        Vector<N> newton_direction(2);
-        newton_direction[0] = newton_directions[i][0];
-        newton_direction[1] = newton_directions[i][1];
-
-        Vector<N> steepest_descent_direction(2);
-        steepest_descent_direction[0] = steepest_descent_directions[i][0];
-        steepest_descent_direction[1] = steepest_descent_directions[i][1];
-
-        Vector<N> dog_leg_direction(2);
-        dog_leg_direction[0] = dog_leg_directions[i][0];
-        dog_leg_direction[1] = dog_leg_directions[i][1];
-
-        file << x[0] << "   " << x[1] << "   ";
-        file << newton_direction[0] << "   " << newton_direction[1] << "   ";
-        file << steepest_descent_direction[0] << "   " << steepest_descent_direction[1] << "   ";
-        file << dog_leg_direction[0] << "   " << dog_leg_direction[1] << "   ";
-        file << trust_radius_list[i] << "   ";
-        file << norms[i] << "   ";
-        file << reductions[i] << "   ";
-        file << loss[i] <<"\n";
-      }
-    }
-
+  class NewtonDogLegCauchy: public Newton{
     public:
       
     NewtonDogLegCauchy ()
-      : maxit(25), verbosity(0), 
-        reduction(1e-14), abslimit(1e-30), converged(false)
-    {}
-
-    void set_maxit (size_type n)
+      :maxTrustRadius(1.0), initialTrustRadius(1.0)
     {
-      maxit = n;
+      maxit = 25;
+      verbosity = 0;
+      reduction = 1e-14;
+      abslimit = 1e-30;
+      converged = false;
     }
 
-    //! basolute limit for defect
-    void set_abslimit (double l)
-    {
-      abslimit = l;
+    void setMaxTrustRadius(double max){
+      maxTrustRadius = max;
     }
 
-    //! control output given 0=nothing, 1=summary, 2=every step 
-    void set_verbosity (size_type n)
-    {
-      verbosity = n;
+    void setInitialTrustRadius(double initial){
+      initialTrustRadius = initial;
     }
 
-    //! reduction factor
-    void set_reduction (double l)
-    {
-      reduction = l;
-    }
-
-    void set_max_radius(double max){
-      max_radius = max;
-    }
-
-    void set_initial_trust_radius(double rad){
-      initial_trust_radius = rad;
-    }
-
+    // The last parameter is optional to save the results in a file
     template<class M>
     void solve (const M& model, Vector<typename M::number_type> & x, std::string filename="") 
     {
-      //clear_data();
-
       typedef typename M::number_type N;
       // In complex case, we still need to use real valued numbers for residual norms etc.
       using Real = typename std::conditional<std::is_same<std::complex<double>, N>::value, double, N>::type;
 
-      std::vector<std::vector<N>> iteration_points;
-      std::vector<std::vector<N>> newton_directions;
-      std::vector<std::vector<N>> steepest_descent_directions;
-      std::vector<std::vector<N>> dog_leg_directions;
-
-      std::vector<double> trust_radius_list;
-      std::vector<Real> norms;
-      std::vector<Real> reductions;
-      std::vector<Real> loss;
+      // for saving the data
+      Vector<Vector<N>> iterationPoints;
+      Vector<Vector<N>> newtonDirections;
+      Vector<Vector<N>> steepestDescentDirections;
+      Vector<Vector<N>> doglegDirections;
+      Vector<double> trustRadiusList;
+      Vector<Real> norms;
+      Vector<Real> reductions;
+      Vector<Real> losses;
 
       Vector<N> F(model.size());              // residual
       DenseMatrix<N> J(model.size(),model.size()); // Jacobian matrix
@@ -742,18 +543,16 @@ namespace hdnum {
 
       converged = false;
 
-      //Initial trust radius
-      trust_region = initial_trust_radius;
+      double trustRadius = initialTrustRadius; // initial trust radius
 
-      //save the type of the direction which was used in each step
-      std::string direction_type;
+      std::string direction_type; // save the type of the direction which was used in each iteration
 
       for (size_type i=1; i<=maxit; i++)                // do iterations
         {
-          iteration_points.push_back(x);
+          iterationPoints.push_back(x);
           norms.push_back(R);
-          loss.push_back(0.5 * R * R );
-          trust_radius_list.push_back(trust_region);
+          losses.push_back(0.5 * R * R );
+          trustRadiusList.push_back(trustRadius);
 
           //check convergence
           if (R<=abslimit)
@@ -767,20 +566,30 @@ namespace hdnum {
               }
               iterations_taken = i;
               converged = true;
-              if(filename.size()!=0){
-                saveDatainFile(filename,iteration_points, newton_directions, steepest_descent_directions, dog_leg_directions, trust_radius_list, norms, reductions, loss);
-              }
+              if(filename.size()!=0)
+                saveDatainFile(filename,iterationPoints, newtonDirections, steepestDescentDirections, doglegDirections, trustRadiusList, norms, reductions, losses);
               return;
             } 
+          
+          /* Each iterations solves the trust region subproblem 
+          *  min m(d) = f(x) + J^T * F * d + 0.5 * p^T * J^T * J * p s.t ||p|| <= trustRadius 
+          *  by using different directions:
+          *  - Newton direction: solves J^T d = - F(x) 
+          *    => will be applied if direction is inside trust region
+          *  - Cauchy point: takes the negative gradient with scaling factor alpha to minimize m(alpha *d) 
+          *    => will be applied if direction is outside trust region
+          *  - otherwise dogleg direction: interpolation of the endpoints from Newton and Cauchy direction
+          */
 
           model.F_x(x,J);                               // compute Jacobian matrix
           model.F(x,F);                                 // compute residual
-          
-          hdnum::Vector<N> jF = J.transpose() * F;      // compute J^T * F
-          hdnum::DenseMatrix<N> B = J.transpose() * J;  // compute J^T * J
+          hdnum::Vector<N> jF = J.transpose() * F;      // compute J^T * F (gradient of f)
+          hdnum::DenseMatrix<N> B = J.transpose() * J;  // compute J^T * J (Approximation of the Hessian of f)
 
+          // copy J, otherwise it will be modified by the LR decomposition
           hdnum::DenseMatrix<N> A = J;
 
+          // solve J^T d = - F(x) to get newton direction
           row_equilibrate(A,s);                         // equilibrate rows
           lr_fullpivot(A,p,q);                          // LR decomposition of A
           d_newton = N(0.0);                                   // clear solution
@@ -792,55 +601,58 @@ namespace hdnum {
 
           d_newton *= -1.0;
 
-          //step direction 
-          Vector<N> d(model.size());
+          Vector<N> d(model.size()); // direction to apply
 
-          //check if newton direction can be applied
-          if(std::abs(norm(d_newton)) <= trust_region){
+          // check if newton direction is inside trust region
+          if(std::abs(norm(d_newton)) <= trustRadius){
             d = d_newton;
-            direction_type = "Newton direction";
 
-            newton_directions.push_back(d_newton);
-            Vector<N> zeros(model.size());
-            steepest_descent_directions.push_back(zeros);
-            dog_leg_directions.push_back(zeros);
+            direction_type = "Newton direction";
+            newtonDirections.push_back(d_newton);
+            steepestDescentDirections.push_back({0,0});
+            doglegDirections.push_back({0,0});
           }
           else{
-            Vector<N> zeros(model.size());
-            newton_directions.push_back(zeros);
-            double norm_jF = std::abs(norm(jF));
-            Vector<N> product_J_jF= J.transpose() * jF;
-            double norm_B_jF = std::abs(norm(product_J_jF));
+            newtonDirections.push_back({0,0});
 
-            double alpha = norm_jF * norm_jF / (norm_B_jF * norm_B_jF);
+            /* the cauchy point is given as d = - alpha * J^T F (steepest descent direction) and 
+            * alpha = min( trustRadius / abs(norm(J^T F))) , abs(norm(J^T F)))**2 / ( (J^T F)^T * B * J^T F) )
+            * For the implementation, instead of directly taking the min, first compute the second term and check if alpha * d
+            * is outside the trust region or on the edge.
+            */
+            Real norm_jF = std::abs(norm(jF));
+
+            // (J^T*F)^T * B * J^T*F) = ||J^T*J^T*F||^2
+            Vector<N> product_J_jF= J.transpose() * jF;
+            Real norm_B_jF = std::abs(norm(product_J_jF));
+            
+            Real alpha = norm_jF * norm_jF / (norm_B_jF * norm_B_jF);
 
             Vector<N> d_cauchy = jF;
             d_cauchy *= -alpha;
-            
-            //check if steepest descent direction can be applied
-            if(std::abs(norm(d_cauchy)) >= trust_region){
-              d_cauchy /= std::abs(norm(d_cauchy));
-              d_cauchy *= trust_region;
+
+            //check if cauchy point is outside trust region or on the edge
+            if(std::abs(norm(d_cauchy)) >= trustRadius){
+              d_cauchy /= std::abs(norm(d_cauchy)); // scale the cauchy point so that it has the length trustRadius
+              d_cauchy *= trustRadius;
 
               d = d_cauchy;
               direction_type = "Steepest descent direction";
 
-              steepest_descent_directions.push_back(d_cauchy);
-              Vector<N> zeros(model.size());
-              dog_leg_directions.push_back(zeros);
+              steepestDescentDirections.push_back(d_cauchy);
+              doglegDirections.push_back({0,0});
             }
             else{ 
-              Vector<N> zeros(model.size());
-              steepest_descent_directions.push_back(zeros);
-              //apply dog leg direction by soolving the quadratic equation ||d_cauchy + tau * (d_newton-d_cauchy)|| = trust_region
+              steepestDescentDirections.push_back({0,0});
+              // apply dog leg direction by solving the quadratic equation ||d_cauchy + tau * (d_newton-d_cauchy)|| = trust_region
               Vector<N> dn_minus_dc = d_newton - d_cauchy;
   
-              double a = std::abs(norm(dn_minus_dc)) * std::abs(norm(dn_minus_dc));
+              Real a = std::abs(norm(dn_minus_dc)) * std::abs(norm(dn_minus_dc));
               N product_dc_dn_minus_dc = d_cauchy * dn_minus_dc;
               N b = 2.0 * product_dc_dn_minus_dc;
 
-              N dc_dc = d_cauchy * d_cauchy;
-              N c = -trust_region * trust_region + dc_dc;
+              Real dc_dc = std::abs(norm(d_cauchy)) * std::abs(norm(d_cauchy));
+              Real c = -trustRadius * trustRadius + dc_dc;
 
               N root = sqrt(b*b - 4 * a * c);
               N solution = (-b + root) / (2 * a);
@@ -851,45 +663,48 @@ namespace hdnum {
               d =  d_cauchy + product_dn_minus_dc_solution;
               direction_type = "Dog leg direction";
 
-              dog_leg_directions.push_back(d);
+              doglegDirections.push_back(d);
             } 
           }
 
-          /*compute ratio of actual reduction and predicted reduction(How good is the approximated model?)
-          * (f(x) - f(x+d)) / (m(0) - m(d))
-          * with m(p) = f(x) + (J^T * F(x))^T * p + p^T * J^T*J * p
+          /*compute ratio of actual reduction and predicted reduction(How good is the approximated model?):
+          * actualReduction/predicted Reduction = (f(x) - f(x+d)) / (m(0) - m(d)), 
+          * with m(d) = f(x) + (J^T * F(x))^T * d + d^T * B * d,  B = J^T * J and f(x) = 0.5 * F(x)^T * F(x) 
           */
-          Vector<N> new_x = x + d;
-
-          Vector<N> res_old(model.size());
-          model.F(x,res_old);
-          Vector<N> res_new(model.size());
-          model.F(new_x, res_new);
+          Vector<N> new_x = x + d; // perform update
           
-          Real newR(std::abs(norm(res_new)));
+          Vector<N> res_old(model.size());
+          model.F(x,res_old); // F(x)
+          Vector<N> res_new(model.size());
+          model.F(new_x, res_new); // F(x+d)
+          
+          Real newR(std::abs(norm(res_new))); // norm of new residual
+          Real red(1.0); // reduction for the output
 
-          //reduction for the output
-          Real red(1.0);
+          Real product_res_old_res_old = std::abs(norm(res_old)) * std::abs(norm(res_old));
+          Real product_res_new_res_new = std::abs(norm(res_new)) * std::abs(norm(res_new));
+          Real actual_reduction = 0.5 * product_res_old_res_old - 0.5 *  product_res_new_res_new; //  (f(x) - f(x+d))
 
-          N product_res_old_res_old = res_old * res_old;
-          N product_res_new_res_new = res_new * res_new;
-          N actual_reduction = 0.5 * product_res_old_res_old - 0.5 *  product_res_new_res_new;
-
-          N product_jF_d = jF * d;
+          N product_jF_d = jF * d; // (J^T * F(x))^T * d 
           Vector<N> product_B_d = B * d;
+
           N product_d_B_d = d * product_B_d;
-          product_d_B_d *= 0.5;
-          N predicted_reduction = - (product_jF_d + product_d_B_d);
+          product_d_B_d *= 0.5; // d^T * B * d
+
+          N predicted_reduction = - (product_jF_d + product_d_B_d); // m(0) - m(d)
 
           N ro = actual_reduction / predicted_reduction;
+          Real absro = std::abs(ro);
 
-          if(std::abs(ro) < n2){
-            trust_region = t1 * trust_region;
+          if(absro < n2){
+            trustRadius = t1 * trustRadius; // bad approximation
           }
-          else if(std::abs(ro) > n3 && std::abs(norm(d)) == trust_region){
-            trust_region = std::min(t2 * trust_region, max_radius);
+          else if(absro > n3 && std::abs(norm(d)) == trustRadius){
+            trustRadius = std::min(t2 * trustRadius, maxTrustRadius); // good approximation
           }
-          if(std::abs(ro) > n1){
+
+          // check if approximation is good enough to perform update
+          if(absro > n1){
             x = new_x;
             red = newR/R;
             R = newR;
@@ -913,16 +728,15 @@ namespace hdnum {
             {
               if (verbosity>=1)
               {
-                std::cout << "Newton Dog Leg Cuchy converged in "  << i << " steps"
+                std::cout << "Newton Dog Leg Cauchy converged in "  << i << " steps"
                             << " reduction=" << std::scientific << std::showpoint 
                             << std::setprecision(4) << R/R0
                             << std::endl;
               }
               iterations_taken = i;
               converged = true;
-              if(filename.size()!=0){
-                saveDatainFile(filename,iteration_points, newton_directions, steepest_descent_directions, dog_leg_directions, trust_radius_list, norms, reductions, loss);
-              }
+              if(filename.size()!=0)
+                saveDatainFile(filename,iterationPoints, newtonDirections, steepestDescentDirections, doglegDirections, trustRadiusList, norms, reductions, losses);
               return;
             }
 
@@ -930,9 +744,8 @@ namespace hdnum {
             iterations_taken = i;
             if (verbosity>=1){
               std::cout << "Newton Dogleg Cauchy not converged within " << maxit << " iterations" << std::endl;
-              if(filename.size()!=0){
-                saveDatainFile(filename,iteration_points, newton_directions, steepest_descent_directions, dog_leg_directions, trust_radius_list, norms, reductions, loss);
-              }
+              if(filename.size()!=0)
+                saveDatainFile(filename,iterationPoints, newtonDirections, steepestDescentDirections, doglegDirections, trustRadiusList, norms, reductions, losses);
             }
           }
 
@@ -940,35 +753,41 @@ namespace hdnum {
 
     }
 
-        
-    bool has_converged () const
-    {
-      return converged;
-    }
-    size_type iterations() const {
-      return iterations_taken;
-    }
-
 
     private:
-      size_type maxit;
+      double initialTrustRadius;
+      double maxTrustRadius;
 
-      mutable size_type iterations_taken = -1;
-      size_type linesearchsteps;
-      size_type verbosity;
-      double reduction;
-      double abslimit;
-      mutable bool converged;
-
-      double trust_region = 1.0;
-      double initial_trust_radius = 1.0;
-      double max_radius = 1.0;
-
+      // approximation values
       double n1 = 0.001;
       double n2 = 0.25;
       double n3 = 0.75;
+
+      // scale factors for trust radius
       double t1 = 0.25;
       double t2 = 2.0;
+
+      // save results in a file 
+      template<typename N, typename Real>
+      void saveDatainFile(std::string filename, Vector<Vector<N>> iterationPoints, Vector<Vector<N>> newtonDirections, Vector<Vector<N>> steepestDescentDirections, Vector<Vector<N>> doglegDirections, Vector<double> trustRadiusList, Vector<Real> norms, Vector<Real> reductions, Vector<Real> losses){
+        std::fstream file(filename.c_str(),std::ios::out);
+        file<< "#This file contains the outputs from the newton-dog-leg-cauchy method solver. The outputs are ordered in the following way: \n";
+        file<< "#Iteration point | directions(Newton-Steepest-Dog leg) | trust radius | norm | reduction \n";
+        
+        // go through iterations
+        for(int i = 0; i< iterations_taken;++i){
+          for(auto x: iterationPoints[i])
+            file << x << "   ";
+          for(auto dNewton: newtonDirections[i])
+            file << dNewton << "   ";
+          for(auto dSteepest: steepestDescentDirections[i])
+            file << dSteepest << "   ";
+          for(auto dDogleg: doglegDirections[i])
+            file << dDogleg << "   ";
+
+          file << trustRadiusList[i] << "   " << norms[i] << "   " << reductions[i] << "   " << losses[i] <<"\n";
+        }
+      }
   };
 
   class ProjectedNewton{
@@ -1179,6 +998,141 @@ namespace hdnum {
       size_type linesearchsteps;
       mutable bool converged;
   };
+
+
+
+
+  /** @brief Solve nonlinear problem using a fixed point iteration
+
+      solve F(x) = 0.
+
+      \f[ x = x - \sigma*F(x) \f]
+
+  */
+  class Banach
+  {
+    typedef std::size_t size_type;
+
+  public:
+    //! constructor stores reference to the model
+    Banach ()
+      : maxit(25), linesearchsteps(10), verbosity(0), 
+        reduction(1e-14), abslimit(1e-30),  sigma(1.0), converged(false)
+    {}
+
+    //! maximum number of iterations before giving up
+    void set_maxit (size_type n)
+    {
+      maxit = n;
+    }
+
+    //! damping parameter
+    void set_sigma (double sigma_)
+    {
+      sigma = sigma_;
+    }
+
+    //! maximum number of steps in linesearch before giving up
+    void set_linesearchsteps (size_type n)
+    {
+      linesearchsteps = n;
+    }
+
+    //! control output given 0=nothing, 1=summary, 2=every step, 3=include line search
+    void set_verbosity (size_type n)
+    {
+      verbosity = n;
+    }
+
+    //! basolute limit for defect
+    void set_abslimit (double l)
+    {
+      abslimit = l;
+    }
+
+    //! reduction factor
+    void set_reduction (double l)
+    {
+      reduction = l;
+    }
+
+    //! do one step
+    template<class M>
+    void solve (const M& model, Vector<typename M::number_type>& x) const
+    {
+      typedef typename M::number_type N;
+      Vector<N> r(model.size());              // residual
+      Vector<N> y(model.size());              // temporary solution in line search
+
+      model.F(x,r);                           // compute nonlinear residual
+      N R0(norm(r));                          // norm of initial residual
+      N R(R0);                                // current residual norm
+      if (verbosity>=1)
+        {
+          std::cout << "Banach " 
+                    << " norm=" << std::scientific << std::showpoint 
+                    << std::setprecision(4) << R0
+                    << std::endl;
+        }
+
+      converged = false;
+      for (size_type i=1; i<=maxit; i++)                // do iterations
+        {
+          // check absolute size of residual
+          if (R<=abslimit)
+            {
+              converged = true;
+              return;
+            } 
+
+          // next iterate
+          y = x;                                    
+          y.update(-sigma,r);                       // y = x+lambda*z
+          model.F(y,r);                             // r = F(y)
+          N newR(norm(r));                // compute norm
+          if (verbosity>=2)
+            {
+              std::cout << "    "  << std::setw(3) << i 
+                        << " norm=" << std::scientific << std::showpoint 
+                        << std::setprecision(4) << newR
+                        << " red=" << std::scientific << std::showpoint 
+                        << std::setprecision(4) << newR/R
+                        << std::endl;
+            }
+          x = y;                                // accept new iterate
+          R = newR;                             // remember new norm
+
+          // check convergence
+          if (R<=reduction*R0 || R<=abslimit)
+            {
+              if (verbosity>=1)
+                {
+                  std::cout << "Banach converged in "  << i << " steps"
+                            << " reduction=" << std::scientific << std::showpoint 
+                            << std::setprecision(4) << R/R0
+                            << std::endl;
+                }
+              converged = true;
+              return;
+            }
+        }
+    }
+    
+    bool has_converged () const
+    {
+      return converged;
+    }
+
+  private:
+    size_type maxit;
+    size_type linesearchsteps;
+    size_type verbosity;
+    double reduction;
+    double abslimit;
+    double sigma;
+    mutable bool converged;
+  };
+
 
 } // namespace hdnum
 

@@ -13,7 +13,6 @@ for i,a in enumerate(f):
     iteration_points.append(np.array([np.double(x[0]),np.double(x[1])]))
         
 iteration_points = np.array(iteration_points, dtype= np.double)
-#print(iteration_points)
 
 f = open(file2, "r")
 
