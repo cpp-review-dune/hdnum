@@ -9,8 +9,8 @@ int main ()
   typedef double Number;    // define a type for numbers
   typedef Vector<Number> V; // define a type for states u
 
-  Number lambda = -1.0; // model problem u' = lambda * u
-  Number dt = 0.1;      // time step \Delta t
+  Number lambda = -10.0; // model problem u' = lambda * u
+  Number dt = 0.01;      // time step \Delta t
   Number time = 0.0;    // initial time t_0
   V u(1);               // a state with one component (d=1)
   u[0] = 1.0;           // assign initial value

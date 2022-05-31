@@ -84,7 +84,7 @@ int main ()
   /* Runge-Kutta Fehlberg solver */
   // typedef RKF45<Model> Solver;
   // Solver solver(model);
-  // solver.set_TOL(0.2);
+  // solver.set_TOL(0.1);
 
   /* DIRK solver 
 
@@ -131,8 +131,8 @@ int main ()
 	    << " number of f evaluations: " << model.get_count() 
             << " minimum step width: " << min_dt
 	    << std::endl;
-  //gnuplot("vanderpol_rk45_loose.dat",times,states,dts); // output model result
-  gnuplot("vanderpol_IE_loose.dat",times,states,dts); // output model result
+  gnuplot("vanderpol_rk45.dat",times,states,dts); // output model result
+  //gnuplot("vanderpol_IE_loose.dat",times,states,dts); // output model result
 
   return 0;
 }

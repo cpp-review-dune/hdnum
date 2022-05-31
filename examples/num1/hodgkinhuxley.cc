@@ -13,10 +13,21 @@ int main ()
   typedef HodgkinHuxley<Number> Model; // Model type
   Model model;                         // instantiate model
 
+  // adaptive embedded RK method
   typedef RKF45<Model> Solver;         // Solver type
   Solver solver(model);                // instantiate solver
   solver.set_dt(1.0/16.0);             // set initial time step
-  solver.set_TOL(0.001);
+  solver.set_TOL(1e-2);
+
+  // Richardson Extrapolation with RK4
+  // typedef RungeKutta4<Model> SubSolver;         // Solver type
+  // SubSolver subsolver(model);                // instantiate solver
+  // typedef RE<Model,SubSolver> Solver;         // Solver type
+  // Solver solver(model,subsolver);                // instantiate solver
+  // solver.set_dt(1.0/16.0);             // set initial time step
+  // solver.set_TOL(1e-2); 
+  // solver.set_dtmin(1e-6); 
+  // solver.set_rho(0.03); 
 
   std::vector<Number> times;           // store time values here
   std::vector<Vector<Number> > states; // store states here
@@ -32,9 +43,13 @@ int main ()
       times.push_back(solver.get_time()); // save time
       states.push_back(solver.get_state()); // and state
       dts.push_back(solver.get_dt());      // used dt
+      //std::cout << solver.get_time() << " " << solver.get_dt() << std::endl;
     }
 
-  gnuplot("hodgkinhuxley.dat",times,states,dts); // output model result
+  gnuplot("hodgkinhuxley_rk45.dat",times,states,dts); // output model result
 
+  std::cout << times.size() << " timesteps" << std::endl;
+  std::cout << model.get_count() << " f evaluations" << std::endl;
+  
   return 0;
 }
