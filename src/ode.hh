@@ -846,9 +846,9 @@ namespace hdnum {
       for (size_type i=0; i<solver.get_order(); i++)
         two_power_m *= 2.0;
       TOL = time_type(0.0001);
-      rho = time_type(0.8);
-      alpha = time_type(0.25);
-      beta = time_type(4.0);
+      rho = time_type(1e-1);
+      alpha = time_type(0.5);
+      beta = time_type(2.0);
       dt_min = 1E-12;
     }
 
@@ -858,10 +858,22 @@ namespace hdnum {
       dt = dt_;
     }
 
+    //! set minimal step size
+    void set_dtmin (time_type dt_)
+    {
+      dt_min = dt_;
+    }
+
     //! set tolerance for adaptive computation
     void set_TOL (time_type TOL_)
     {
       TOL = TOL_;
+    }
+
+    //! set safety factor
+    void set_rho (time_type rho_)
+    {
+      rho = rho_;
     }
 
     //! do one step
@@ -887,18 +899,20 @@ namespace hdnum {
       // estimate local error
       ww = wlow;
       ww -= whigh;
-      time_type error(norm(ww)/(pow(H,1.0+solver.get_order())*(1.0-1.0/two_power_m)));
-      time_type dt_opt(pow(rho*TOL/error,1.0/((time_type)solver.get_order())));
+      time_type error(two_power_m/(two_power_m-1)*norm(ww));
+      time_type dt_opt(H*pow(rho*TOL/error,1.0/((time_type)solver.get_order())));
       dt_opt = std::min(beta*dt,std::max(alpha*dt,dt_opt));
-      //std::cout << "est. error=" << error << " dt_opt=" << dt_opt << std::endl;
-
-      if (dt<=dt_opt)
+      //std::cout << "est. error=" << error << " dt=" << dt << " dt_opt=" << dt_opt << std::endl;
+      
+      if (error<=TOL)
         {
+          // accept extrapolated solution
           t += H;
           u = whigh;
           u *= two_power_m;
           u -= wlow;
           u /= two_power_m-1.0;
+          // and suggest a new timestep
           dt = dt_opt;
         }
       else
