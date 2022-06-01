@@ -207,6 +207,17 @@ namespace hdnum {
       return *this;
     }
 
+    // for real numbers
+    template<typename N>
+    N getConjugate(const N x) const{
+      return x;
+    }
+
+    // for complex numbers 
+    template<typename N>
+    std::complex<N> getConjugate(const std::complex<N> x) const{
+      return std::conj(x);
+    }
 
     /*!
       \brief Inner product with another vector
@@ -245,12 +256,9 @@ namespace hdnum {
       REAL sum( 0 );
       const Vector & self = *this;
       for( size_t i = 0; i < this->size(); ++i )
-        sum += self[i] * x[i];
+        sum += getConjugate(self[i]) * x[i];
       return sum;
     }
-
-
-
 
     /*!
       \brief Adding two vectors x+y
@@ -342,7 +350,7 @@ namespace hdnum {
       REAL sum( 0 );
       const Vector & self = *this;
       for (size_t i = 0; i < (size_t) this->size(); ++i)
-        sum += self[i] * self[i];
+        sum += getConjugate(self[i]) * self[i];
       return sum;
     }
 

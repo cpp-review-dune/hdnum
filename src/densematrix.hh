@@ -393,6 +393,18 @@ namespace hdnum {
       return A;
     }
 
+    // for real numbers
+    template<typename N>
+    N getConjugate(const N x) const{
+      return x;
+    }
+
+    // for complex numbers
+    template<typename N>
+    std::complex<N> getConjugate(const std::complex<N> x) const{
+      return std::conj(x);
+    }
+
     /*!
       \brief Transposition
 
@@ -404,7 +416,7 @@ namespace hdnum {
       DenseMatrix &self = *this;
       for (size_type i=0; i<m_rows; i++)
         for (size_type j=0; j<m_cols; j++)
-          A[j][i] = self[i][j];
+          A[j][i] = getConjugate(self[i][j]);
       return A;
     }
 

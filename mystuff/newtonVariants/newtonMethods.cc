@@ -5,18 +5,21 @@
 #include <vector>
 #include <cmath> 
 
-#include "hdnum.hh"    // hdnum header
+#include "hdnum.hh"    // hdnum header* rightPart 
 #include "nonlinearFunctions.hh" 
 #include "newtonVisualization.hh" //contains test functions to visualize newton methods
+#include <any>
+#include <algorithm>
 
 using namespace hdnum;
+
 
 int main ()
 {
   // Examples of solving nonlinear models with the newton-raphson method:
 
+  std::cout<<"Example of solving squared root problem with newton method: \n "<<std::endl;
   SquareRootProblem<double> sqp(16); // Squared root problem: min_x x^2 - a. (Here, a=16)
-  std::cout<< "Size of the model: " << sqp.size()<<std::endl;
 
   // Declare a Newton-Raphson solver and use default valued for the maximum nuber of iterations, 
   // the number of line search steps, the absolute limit for defect and the reduction factor.
@@ -29,8 +32,7 @@ int main ()
   
   newtonRapshon.solve(sqp,  x);
 
-  std::cout<<"-----------------------------------------------------------"<<std::endl;
-
+  std::cout<<"\nExample of solving general nonlinear problems with newton and newton dog leg cauchy method: \n" << std::endl;
   Vector<double> solution(2); // Solution of the nonlinear problem will be saved here.
 
   // General nonlinear problems(For the loss function, you need to define a lambda function)
@@ -39,8 +41,6 @@ int main ()
   auto problemBooth = getNonlinearProblem(functionBooth<double>, solution);
   auto problemBranin = getNonlinearProblem(functionBranin<double>, solution);
   auto problemMatyas = getNonlinearProblem(functionMatyas<double>, solution);
-
-  std::cout<< "Number of components of model: " << problemRosenbrock.size()<<std::endl;
 
   // change settings of the solver
   newtonRapshon.set_linesearchsteps(50);
@@ -61,17 +61,33 @@ int main ()
   solution[1] = -2;
   ndlc.set_verbosity(1);
   ndlc.set_maxit(1000);
+  ndlc.set_abslimit(1e-14);
   ndlc.set_reduction(1e-15);
-  ndlc.setInitialTrustRadius(100.0);
-  ndlc.setMaxTrustRadius(100.0);
+  ndlc.setInitialTrustRadius(1.0);
+  ndlc.setMaxTrustRadius(1.0);
   ndlc.solve(problemRosenbrock,solution);
   std::cout<<"Solution: Newton Dog Cauchy: " << solution[0] << " " << solution[1] << std::endl;
 
+  std::cout<<"\nExample of solving general complex nonlinear problems with the newton and newton dog leg cauchy method: \n" << std::endl;
+
+  Vector<std::complex<double>> complexSolution(1);
+  complexSolution[0].real(8.0);
+  complexSolution[0].imag(4.0);
+
+  auto complexproblem = getNonlinearProblem(complexFunction<std::complex<double>>, complexSolution);
+  newtonRapshon.solve(complexproblem, complexSolution);
+  std::cout<<"Solution: " << complexSolution[0] <<std::endl;
+
   std::cout<<"-----------------------------------------------------------"<<std::endl;
 
+  complexSolution[0].real(8);
+  complexSolution[0].imag(4);
+  ndlc.solve(complexproblem, complexSolution);
+  std::cout<<"complexSolution: " << complexSolution[0] <<std::endl;
+  
   // Viszualize newton and newton dogleg cauchy method
-  ndlc.set_verbosity(0);
   newtonRapshon.set_verbosity(0);
+  ndlc.set_verbosity(0);
   
   Vector<double> sol(2); // solutions of the solvers will be saved here
   sol[0] = -5.0;
@@ -85,61 +101,56 @@ int main ()
   //testDoglegConvergenceFixedInitialSolution(problemRosenbrock,sol, range);
   //testNewtonConvergence(problemBranin, domain);
 
-  // Test Projected Newton method against different nonlinear minimization problems with constraints
-  Vector<double> s(2);
-  ProjectedNewton proj;
+  Vector<std::complex<double>> complexsol(1);
+  complexsol[0].real(8.0);
+  complexsol[0].imag(4.0);
+  //testNewtonAgainstDogLegLossAndReduction(complexproblem, complexsol, 1.0,1.0);
+
+  // Examples of solving constrained nonlinear minimization problem with the projected Newton method
+  Vector<double> projectedNewtonSolution(2);
 
   DenseMatrix<double> constraints1(2,2);
   constraints1[0][0] = -1;
   constraints1[0][1] = 2;
   constraints1[1][0] = 1;
   constraints1[1][1] = 2;
-
   Vector<double> upperbound1 = {2,6};
   Vector<double> lowerbound1 = {-10000, -10000};
-  s[0] = 0;
-  s[1] = 1;
-  auto prob1= getNonlinearMinimizationProblem_Constrained(functionConstrained1<double>, gradientConstrained1<double>, constraints1, lowerbound1, upperbound1, s);
-
-  //proj.solve(prob1, s);
+  projectedNewtonSolution[0] = 0;
+  projectedNewtonSolution[1] = 1;
+  auto constraintProblem1= getNonlinearMinimizationProblem_Constrained(functionConstrained1<double>, gradientConstrained1<double>, constraints1, lowerbound1, upperbound1, projectedNewtonSolution);
 
   DenseMatrix<double> constraints2(2,2);
   constraints2[0][0] = -2;
   constraints2[0][1] = -1;
   constraints2[1][0] = 1;
   constraints2[1][1] = 0;
-
   Vector<double> upperbound2 = {10000,10000};
   Vector<double> lowerbound2 = {-2, 0};
-  s[0] = 0;
-  s[1] = 1;
-  auto prob2= getNonlinearMinimizationProblem_Constrained(functionConstrained2<double>, gradientConstraiend2<double>, constraints2, lowerbound2, upperbound2, s);
-
-  //proj.solve(prob2, s);
+  projectedNewtonSolution[0] = 0;
+  projectedNewtonSolution[1] = 1;
+  auto constraintProblem2= getNonlinearMinimizationProblem_Constrained(functionConstrained2<double>, gradientConstraiend2<double>, constraints2, lowerbound2, upperbound2, projectedNewtonSolution);
 
   hdnum::DenseMatrix<double> constraints3(4,2);
   constraints3[0][0] = -1;
   constraints3[0][1] = 0;
-
   constraints3[1][0] = 0;
   constraints3[1][1] = -1;
-
   constraints3[2][0] = 1;
   constraints3[2][1] = 1;
-
   constraints3[3][0] = -1;
   constraints3[3][1] = 2;
-
-
   hdnum::Vector<double> upperbound3 = {0,0,8,10};
   hdnum::Vector<double> lowerbound3 = {-10000, -10000, -10000, -10000};
-  s[0] = 0;
-  s[1] = 0;
-  auto prob3= hdnum::getNonlinearMinimizationProblem_Constrained(functionConstrained3<double>, gradientConstraiend3<double>, constraints3, lowerbound3, upperbound3, s);
+  projectedNewtonSolution[0] = 0;
+  projectedNewtonSolution[1] = 0;
+  auto constraintProblem3= hdnum::getNonlinearMinimizationProblem_Constrained(functionConstrained3<double>, gradientConstraiend3<double>, constraints3, lowerbound3, upperbound3, projectedNewtonSolution);
 
-  //proj.solve(prob3, s);
-
-  //testProjectedNewton(prob3, constraints3, lowerbound3, upperbound3);
+  Vector<double> projectedNewtonDomain = {-5,10};
+  Vector<double> projectedNewtonInitialSolution = {-2,6};
+  //testProjectedNewton(constraintProblem1, projectedNewtonInitialSolution, constraints1, lowerbound1, upperbound1, projectedNewtonDomain);
+  //testProjectedNewton(constraintProblem2, projectedNewtonInitialSolution, constraints2, lowerbound2, upperbound2, projectedNewtonDomain );
+  //testProjectedNewton(constraintProblem3, projectedNewtonInitialSolution, constraints3, lowerbound3, upperbound3, projectedNewtonDomain);
 }
 
 #endif

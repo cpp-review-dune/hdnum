@@ -81,7 +81,7 @@ Z = np.reshape(losses, (dimension, dimension)).T
 
 
 # 3D visualization
-fig = plt.figure(figsize=(10, 10))
+fig = plt.figure(figsize=(15, 8))
 ax = fig.add_subplot(projection='3d')
 surf = ax.plot_wireframe(X, Y, Z)
 ax.scatter(iterationPointsNewton[:,0], iterationPointsNewton[:,1], lossesNewton,  color = "k", s=10)
@@ -90,6 +90,7 @@ ax.set_xlabel("x")
 ax.set_ylabel("y")
 ax.set_zlabel("z")
 plt.legend(["Surface of loss function" ,"Newton", "Newton dog leg cauchy"])
+plt.title("3D visualization of the newton and dog leg cauchy method")
 plt.show()
 
 # 2D visualization using contourplots
@@ -101,6 +102,7 @@ plt.scatter(iterationPointsNewton[0,0], iterationPointsNewton[0,1], color="red")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.legend(['Newton', 'Newton dog leg cauchy',"Initial solution"])
+plt.title("Contour plot of the objective function")
 plt.show()
 
 # trajectory of the norm
@@ -119,7 +121,7 @@ plt.ylabel("reduction")
 plt.legend(['Newton', 'Newton dog leg cauchy'])
 plt.show()
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize= (15,8))
 overlapping = 0.1
 ax.contour(X,Y,Z,200, alpha=overlapping)
 
@@ -149,4 +151,5 @@ for i in range(doglegDirections.shape[0]-1):
 plt.xlabel("x")
 plt.ylabel("y")
 plt.legend(["trust radius", "current solution", "newton direction", "steepest descent direction", "dog leg direction"])
+plt.title("Vizualization of the trust regions and the directions of the dog leg cauchy method")
 plt.show()

@@ -9,10 +9,11 @@ using namespace hdnum;
 std::string pythonScriptProjectedNewton = "testProjectedNewton.py";
 std::string pythonScriptNewtonAgainstDogleg = "testNewtonAgainstDogLeg.py";
 std::string pythonScriptConvergence = "testConvergence.py";
+std::string pythonScriptLossAndReduction = "showLossAndReduction.py";
 
 /**
  * @brief Test Newton method against Newton dogleg cauchy method(with a fixed maximum trust radius and initial trust radius).
- *        This test method will only work for the input dimension 2.
+ *        This test method will only work for the input dimension 2 and real data.
  *        Both methods output a summary on the terminal and afterwards some results will be vizualized:
  *        - trajectory of the optimal solution(3D and 2D)
  *        - process of norm and reduction
@@ -27,16 +28,15 @@ std::string pythonScriptConvergence = "testConvergence.py";
  */
 template<typename NonlinearProblem>
 void testNewtonAgainstDogLeg(const NonlinearProblem& nonlinearProblem, const Vector<typename NonlinearProblem::number_type>& initialSolution, const Vector<typename NonlinearProblem::number_type> domain, const double& maxTrustRadius= 1.0,const double& initialTrustRadius= 1.0){
-    if(nonlinearProblem.size() != 2){
-      HDNUM_ERROR("Error: This test method will only work for the input dimension 2");
-    }
     typedef typename NonlinearProblem::number_type N;
+    if(nonlinearProblem.size() != 2 || std::is_same<N, std::complex<double>>::value == 1){
+      HDNUM_ERROR("Error: This test method will only work for the input dimension 2 and real data!");
+    }
 
-    std::cout<<"-------------------------------"<<std::endl;
-    std::cout<<"Test Newton method against Newton Dogleg Cauchy"<< std::endl;
+    std::cout<<"\nTest Newton method against Newton Dogleg Cauchy(two dimensional data): \n"<< std::endl;
     std::cout<<"Initial solution: " << initialSolution[0] << " " << initialSolution[1]<< std::endl;
     std::cout<<"Domain: " << domain[0] << " " << domain[1] << std::endl;
-    std::cout<<"Initial trust radius: " << initialTrustRadius << " , Maxmimum trust radius: " << maxTrustRadius << std::endl;
+    std::cout<<"Initial trust radius: " << initialTrustRadius << " , Maxmimum trust radius: " << maxTrustRadius << "\n" << std::endl;
     Vector<N> solution = initialSolution;
     
     std::fstream file_loss("loss.dat",std::ios::out); // create file to save loss(x) = 0.5 * F(x)^T * F(x)
@@ -88,8 +88,55 @@ void testNewtonAgainstDogLeg(const NonlinearProblem& nonlinearProblem, const Vec
 }
 
 /**
+ * @brief Test Newton method against Newton dogleg cauchy method(with a fixed maximum trust radius and initial trust radius) by
+ *        visualizing the norm of the residual and the reduction. This test method will work for any input dimension.
+ * 
+ * @tparam NonlinearProblem 
+ * @param nonlinearProblem 
+ * @param initialSolution 
+ * @param maxTrustRadius // default: 1.0
+ * @param initialTrustRadius // default: 1.0
+ */
+template<typename NonlinearProblem>
+void testNewtonAgainstDogLegLossAndReduction(const NonlinearProblem& nonlinearProblem, const Vector<typename NonlinearProblem::number_type>& initialSolution, const double& maxTrustRadius= 1.0,const double& initialTrustRadius= 1.0){
+  typedef typename NonlinearProblem::number_type N;
+
+  std::cout<<"\nTest Newton method against Newton Dogleg Cauchy \n"<< std::endl;
+  std::cout<<"Initial solution: " << initialSolution[0] << " " << initialSolution[1]<< std::endl;
+  std::cout<<"Initial trust radius: " << initialTrustRadius << " , Maxmimum trust radius: " << maxTrustRadius << "\n" <<std::endl;
+  Vector<N> solution = initialSolution;
+
+  Newton newtonSolver;
+  newtonSolver.set_verbosity(1);
+  newtonSolver.set_linesearchsteps(50);
+  newtonSolver.set_maxit(500);
+
+  newtonSolver.solve(nonlinearProblem, solution, "newton_solver.dat");
+
+  solution = initialSolution;
+
+  NewtonDogLegCauchy doglegSolver;
+  doglegSolver.set_verbosity(1);
+  doglegSolver.set_maxit(500); // set maximum number of iteration
+  doglegSolver.set_reduction(1e-15);
+  doglegSolver.setInitialTrustRadius(initialTrustRadius);
+  doglegSolver.setMaxTrustRadius(maxTrustRadius);
+
+  doglegSolver.solve(nonlinearProblem, solution,"dog_leg_solver.dat");
+
+  // call python script to visulize results
+  std::string command = "python3 " + pythonScriptLossAndReduction; 
+  system(command.c_str());
+
+  // delete files
+  std::remove("newton_solver.dat");
+  std::remove("dog_leg_solver.dat");
+
+}
+
+/**
  * @brief Test the convergence of the Newton dog leg cauchy method with different initial solutions and 
- *        a fixed initial and maximum trust radius. This test method will only work for the input dimension 2.
+ *        a fixed initial and maximum trust radius. This test method will only work for the input dimension 2 and real data.
  * 
  * @tparam NonlinearProblem 
  * @tparam N number type   
@@ -100,17 +147,17 @@ void testNewtonAgainstDogLeg(const NonlinearProblem& nonlinearProblem, const Vec
  */
 template<typename NonlinearProblem>
 void testDoglegConvergenceFixedRadius(const NonlinearProblem& nonlinearProblem, const double& initialTrustRadius,const double& maxTrustRadius, Vector<typename NonlinearProblem::number_type> domain){
-  if(nonlinearProblem.size() != 2){
-    HDNUM_ERROR("Error: This test method will only work for the input dimension 2");
-  }
   typedef typename NonlinearProblem::number_type N;
-  std::cout<<"-------------------------------"<<std::endl;
-  std::cout<<"Test Newton dog leg cauchy method for different initial solutions and a fixed initial and maximum trust radius"<< std::endl;
+  if(nonlinearProblem.size() != 2 || std::is_same<N, std::complex<double>>::value == 1){
+    HDNUM_ERROR("Error: This test method will only work for the input dimension 2 and real data!");
+  }
+  std::cout<<"\nTest Newton dog leg cauchy method for different initial solutions and a fixed initial and maximum trust radius(two dimensional data \n"<< std::endl;
   std::cout<<"Initial trust radius: " << initialTrustRadius << " , maximum trust radius: " << maxTrustRadius << std::endl;
-  std::cout<<"Domain: " << domain[0] << " " << domain[1] << std::endl;
+  std::cout<<"Domain: " << domain[0] << " " << domain[1] << "\n" <<std::endl;
 
   NewtonDogLegCauchy doglegSolver;
   doglegSolver.set_verbosity(0);
+  doglegSolver.set_abslimit(1e-12);
   doglegSolver.set_maxit(1000);
   doglegSolver.setMaxTrustRadius(maxTrustRadius);
   doglegSolver.setInitialTrustRadius(initialTrustRadius);
@@ -171,7 +218,7 @@ void testDoglegConvergenceFixedRadius(const NonlinearProblem& nonlinearProblem, 
 
 /**
  * @brief Test the convergence of the Newton dog leg cauchy method for different initial and maximum trust radii 
- *        and a fixed initial solution. This method will work for any input dimension.
+ *        and a fixed initial solution. This method will work for any input dimension but only for real data.
  * 
  * @tparam NonlinearProblem 
  * @param initialSolution 
@@ -181,14 +228,16 @@ void testDoglegConvergenceFixedRadius(const NonlinearProblem& nonlinearProblem, 
 template<typename NonlinearProblem>
 void testDoglegConvergenceFixedInitialSolution(const NonlinearProblem& nonlinearProblem, const Vector<typename NonlinearProblem::number_type>& initialSolution, Vector<double> range){
   typedef typename NonlinearProblem::number_type N;
-  std::cout<<"-------------------------------"<<std::endl;
-  std::cout<<"Test Newton dog leg cauchy method for different initial and maximum trust radii and a fixed initial solution"<< std::endl;
+  if(std::is_same<N, std::complex<double>>::value == 1){
+    HDNUM_ERROR("Error: This test method will only work for real data");
+  }
+  std::cout<<"\nTest Newton dog leg cauchy method for different initial and maximum trust radii and a fixed initial solution \n"<< std::endl;
   std::cout<<"Initial solution: ";
   for(auto sol: initialSolution){
     std::cout<< sol;
   }
   std::cout<<std::endl;
-  std::cout<<"Range: " << range[0] << " " << range[1] << std::endl;
+  std::cout<<"Range: " << range[0] << " " << range[1] << "\n" <<std::endl;
 
   NewtonDogLegCauchy doglegSolver;
 
@@ -256,7 +305,7 @@ void testDoglegConvergenceFixedInitialSolution(const NonlinearProblem& nonlinear
 
 /**
  * @brief Test the convergence of the Newton method for different initial solutions. 
- *        This test method will only work for the input dimension 2.
+ *        This test method will only work for the input dimension 2 and real data.
  * 
  * @tparam NonlinearProblem 
  * @param nonlinearProblem 
@@ -264,13 +313,13 @@ void testDoglegConvergenceFixedInitialSolution(const NonlinearProblem& nonlinear
  */
 template<typename NonlinearProblem>
 void testNewtonConvergence(const NonlinearProblem& nonlinearProblem, Vector<typename NonlinearProblem::number_type> domain){
-  if(nonlinearProblem.size() != 2){
-    HDNUM_ERROR("Error: This test method will only work for the input dimension 2");
-  }
   typedef typename NonlinearProblem::number_type N;
-  std::cout<<"-------------------------------"<<std::endl;
-  std::cout<<"Test Newton method for different initial solutions"<< std::endl;
-  std::cout<<"Domain: " << domain[0]  << " " << domain[1] << std::endl;
+  if(nonlinearProblem.size() != 2 || std::is_same<N, std::complex<double>>::value == 1){
+    HDNUM_ERROR("Error: This test method will only work for the input dimension 2 and real data");
+  }
+
+  std::cout<<"\nTest Newton method for different initial solutions(two dimensional data) \n"<< std::endl;
+  std::cout<<"Domain: " << domain[0]  << " " << domain[1] << "\n" << std::endl;
 
   hdnum::Newton newton_solver;
   newton_solver.set_verbosity(0);
@@ -324,53 +373,81 @@ void testNewtonConvergence(const NonlinearProblem& nonlinearProblem, Vector<type
   std::string command = "python3 " + pythonScriptConvergence;
   system(command.c_str());
 
-  // delete file
+  // delete files
   std::remove("convergence.dat");
   std::remove("convergence2.dat");
   std::cout<<"-------------------------------"<<std::endl;
 
 }
 
+/**
+ * @brief Test the convergence of the projected newton method.
+ *        This test method will only work for real data.
+ * 
+ * @tparam MinimizationProblem 
+ * @param minimizationProblem 
+ * @param initialSolution 
+ * @param transformationMatrix // A defining lower bound <= Ax <= upper bound
+ * @param lowerbound 
+ * @param upperbound 
+ * @param domain 
+ */
 template<typename MinimizationProblem>
-void testProjectedNewton(const MinimizationProblem& nonlinearProblem, DenseMatrix<typename MinimizationProblem::number_type> constraints, Vector<typename MinimizationProblem::number_type> lowerbound,  Vector<typename MinimizationProblem::number_type> upperbound){  
+void testProjectedNewton(const MinimizationProblem& minimizationProblem, Vector<typename MinimizationProblem::number_type> initialSolution, DenseMatrix<typename MinimizationProblem::number_type> transformationMatrix, Vector<typename MinimizationProblem::number_type> lowerbound,  Vector<typename MinimizationProblem::number_type> upperbound, Vector<typename MinimizationProblem::number_type> domain){  
   typedef typename MinimizationProblem::number_type N;
+  if(minimizationProblem.size() != 2 || std::is_same<N, std::complex<double>>::value == 1){
+    HDNUM_ERROR("Error: This test method will only work for the input dimension 2 and real data");
+  }
+  std::cout<<"\nTest the convergence of the projected newton method:\n"<<std::endl;
+  std::cout<<"Initial solution: " << initialSolution << std::endl;
+  std::cout<<"Transformation matrix: " << transformationMatrix << std::endl;
+  std::cout<<"Lower bound: " << lowerbound << std::endl;
+  std::cout<<"Upper bound: " << upperbound << std::endl;
+  std::cout<<"Domain: " << domain << std::endl;
 
-   std::fstream file_loss("loss.dat",std::ios::out);
+  std::fstream fileLoss("loss.dat",std::ios::out); // create file to save loss(x) = f(x)
+  fileLoss << domain[0] << "   " << domain[1]<<"\n";
 
-    N stepSize = 0.2;
+  N stepSize = 0.2;
 
-    for(N i = -5; i<= 10 ; i = i+stepSize){
-      for(N j = -5; j<= 10 ; j = j+stepSize){
-        Vector<N> point = {i,j};
-        Vector<N> result(1);
-        nonlinearProblem.f(point, result);
-        file_loss<< result[0]<< "\n";
+  // compute losses over the domain
+  for(N i = domain[0]; i<= domain[1] ; i = i+stepSize){
+    for(N j = domain[0]; j<= domain[1] ; j = j+stepSize){
+      Vector<N> point = {i,j};
+      Vector<N> result(1);
+      minimizationProblem.f(point, result);
+      fileLoss<< result[0]<< "\n";
+    }
+  }
+  fileLoss.close();
+  
+  std::fstream fileConstraints("constraints.dat", std::ios::out); // create file to save the constraints lower bound <= Ax <= upper bound
+  
+  // write constraints to the file
+  for(int i=0; i< transformationMatrix.rowsize(); ++i){
+      fileConstraints<<lowerbound[i]<<"   ";
+      for(int j = 0; j< transformationMatrix.colsize();++j){
+        fileConstraints <<transformationMatrix(i,j) <<"   ";
       }
-    }
-    file_loss.close();
-    
-    std::fstream file_constraints("constraints.dat", std::ios::out);
-    for(int i=0; i< constraints.rowsize(); ++i){
-        file_constraints<<lowerbound[i]<<"   ";
-        for(int j = 0; j< constraints.colsize();++j){
-          file_constraints <<constraints(i,j) <<"   ";
-        }
-        file_constraints<<upperbound[i]<<"\n";
-    }
-    file_constraints.close();
+      fileConstraints<<upperbound[i]<<"\n";
+  }
+  fileConstraints.close();
 
-  Vector<N> sol(2);
-  sol[0] = 6;
-  sol[1] = 2;
-  ProjectedNewton proj;
-  proj.solve(nonlinearProblem, sol, "a.dat");
+  Vector<N> solution = initialSolution;
 
+  ProjectedNewton projectedNewton;
+  projectedNewton.solve(minimizationProblem, solution, "projectedNewtonSolver.dat");
+  std::cout<<"Solution: " << solution << std::endl;
+
+  // call python script to visulize results
   std::string command = "python3 " + pythonScriptProjectedNewton;
   system(command.c_str());
 
+  // delete files
   std::remove("loss.dat");
   std::remove("constraints.dat");
-  std::remove("a.dat");
+  std::remove("projectedNewtonSolver.dat");
 }
+
 
 #endif

@@ -79,10 +79,10 @@ Vector<N> functionBranin(const Vector<N>& x)
   return result;
 }
 
-template<typename N>
-Vector<N> complexfunc(const Vector<N>& x){
+template<typename N> 
+Vector<N> complexFunction(const Vector<N>& x){
   Vector<N> result(1);
-  result[0] = x[0] * x[0] + 2.0*x[0] + 3.0;
+  result[0] = x[0]*x[0] + 2.0*x[0] + 3.0;
   return result;
 }
 
@@ -160,5 +160,6 @@ Vector<N> gradientConstraiend3(const Vector<N>& x)
 
   return result;
 };
+
 
 #endif
