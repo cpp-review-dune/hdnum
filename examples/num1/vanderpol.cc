@@ -74,13 +74,6 @@ int main ()
   typedef VanDerPolProblem<Number> Model; // Model type
   Model model(1e-3);                         // instantiate model
 
-  Newton newton;
-  newton.set_maxit(20);
-  newton.set_verbosity(0);    
-  newton.set_reduction(1e-12);
-  newton.set_abslimit(1e-15);
-  newton.set_linesearchsteps(3);  
-
   /* Runge-Kutta Fehlberg solver */
   // typedef RKF45<Model> Solver;
   // Solver solver(model);
@@ -94,11 +87,17 @@ int main ()
                  "Implicit Euler"
                  "Fractional Step Theta"
   */
+  Newton newton;
+  newton.set_maxit(20);
+  newton.set_verbosity(0);    
+  newton.set_reduction(1e-12);
+  newton.set_abslimit(1e-15);
+  newton.set_linesearchsteps(3);  
   typedef DIRK<Model,Newton> Solver;         
   Solver solver(model,newton,"Implicit Euler");               
   //Solver solver(model,newton,"Alexander");
 
-  const Number dt = 1.0/16.0;
+  const Number dt = 1.0/32.0;
   solver.set_dt(dt);             // set initial time step
   //solver.set_verbosity(1);
 
@@ -131,8 +130,8 @@ int main ()
 	    << " number of f evaluations: " << model.get_count() 
             << " minimum step width: " << min_dt
 	    << std::endl;
-  gnuplot("vanderpol_rk45.dat",times,states,dts); // output model result
-  //gnuplot("vanderpol_IE_loose.dat",times,states,dts); // output model result
+  //gnuplot("vanderpol_rk45.dat",times,states,dts); // output model result
+  gnuplot("vanderpol_IE.dat",times,states,dts); // output model result
 
   return 0;
 }
