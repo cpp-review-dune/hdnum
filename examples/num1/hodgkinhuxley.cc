@@ -13,21 +13,24 @@ int main ()
   typedef HodgkinHuxley<Number> Model; // Model type
   Model model;                         // instantiate model
 
+  Number TOL=1e-4; // desired tolerance
+  
   // adaptive embedded RK method
   typedef RKF45<Model> Solver;         // Solver type
   Solver solver(model);                // instantiate solver
   solver.set_dt(1.0/16.0);             // set initial time step
-  solver.set_TOL(1e-2);
+  solver.set_TOL(TOL);
 
   // Richardson Extrapolation with RK4
   // typedef RungeKutta4<Model> SubSolver;         // Solver type
+  // //typedef Heun2<Model> SubSolver;         // Solver type
   // SubSolver subsolver(model);                // instantiate solver
   // typedef RE<Model,SubSolver> Solver;         // Solver type
   // Solver solver(model,subsolver);                // instantiate solver
   // solver.set_dt(1.0/16.0);             // set initial time step
-  // solver.set_TOL(1e-2); 
-  // solver.set_dtmin(1e-6); 
-  // solver.set_rho(0.03); 
+  // solver.set_TOL(TOL); 
+  // solver.set_dtmin(1e-8); 
+  // solver.set_rho(0.8); 
 
   std::vector<Number> times;           // store time values here
   std::vector<Vector<Number> > states; // store states here
