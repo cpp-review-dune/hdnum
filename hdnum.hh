@@ -19,6 +19,8 @@
 #include "src/precision.hh"
 #include "src/timer.hh"
 #include "src/vector.hh"
+#include "src/cdenseMatrix.hh"
+#include "src/cvector.hh"
 
 // Num0
 #include "src/lr.hh"

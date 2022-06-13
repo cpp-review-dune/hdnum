@@ -4,7 +4,6 @@
 #include <random>
 #include <algorithm>
 
-
 #include "lr.hh"
 #include <type_traits>
 #include <vector>
@@ -81,7 +80,8 @@ namespace hdnum {
     //! constructor stores parameter lambda
     GenericNonlinearProblem (const Lambda& l_, const Vec& x_, number_type eps_ = 1e-7)
       : lambda(l_), s(x_.size()), eps(eps_)
-    {}
+    {
+    }
 
     //! return number of componentes for the model
     std::size_t size () const
@@ -96,7 +96,8 @@ namespace hdnum {
     }
 
     //! jacobian evaluation needed for implicit solvers
-    void F_x (const Vec& x, DenseMatrix<number_type>& result) const
+    template<typename Matrix>
+    void F_x (const Vec& x, Matrix& result) const
     {
       Vec Fx(x.size());
       F(x,Fx);
@@ -110,8 +111,11 @@ namespace hdnum {
           auto dz = (1.0+abs(zj))*eps;
           z[j] += dz;
           F(z,Fz);
-          for (int i=0; i<result.rowsize(); i++)
+          for (int i=0; i<result.rowsize(); i++){
+            auto g = (Fz[i]-Fx[i])/dz;
+            //std::cout << typeid(g).name() << std::endl;
             result[i][j] = (Fz[i]-Fx[i])/dz;
+          }
           z[j] = zj;
         }
     }
@@ -125,11 +129,10 @@ namespace hdnum {
       \tparam X  the type for the Vector
   */
   template<typename F, typename X>
-  GenericNonlinearProblem<F,X> getNonlinearProblem (const F f, const X& x, typename X::value_type eps = 1e-7)
+  GenericNonlinearProblem<F,X> getNonlinearProblem (const F& f, const X& x, typename X::value_type eps = 1e-7)
   {
     return GenericNonlinearProblem<F,X>(f,x,eps);
   }
-
 
   /**
    * @brief A generic nonlinear minimization problem class that can be set up with a lambda(Objective) definining min F(x),
@@ -154,15 +157,15 @@ namespace hdnum {
       : objective(o), gradient(g), s(x_.size()), eps(eps_), upperBounds(up), lowerBounds(lb), A(constraints)
     {}
 
-    Vector<number_type> getLowerBounds(){
+    Vector<number_type>& getLowerBounds(){
       return lowerBounds;
     }
 
-    Vector<number_type> getUpperBounds(){
+    Vector<number_type>& getUpperBounds(){
       return upperBounds;
     }
 
-    DenseMatrix<number_type> getTransformationMatrix(){
+    DenseMatrix<number_type>& getTransformationMatrix(){
       return A;
     }
 
@@ -224,9 +227,9 @@ namespace hdnum {
       // check if Rang(A*) = s otherwise and add some random elements of the inactive constraints to the active set
       if(activeIndices.size() < s){ 
         std::random_device rd;
-        std::mt19937 g(rd());
+        std::mt19937 randomGenerator(rd());
 
-        std::shuffle(inActiveIndices.begin(), inActiveIndices.end(), g); // shuffle the inactive set
+        std::shuffle(inActiveIndices.begin(), inActiveIndices.end(), randomGenerator); // shuffle the inactive set
 
         for(int i = 0; i<inActiveIndices.size(); ++i){
           if(activeIndices.size() == s){ // stop if Rang(A*) = s
@@ -238,17 +241,12 @@ namespace hdnum {
         }
       }
 
-      DenseMatrix<number_type> identityMatrix(s, s);
-      identity(identityMatrix);
-
       // build the active set by using the active indices
       for(int i = 0; i< x.size();++i){
         if(i >= activeIndices.size()){ // add trivial constraints if necessary
-          activelowerbounds[i] = -10000;
-          activeupperbounds[i] = 10000;
-          for(int j = 0; j < x.size(); ++j){
-            activeSet[i][j] = identityMatrix[x.size() - (x.size() - i)][j];
-          }
+          activelowerbounds[i] = std::numeric_limits<int>::min();
+          activeupperbounds[i] = std::numeric_limits<int>::max();
+          activeSet[i][i - activeIndices.size()] = 1.0;
         }
         else{
           int index = activeIndices[i];
@@ -288,7 +286,7 @@ namespace hdnum {
    * @return GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> 
    */
   template<typename Objective,typename Gradient, typename X>
-  GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> getNonlinearMinimizationProblem_Constrained(const Objective o, const Gradient g, const DenseMatrix<double> constraints, const Vector<double> lb, const Vector<double> up, const  X& x, typename X::value_type eps = 1e-7)
+  GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> getNonlinearMinimizationProblem_Constrained(const Objective& o, const Gradient& g, const DenseMatrix<double>& constraints, const Vector<double>& lb, const Vector<double>& up, const  X& x, typename X::value_type eps = 1e-7)
   {
     return GenericNonlinearMinimizationProblem_Constrained<Objective, Gradient,X>(o,g,constraints, lb, up, x,eps);
   }
@@ -348,34 +346,49 @@ namespace hdnum {
     }
 
 
-    //! do one step. The last parameter is optional to save the results in a file
-    template<class M>
-    void solve (const M& model, Vector<typename M::number_type> & x, std::string filename = "") 
+    /**
+     * @brief Solver method. 
+     * 
+     * @tparam M 
+     * @tparam Vec 
+     * @param model problem class
+     * @param x initial solution. For real/complex values x is of type Vector/CVector
+     * @param filename save results in a file when needed
+     */
+    template<class M, typename Vec>
+    void solve (const M& model, Vec& x, std::string filename = "") const
     {
-      typedef typename M::number_type N;
-      // In complex case, we still need to use real valued numbers for residual norms etc.
-      using Real = typename std::conditional<std::is_same<std::complex<double>, N>::value, double, N>::type;
+      // check if we have a complex problem
+      const auto xTemp = x;
+      ComplexChecker complexChecker;
+      constexpr bool isComplex = complexChecker.isComplexVector(xTemp);  
+      
+      // in complex case, we still need to use real valued numbers for residual norms etc.
+      using Real = typename M::number_type;
+
+      // type of vector and matrix depends on whether we have a complex problem or not
+      typedef typename std::conditional<isComplex, CVector<Real>, Vector<Real>>::type vectortype;
+      typedef typename std::conditional<isComplex, CDenseMatrix<Real>, DenseMatrix<Real>>::type matrixtype;
 
       // for saving the data
-      Vector<Vector<N>> iteration_points;
-      Vector<Vector<N>> directions;
+      Vector<vectortype> iteration_points;
+      Vector<vectortype> directions;
       Vector<Real> stepSizes;
       Vector<Real> norms;
       Vector<Real> reductions;
       Vector<Real> losses;
 
-
-      Vector<N> r(model.size());              // residual
-      DenseMatrix<N> A(model.size(),model.size()); // Jacobian matrix
-      Vector<N> y(model.size());              // temporary solution in line search
-      Vector<N> z(model.size());              // solution of linear system
-      Vector<N> s(model.size());              // scaling factors
+      vectortype r(model.size());              // residual
+      matrixtype A(model.size(),model.size()); // Jacobian matrix
+      vectortype y(model.size());              // temporary solution in line search
+      vectortype z(model.size());              // solution of linear system
+      vectortype s(model.size());              // scaling factors
       Vector<size_type> p(model.size());                 // row permutations
       Vector<size_type> q(model.size());                 // column permutations
 
       model.F(x,r);                                     // compute nonlinear residualz
 
-      Real R0(std::abs(norm(r)));                          // norm of initial residual
+      Real R0(norm(r));                          // norm of initial residual
       Real R(R0);                                // current residual norm
       if (verbosity>=1)
         {
@@ -389,8 +402,8 @@ namespace hdnum {
       for (size_type i=1; i<=maxit; i++)                // do Newton iterations
         {
           iteration_points.push_back(x);
-          norms.push_back(std::abs(norm(r)));
-          losses.push_back(0.5 * std::abs(norm(r)) * std::abs(norm(r)));
+          norms.push_back(R);
+          losses.push_back(0.5 * R * R);
 
           // check absolute size of residual
           if (R<=abslimit)
@@ -405,12 +418,9 @@ namespace hdnum {
           model.F_x(x,A);                               // compute Jacobian matrix
 
           row_equilibrate(A,s);                         // equilibrate rows
-
           lr_fullpivot(A,p,q);                          // LR decomposition of A
-
-          z = N(0.0);                                   // clear solution
+          z = vectortype(model.size());                                      // clear solution
           apply_equilibrate(s,r);                       // equilibration of right hand side
-
           permute_forward(p,r);                         // permutation of right hand side
           solveL(A,r,r);                                // forward substitution
           solveR(A,z,r);                                // backward substitution
@@ -426,7 +436,7 @@ namespace hdnum {
               y = x;                              
               y.update(lambda,z);                       // y = x+lambda*z
               model.F(y,r);                             // r = F(y)
-              Real newR(std::abs(norm(r)));                // compute norm
+              Real newR(norm(r));                // compute norm
               if (verbosity>=3)
                 {
                   std::cout << "    line search "  << std::setw(2) << k 
@@ -514,8 +524,8 @@ namespace hdnum {
     mutable bool converged;
 
     // save results in a file 
-    template<typename N, typename Real>
-    void saveDataInFile(std::string filename, Vector<Vector<N>> iterationPoints, Vector<Vector<N>> directions, Vector<Real> stepSizes, Vector<Real> norms, Vector<Real> reductions,Vector<Real> losses){
+    template<typename vectortype, typename Real>
+    void saveDataInFile(const std::string filename,const Vector<vectortype>& iterationPoints,const Vector<vectortype>& directions, const Vector<Real>& stepSizes,const Vector<Real>& norms, const Vector<Real>& reductions, const Vector<Real>& losses) const{
         std::fstream file(filename.c_str(),std::ios::out);
         file<< "#This file contains the outputs from the newton-raphson method solver. The outputs are ordered in the following way: \n";
         file<< "#Iteration point | direction | step size | norm | reduction | loss\n";
@@ -556,39 +566,60 @@ namespace hdnum {
     }
 
     void setInitialTrustRadius(double initial){
-      initialTrustRadius = initial;
+      if(initial > maxTrustRadius)
+        initialTrustRadius = maxTrustRadius;
+      else
+        initialTrustRadius = initial;
     }
 
-    // Solver method. The last parameter is optional to save the results in a file
-    template<class M>
-    void solve (const M& model, Vector<typename M::number_type> & x, std::string filename="") 
+    /**
+     * @brief Solver method. 
+     * 
+     * @tparam M 
+     * @tparam Vec 
+     * @param model problem class
+     * @param x initial solution. For real/complex values x is of type Vector/CVector
+     * @param filename save results in a file when needed
+     */
+    template<class M, typename Vec>
+    void solve (const M& model, Vec& x, std::string filename="") const
     {
-      typedef typename M::number_type N;
-      // In complex case, we still need to use real valued numbers for residual norms etc.
-      using Real = typename std::conditional<std::is_same<std::complex<double>, N>::value, double, N>::type;
+      // check if we have a complex problem
+      const auto xTemp = x;
+      ComplexChecker complexChecker;
+      constexpr bool isComplex = complexChecker.isComplexVector(xTemp);  
+
+      // in complex case, we still need to use real valued numbers for residual norms etc.
+      using Real = typename M::number_type;
+
+      // type of vector and matrix depends on whether we have a complex problem or not
+      typedef typename std::conditional<isComplex, CVector<Real>, Vector<Real>>::type vectortype;
+      typedef typename std::conditional<isComplex, CDenseMatrix<Real>, DenseMatrix<Real>>::type matrixtype;
+      // for complex problems we also need complex values
+      typedef typename std::conditional<isComplex, std::complex<Real>, Real>::type N;
 
       // for saving the results
-      Vector<Vector<N>> iterationPoints;
-      Vector<Vector<N>> newtonDirections;
-      Vector<Vector<N>> steepestDescentDirections;
-      Vector<Vector<N>> doglegDirections;
+      Vector<vectortype> iterationPoints;
+      Vector<vectortype> newtonDirections;
+      Vector<vectortype> steepestDescentDirections;
+      Vector<vectortype> doglegDirections;
       Vector<double> trustRadiusList;
       Vector<Real> norms;
       Vector<Real> reductions;
       Vector<Real> losses;
 
-      Vector<N> F(model.size());              // residual
-      DenseMatrix<N> J(model.size(),model.size()); // Jacobian matrix
-      Vector<N> d_newton(model.size());              // solution of linear system, which returns the newton direction
-      Vector<N> s(model.size());              // scaling factors
+      vectortype F(model.size());              // residual
+      matrixtype J(model.size(),model.size()); // Jacobian matrix
+      vectortype d_newton(model.size());              // solution of linear system, which returns the newton direction
+      vectortype s(model.size());              // scaling factors
       Vector<size_type> p(model.size());                 // row permutations
       Vector<size_type> q(model.size());                 // column permutations
 
       model.F(x,F);                                     // compute nonlinear residual
      
-      Real R0(std::abs(norm(F)));                          // norm of initial residual
+      Real R0(norm(F));                          // norm of initial residual
       Real R(R0);                                // current residual norm
-
+      
       if (verbosity>=1)
       {
         std::cout << "Newton Dog Leg Cauchy " 
@@ -602,7 +633,7 @@ namespace hdnum {
       double trustRadius = initialTrustRadius; // initial trust radius
 
       std::string direction_type; // save the type of the direction which was used in each iteration
-
+      
       for (size_type i=1; i<=maxit; i++)                // do iterations
         {
           iterationPoints.push_back(x);
@@ -636,20 +667,20 @@ namespace hdnum {
           *    => will be applied if direction is outside trust region
           *  - otherwise dogleg direction: interpolation of the endpoints from Newton and Cauchy direction
           */
-
           model.F_x(x,J);                               // compute Jacobian matrix
           model.F(x,F);                                 // compute residual
 
-          hdnum::Vector<N> jF = J.transpose() * F;      // compute J^T * F (gradient of f)
-          hdnum::DenseMatrix<N> B = J.transpose() * J;  // compute J^T * J (Approximation of the Hessian of f)
+          matrixtype JTranspose =  getTranspose(J);
+          vectortype jF = JTranspose * F;      // compute J^T * F (gradient of f)
+          matrixtype B = JTranspose * J;  // compute J^T * J (Approximation of the Hessian of f)
 
           // copy J, otherwise it will be modified by the LR decomposition
-          hdnum::DenseMatrix<N> A = J;
+          matrixtype A = J;
 
           // solve J^T d = - F(x) to get newton direction
           row_equilibrate(A,s);                         // equilibrate rows
           lr_fullpivot(A,p,q);                          // LR decomposition of A
-          d_newton = N(0.0);                                   // clear solution
+          d_newton = vectortype(model.size());                                   // clear solution
           apply_equilibrate(s,F);                       // equilibration of right hand side
           permute_forward(p,F);                         // permutation of right hand side
           solveL(A,F,F);                                // forward substitution
@@ -658,11 +689,11 @@ namespace hdnum {
 
           d_newton *= -1.0;
 
-          Vector<N> d(model.size()); // direction to apply
-          Vector<N> zeros(model.size()); // for directions which are not applied in current iteration
+          vectortype d(model.size()); // direction to apply
+          vectortype zeros(model.size()); // for directions which are not applied in current iteration
 
           // check if newton direction is inside trust region
-          if(std::abs(norm(d_newton)) <= trustRadius){
+          if(norm(d_newton) <= trustRadius){
             d = d_newton;
 
             direction_type = "Newton direction";
@@ -678,22 +709,21 @@ namespace hdnum {
             * For the implementation, instead of directly taking the min, first compute the second term and check if alpha * d
             * is outside the trust region or on the edge.
             */
-            Real norm_jF = std::abs(norm(jF));
+            Real norm_jF = norm(jF);
 
             // (J^T*F)^T * B * J^T*F) = ||J^T*J^T*F||^2
-            Vector<N> product_J_jF= J.transpose() * jF;
-            Real norm_B_jF = std::abs(norm(product_J_jF));
+            vectortype product_J_jF= JTranspose * jF;
+            Real norm_B_jF = norm(product_J_jF);
             
-            Real alpha = norm_jF * norm_jF / (norm_B_jF * norm_B_jF);
+            Real alpha_1 = norm_jF * norm_jF / (norm_B_jF * norm_B_jF);
+            Real alpha_2 = trustRadius / norm_jF;
+            Real alpha = std::min(alpha_1, alpha_2);
 
-            Vector<N> d_cauchy = jF;
+            vectortype d_cauchy = jF;
             d_cauchy *= -alpha;
 
             //check if cauchy point is outside trust region or on the edge
-            if(std::abs(norm(d_cauchy)) >= trustRadius){
-              d_cauchy /= std::abs(norm(d_cauchy)); // scale the cauchy point so that it has the length trustRadius
-              d_cauchy *= trustRadius;
-
+            if(norm(d_cauchy) >= trustRadius){
               d = d_cauchy;
               direction_type = "Steepest descent direction";
 
@@ -703,19 +733,21 @@ namespace hdnum {
             else{ 
               steepestDescentDirections.push_back(zeros);
               // apply dog leg direction by solving the quadratic equation ||d_cauchy + tau * (d_newton-d_cauchy)|| = trust_region
-              Vector<N> dn_minus_dc = d_newton - d_cauchy;
+              vectortype dn_minus_dc = d_newton - d_cauchy;
   
-              Real a = std::abs(norm(dn_minus_dc)) * std::abs(norm(dn_minus_dc));
-              N product_dc_dn_minus_dc = d_cauchy * dn_minus_dc;
+              Real a = norm(dn_minus_dc);
+              a*= a;
+              N  product_dc_dn_minus_dc = d_cauchy * dn_minus_dc;
               N b = 2.0 * product_dc_dn_minus_dc;
 
-              Real dc_dc = std::abs(norm(d_cauchy)) * std::abs(norm(d_cauchy));
+              Real dc_dc = norm(d_cauchy);
+              dc_dc *= dc_dc;
               Real c = -trustRadius * trustRadius + dc_dc;
 
               N root = sqrt(b*b - 4 * a * c);
               N solution = (-b + root) / (2 * a);
 
-              Vector<N> product_dn_minus_dc_solution = dn_minus_dc;
+              vectortype product_dn_minus_dc_solution = dn_minus_dc;
               product_dn_minus_dc_solution *= solution;
 
               d =  d_cauchy + product_dn_minus_dc_solution;
@@ -729,36 +761,32 @@ namespace hdnum {
           * actualReduction/predicted Reduction = (f(x) - f(x+d)) / (m(0) - m(d)), 
           * with m(d) = f(x) + (J^T * F(x))^T * d + d^T * B * d,  B = J^T * J and f(x) = 0.5 * F(x)^T * F(x) 
           */
-          Vector<N> new_x = x + d; // perform update
+          vectortype new_x = x + d; // perform update
           
-          Vector<N> res_old(model.size());
+          vectortype res_old(model.size());
           model.F(x,res_old); // F(x)
-          Vector<N> res_new(model.size());
+          vectortype res_new(model.size());
           model.F(new_x, res_new); // F(x+d)
           
-          Real newR(std::abs(norm(res_new))); // norm of new residual
+          Real newR(norm(res_new)); // norm of new residual
           Real red(1.0); // reduction for the output
 
-          Real product_res_old_res_old = std::abs(norm(res_old)) * std::abs(norm(res_old));
-          Real product_res_new_res_new = std::abs(norm(res_new)) * std::abs(norm(res_new));
-          Real actual_reduction = 0.5 * product_res_old_res_old - 0.5 *  product_res_new_res_new; //  (f(x) - f(x+d))
-
+          Real actual_reduction = 0.5 * R * R - 0.5 *  newR * newR; //  (f(x) - f(x+d))
 
           Real product_jF_d = std::real(jF * d); // (J^T * F(x))^T * d 
-          Vector<N> product_B_d = B * d;
+          vectortype product_B_d = B * d;
           
           Real product_d_B_d= std::real(d * product_B_d);
           product_d_B_d *= 0.5; // 0.5 * d^T * B * d
 
           Real predicted_reduction = - (product_jF_d + product_d_B_d); 
-
           Real ro = actual_reduction / predicted_reduction;
           Real absro = std::abs(ro);
 
           if(absro < n2){
             trustRadius = t1 * trustRadius; // bad approximation
           }
-          else if(absro > n3 && std::abs(norm(d)) == trustRadius){
+          else if(absro > n3 && norm(d) == trustRadius){
             trustRadius = std::min(t2 * trustRadius, maxTrustRadius); // good approximation
           }
 
@@ -803,15 +831,13 @@ namespace hdnum {
             iterations_taken = i;
             if (verbosity>=1){
               std::cout << "Newton Dogleg Cauchy not converged within " << maxit << " iterations" << std::endl;
-              if(filename.size()!=0)
+              if(filename.size()!=0){}
                 saveDatainFile(filename,iterationPoints, newtonDirections, steepestDescentDirections, doglegDirections, trustRadiusList, norms, reductions, losses);
             }
           }
 
         }
-
     }
-
 
     private:
       double initialTrustRadius;
@@ -827,8 +853,8 @@ namespace hdnum {
       double t2 = 2.0;
 
       // save results in a file 
-      template<typename N, typename Real>
-      void saveDatainFile(std::string filename, Vector<Vector<N>> iterationPoints, Vector<Vector<N>> newtonDirections, Vector<Vector<N>> steepestDescentDirections, Vector<Vector<N>> doglegDirections, Vector<double> trustRadiusList, Vector<Real> norms, Vector<Real> reductions, Vector<Real> losses){
+      template<typename vectortype, typename Real>
+      void saveDatainFile(const std::string& filename, const Vector<vectortype>& iterationPoints, const Vector<vectortype>& newtonDirections, const Vector<vectortype>& steepestDescentDirections,const Vector<vectortype>& doglegDirections,const Vector<double>& trustRadiusList,const Vector<Real>& norms,const Vector<Real>& reductions,const Vector<Real>& losses) const{
         std::fstream file(filename.c_str(),std::ios::out);
         file<< "#This file contains the outputs from the newton-dog-leg-cauchy method solver. The outputs are ordered in the following way: \n";
         file<< "#Iteration point | directions(Newton-Steepest-Dog leg) | trust radius | norm | reduction | loss \n";
@@ -847,6 +873,18 @@ namespace hdnum {
           file << trustRadiusList[i] << "   " << norms[i] << "   " << reductions[i] << "   " << losses[i] <<"\n";
         }
       }
+
+      template<typename N>
+      DenseMatrix<N> getTranspose(const DenseMatrix<N>& A) const{
+        return A.transpose();
+      }
+
+      //For complex case we use the conjugate transposed matrix
+      template<typename N>
+      CDenseMatrix<N> getTranspose(const CDenseMatrix<N>& A) const{
+        return A.ctranspose();
+      }
+
   };
 
 
@@ -855,22 +893,22 @@ namespace hdnum {
  *        on the transformed variable y = Ax. A must have Rang(A) = size of x.
  * 
  */
-  class ProjectedNewton : Newton{
+  class ProjectedNewton : public Newton{
     typedef std::size_t size_type;
 
     public:
       
     ProjectedNewton ()
     {
-      maxit = 25;
-      linesearchsteps = 30;
+      maxit = 250;
+      linesearchsteps = 50;
       converged = false;
     }
 
     
     // Solver method. The last parameter is optional to save the results in a file
     template<class M>
-    void solve (const M& model, Vector<typename M::number_type> & x, std::string filename="") 
+    void solve (const M& model, Vector<typename M::number_type> & x, std::string filename="") const
     {
       typedef typename M::number_type N;
       using Real = typename std::conditional<std::is_same<std::complex<double>, N>::value, double, N>::type;
@@ -887,7 +925,6 @@ namespace hdnum {
 
         // compute y = A* x
         Vector<N> y = activeSet * x;
-
         // project to feasible space
         for(int k = 0; k<y.size(); ++k){
           if(y[k] < activelowerbounds[k]){
@@ -905,15 +942,15 @@ namespace hdnum {
         A_T = A_T.transpose(); 
         
         // LR decomposition of A 
-        Vector<size_t> p_(2);
-        Vector<size_t> q_(2);         
+        Vector<size_t> p_(model.size());
+        Vector<size_t> q_(model.size());         
         Vector<N> s_(model.size()); 
         row_equilibrate(A,s_);                         // equilibrate rows
         lr_fullpivot(A,p_,q_);                          // LR decomposition of A
 
         // LR decompisition of A^T
-        Vector<size_t> p(2);
-        Vector<size_t> q(2);
+        Vector<size_t> p(model.size());
+        Vector<size_t> q(model.size());
         Vector<N> d(model.size());              
         Vector<N> s(model.size());            
         row_equilibrate(A_T,s);                         // equilibrate rows
@@ -928,11 +965,13 @@ namespace hdnum {
         solveR(A,x,y_temp);                                // backward substitution
         permute_backward(q_,x);                        // backward permutation
 
-        DenseMatrix<N> H(2,2); // Hessian
+        DenseMatrix<N> H(model.size(),model.size()); // Hessian
         model.H(x,H);
 
         Vector<N> loss(1); // loss(x) = f(x)
         model.f(x,loss);
+
+        // solve z = H^-1 * (A*^T)^-1 * g(x) by (1) A*^T * d = g(x) and (2) H * z = d 
 
         //solve A*^T * d = g(x)
         Vector<N> gradient(model.size());         
@@ -944,12 +983,12 @@ namespace hdnum {
         solveR(A_T,d,gradient);                                // backward substitution
         permute_backward(q,d);                        // backward permutation
 
-        //solve H * x = d 
+        //solve H * z = d 
         Vector<N> z(model.size());
 
         // LR decomposition of H 
-        Vector<size_t> p_H(2);
-        Vector<size_t> q_H(2);         
+        Vector<size_t> p_H(model.size());
+        Vector<size_t> q_H(model.size());         
         Vector<N> s_H(model.size()); 
         row_equilibrate(H,s_H);                         // equilibrate rows
         lr_fullpivot(H,p_H,q_H);                          // LR decomposition of A
@@ -958,7 +997,6 @@ namespace hdnum {
         solveL(H,z,d);                                // forward substitution
         solveR(H,z,d);                                // backward substitution
         permute_backward(q_H,z);                        // backward permutation
-
 
         double alpha = 1.0; // step size
         int k = 0;
@@ -981,10 +1019,9 @@ namespace hdnum {
               yNew[k] = activeupperbounds[k];
             }
           }
-
           // compute x
           Vector<N> yNewTemp = yNew;
-          Vector<N> xNew(2);
+          Vector<N> xNew(model.size());
           apply_equilibrate(s_,yNewTemp);                       // equilibration of right hand side
           permute_forward(p_,yNewTemp);                         // permutation of right hand side
           solveL(A,yNewTemp,yNewTemp);                                // forward substitution
@@ -996,7 +1033,7 @@ namespace hdnum {
 
           // check if there was a reduction
           if(newLoss[0] < loss[0]){
-            difference = std::abs(norm(y-yNew));
+            difference = norm(y-yNew);
             y = yNew;
             x = xNew;
             reduced = true;
@@ -1006,9 +1043,8 @@ namespace hdnum {
           alpha = alpha * 0.5;
           k = k+1;
         }
-
         // check for convergence
-        if(difference < 1e-20 && difference != 0.0 && reduced){
+        if(difference < 1e-20 && reduced){
           converged = true;
           iterations_taken = i;
           if(filename.size()!=0)
@@ -1029,7 +1065,7 @@ namespace hdnum {
 
     // save results in a file 
     template<typename N>
-    void saveDatainFile(std::string filename, Vector<Vector<N>> iteration_points){
+    void saveDatainFile(const std::string& filename,const Vector<Vector<N>>& iteration_points) const {
       std::fstream file(filename.c_str(),std::ios::out);
 
       // go through iterations

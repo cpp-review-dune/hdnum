@@ -69,8 +69,8 @@ void testNewtonAgainstDogLeg(const NonlinearProblem& nonlinearProblem, const Vec
     doglegSolver.set_verbosity(1);
     doglegSolver.set_maxit(500); // set maximum number of iteration
     doglegSolver.set_reduction(1e-15);
-    doglegSolver.setInitialTrustRadius(initialTrustRadius);
     doglegSolver.setMaxTrustRadius(maxTrustRadius);
+    doglegSolver.setInitialTrustRadius(initialTrustRadius);
 
     doglegSolver.solve(nonlinearProblem, solution,"dog_leg_solver.dat");
 
@@ -151,7 +151,7 @@ void testDoglegConvergenceFixedRadius(const NonlinearProblem& nonlinearProblem, 
   if(nonlinearProblem.size() != 2 || std::is_same<N, std::complex<double>>::value == 1){
     HDNUM_ERROR("Error: This test method will only work for the input dimension 2 and real data!");
   }
-  std::cout<<"\nTest Newton dog leg cauchy method for different initial solutions and a fixed initial and maximum trust radius(two dimensional data \n"<< std::endl;
+  std::cout<<"\nTest Newton dog leg cauchy method for different initial solutions and a fixed initial and maximum trust radius(two dimensional data) \n"<< std::endl;
   std::cout<<"Initial trust radius: " << initialTrustRadius << " , maximum trust radius: " << maxTrustRadius << std::endl;
   std::cout<<"Domain: " << domain[0] << " " << domain[1] << "\n" <<std::endl;
 
@@ -202,7 +202,7 @@ void testDoglegConvergenceFixedRadius(const NonlinearProblem& nonlinearProblem, 
       }
     }
   }
-  
+
   fileConvergence.close();
   fileConvergence2.close();
 
@@ -214,6 +214,7 @@ void testDoglegConvergenceFixedRadius(const NonlinearProblem& nonlinearProblem, 
   std::remove("convergence.dat");
   std::remove("convergence2.dat");
   std::cout<<"-------------------------------"<<std::endl;
+  
 }
 
 /**

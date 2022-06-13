@@ -21,7 +21,7 @@
 
 namespace hdnum {
 
-  /*! \brief Class with mathematical matrix operations
+  /*! \brief Class with mathematical matrix operations. (For complex values, use CDensematrix instead)
    */
   template<typename REAL>
   class DenseMatrix
@@ -33,7 +33,7 @@ namespace hdnum {
 	typedef typename VType::const_iterator ConstVectorIterator;
 	typedef typename VType::iterator VectorIterator;
 
-  private:
+  protected:
 	VType m_data;  // Matrix data is stored in an STL vector!
 	std::size_t m_rows;          // Number of Matrix rows
 	std::size_t m_cols;          // Number of Matrix columns
@@ -393,30 +393,18 @@ namespace hdnum {
       return A;
     }
 
-    // for real numbers
-    template<typename N>
-    N getConjugate(const N x) const{
-      return x;
-    }
-
-    // for complex numbers
-    template<typename N>
-    std::complex<N> getConjugate(const std::complex<N> x) const{
-      return std::conj(x);
-    }
-
     /*!
       \brief Transposition
 
       Return the transposed as a new matrix.
     */
-    DenseMatrix transpose ()
+    DenseMatrix transpose () const
     {
       DenseMatrix A(m_cols,m_rows);
-      DenseMatrix &self = *this;
+      const DenseMatrix &self = *this;
       for (size_type i=0; i<m_rows; i++)
         for (size_type j=0; j<m_cols; j++)
-          A[j][i] = getConjugate(self[i][j]);
+          A[j][i] = self[i][j];
       return A;
     }
 

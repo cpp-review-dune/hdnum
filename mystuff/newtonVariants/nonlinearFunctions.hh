@@ -80,8 +80,8 @@ Vector<N> functionBranin(const Vector<N>& x)
 }
 
 template<typename N> 
-Vector<N> complexFunction(const Vector<N>& x){
-  Vector<N> result(1);
+CVector<N> complexFunction(const CVector<N>& x){
+  CVector<N> result(1);
   result[0] = x[0]*x[0] + 2.0*x[0] + 3.0;
   return result;
 }
@@ -97,7 +97,7 @@ Vector<N> functionConstrained1(const Vector<N>& x)
   result[0] = (x[0] - 1.0 ) * (x[0] - 1.0 ) + (x[1] - 2.5 ) *  (x[1] - 2.5 );
 
   return result;
-};
+}
 
 template<typename N> 
 Vector<N> gradientConstrained1(const Vector<N>& x)
@@ -110,7 +110,7 @@ Vector<N> gradientConstrained1(const Vector<N>& x)
   result[1] = 2.0 * (x[1] - 2.5 );
 
   return result;
-};
+}
 
 template<typename N> 
 Vector<N> functionConstrained2(const Vector<N>& x)
@@ -122,7 +122,7 @@ Vector<N> functionConstrained2(const Vector<N>& x)
   result[0] = x[0]*x[0] + x[1]*x[1] - 4.0 * x[0] - 5.0 * x[1] + 2.0;
 
   return result;
-};
+}
 
 template<typename N> 
 Vector<N> gradientConstraiend2(const Vector<N>& x)
@@ -135,7 +135,7 @@ Vector<N> gradientConstraiend2(const Vector<N>& x)
   result[1] = 2.0 * x[1] - 5.0;
 
   return result;
-};
+}
 
 template<typename N> 
 Vector<N> functionConstrained3(const Vector<N>& x){
@@ -146,7 +146,7 @@ Vector<N> functionConstrained3(const Vector<N>& x){
   result[0] = 2.0 * x[0]*x[0] + x[1]*x[1] - 2.0 * x[0] * x[1] - 4.0 * x[0] - 6.0 * x[1];
 
   return result;
-};
+}
 
 template<typename N> 
 Vector<N> gradientConstraiend3(const Vector<N>& x)
@@ -159,7 +159,36 @@ Vector<N> gradientConstraiend3(const Vector<N>& x)
   result[1] = 2.0 * x[1] - 2.0 * x[0] - 6.0;
 
   return result;
-};
+}
+
+template<typename N> 
+Vector<N> functionMinDistToCircle(const Vector<N>& x){
+  if(x.size() != 3){
+    HDNUM_ERROR("Size of vector not equal 2");
+  }
+  Vector<N> result(1);
+  double epsilon = 1e-10;
+  result[0] = (x[0]*x[0]+x[1]*x[1])*(1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon))*(1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) + (x[2]-10)* (x[2]-10);
+  return result;
+}
+
+template<typename N> 
+Vector<N> gradientMinDistToCircle(const Vector<N>& x)
+{
+  if(x.size() != 3){
+    HDNUM_ERROR("Size of vector not equal 2");
+  }
+  double epsilon = 1e-10;
+  Vector<N> result(3);
+  result[0] = 2.0 * x[0] * (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) * (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon))
+            + (x[0]*x[0]+x[1]*x[1]) * (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) * (x[0]/(sqrt(x[0]*x[0]+x[1]*x[1]+epsilon) * (x[0]*x[0]+x[1]*x[1]+epsilon)));
+  result[1] = 2.0 * x[1] * (1.0-1/(sqrt(x[0]*x[0]+x[1]+x[1]+epsilon))) * (1-1/(sqrt(x[0]*x[0]+x[1]+x[1]+epsilon))) 
+            + (x[0]*x[0]+x[1]*x[1]) * (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) * (x[1]/(sqrt(x[0]*x[0]+x[1]*x[1]+epsilon) * (x[0]*x[0]+x[1]*x[1]+epsilon)));
+  result[2] = 2.0 * (x[2]-10.0);
+
+  return result;
+}
+
 
 
 #endif

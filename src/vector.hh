@@ -26,21 +26,22 @@ namespace hdnum {
   /*! \brief Class with mathematical vector operations
    */
 
+  // For complex vectors use CVector instead
   template<typename REAL>
   class Vector : public std::vector<REAL>  // inherit from the STL vector
   {
   public:
     /** \brief Type used for array indices */
     typedef std::size_t size_type;
+    typedef REAL value_type;
 
-  private:
+  protected:
     static bool bScientific;
     static std::size_t nIndexWidth;
     static std::size_t nValueWidth;
     static std::size_t nValuePrecision;
 
   public:
-
     //! default constructor, also inherited from the STL vector default constructor
     Vector() : std::vector<REAL>()
     {
@@ -207,18 +208,6 @@ namespace hdnum {
       return *this;
     }
 
-    // for real numbers
-    template<typename N>
-    N getConjugate(const N x) const{
-      return x;
-    }
-
-    // for complex numbers 
-    template<typename N>
-    std::complex<N> getConjugate(const std::complex<N> x) const{
-      return std::conj(x);
-    }
-
     /*!
       \brief Inner product with another vector
 
@@ -256,7 +245,7 @@ namespace hdnum {
       REAL sum( 0 );
       const Vector & self = *this;
       for( size_t i = 0; i < this->size(); ++i )
-        sum += getConjugate(self[i]) * x[i];
+        sum += self[i] * x[i];
       return sum;
     }
 
@@ -350,7 +339,7 @@ namespace hdnum {
       REAL sum( 0 );
       const Vector & self = *this;
       for (size_t i = 0; i < (size_t) this->size(); ++i)
-        sum += getConjugate(self[i]) * self[i];
+        sum += self[i] * self[i];
       return sum;
     }
 
