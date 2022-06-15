@@ -21,7 +21,7 @@ public:
   //! constructor stores parameter lambda
   HodgkinHuxley () 
   : Cm(1.0),GNa(120.0), GK(36.0), Gm(0.3),
-    ENa(115.0), EK(-12.0),Em(10.613)
+    ENa(115.0), EK(-12.0),Em(10.613), counter(0)
   {}
 
   //! return number of componentes for the model
@@ -33,6 +33,7 @@ public:
   //! set initial state including time value
   void initialize (T& t0, Vector<N>& x0) const
   {
+    counter = 0;
     t0 = 0;
     for (size_type i=0; i<3; i++) x0[i] = 0.0;
   }
@@ -49,12 +50,20 @@ public:
     result[1] = alpham(V)*(1-m)-betam(V)*m;
     result[2] = alphah(V)*(1-h)-betah(V)*h;
     result[3] = alphan(V)*(1-n)-betan(V)*n;
+
+    counter++;
+  }
+
+  int get_count () const
+  {
+    return counter;
   }
 
 private:
   number_type Cm;
   number_type GNa, GK, Gm;
   number_type ENa, EK, Em;
+  mutable int counter;
 
   number_type alphan (number_type V) const
   {

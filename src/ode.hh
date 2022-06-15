@@ -858,54 +858,87 @@ namespace hdnum {
       dt = dt_;
     }
 
+    //! set minimal step size
+    void set_dtmin (time_type dt_)
+    {
+      dt_min = dt_;
+    }
+
     //! set tolerance for adaptive computation
     void set_TOL (time_type TOL_)
     {
       TOL = TOL_;
     }
 
+    //! set safety factor
+    void set_rho (time_type rho_)
+    {
+      rho = rho_;
+    }
+
     //! do one step
     void step ()
     {
-      // count steps done
-      steps++;
+      int substeps=0;
+      int maxsubsteps=50;
 
-      // do 1 step with 2*dt
-      time_type H(2.0*dt);
-      solver.set_state(t,u);
-      solver.set_dt(H);
-      solver.step();
-      wlow = solver.get_state();
-
-      // do 2 steps with dt
-      solver.set_state(t,u);
-      solver.set_dt(dt);
-      solver.step();
-      solver.step();
-      whigh = solver.get_state();
-
-      // estimate local error
-      ww = wlow;
-      ww -= whigh;
-      time_type error(norm(ww)/(pow(H,1.0+solver.get_order())*(1.0-1.0/two_power_m)));
-      time_type dt_opt(pow(rho*TOL/error,1.0/((time_type)solver.get_order())));
-      dt_opt = std::min(beta*dt,std::max(alpha*dt,dt_opt));
-      //std::cout << "est. error=" << error << " dt_opt=" << dt_opt << std::endl;
-
-      if (dt<=dt_opt)
+      // do only a limited number of substeps
+      while (true)
         {
-          t += H;
-          u = whigh;
-          u *= two_power_m;
-          u -= wlow;
-          u /= two_power_m-1.0;
-          dt = dt_opt;
-        }
-      else
-        {
-          rejected++;
-          dt = dt_opt;
-          if (dt>dt_min) step();
+          // do 1 step with 2*dt
+          time_type H(2.0*dt);
+          solver.set_state(t,u);
+          solver.set_dt(H);
+          solver.step();
+          wlow = solver.get_state();
+
+          // do 2 steps with dt
+          solver.set_state(t,u);
+          solver.set_dt(dt);
+          solver.step();
+          solver.step();
+          whigh = solver.get_state();
+
+          // estimate local error
+          ww = wlow;
+          ww -= whigh; // difference
+          time_type error(two_power_m/(two_power_m-1)*norm(ww)); // estimate of h*local truncation error 
+          time_type dt_opt(dt*pow(rho*TOL/error,1.0/((time_type)solver.get_order()+1)));
+          dt_opt = std::min(beta*dt,std::max(alpha*dt,dt_opt));
+
+          substeps++; // we have done one substep
+          std::cout << "substep=" << substeps << " time=" << t
+                    << " est. error=" << error << " dt=" << dt << " dt_opt=" << dt_opt << std::endl;
+          
+          if (error<=TOL)
+            {
+              // accept extrapolated solution
+              steps++;
+              t += H;
+              u = whigh;
+              u *= two_power_m;
+              u -= wlow;
+              u /= two_power_m-1.0;
+              // and suggest a new timestep
+              dt = dt_opt;
+              break; // exit while loop
+            }
+          else
+            {
+              // repeat step with dt_opt
+              rejected++;
+              dt = dt_opt;
+              if (dt<dt_min)
+                {
+                  std::cout << "time step too small dt=" << dt << " consider decreasing rho" << std::endl;
+                  exit(1);
+                }
+              if (substeps>=maxsubsteps)
+                {
+                  std::cout << "too many substeps " << substeps << " consider decreasing rho" << std::endl;
+                  exit(1);
+                }
+            }
         }
     }
 

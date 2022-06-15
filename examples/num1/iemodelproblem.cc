@@ -9,8 +9,8 @@ int main ()
   typedef double Number;
   typedef Vector<Number> V;
 
-  Number lambda = -100;
-  Number dt = 1.0;
+  Number lambda = -10.0;
+  Number dt = 0.25;
   Number time = 0.0;
   V u(1);
   u[0] = 1.0;
@@ -28,7 +28,7 @@ int main ()
       states.push_back(u); // and state
     }
 
-  gnuplot("mp2-ie-1.0.dat",times,states); // output model result
+  gnuplot("iemp.dat",times,states); // output model result
 
   return 0;
 }
