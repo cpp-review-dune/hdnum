@@ -173,7 +173,8 @@ int main ()
   Vector<double> minDistToCirlceSolution = {2, 1, 14};
   Vector<double> upperbound4 = {std::numeric_limits<int>::max(),std::numeric_limits<int>::max(),std::numeric_limits<int>::max(),std::numeric_limits<int>::max()};
   Vector<double> lowerbound4 = {10, 10, 10, 10};
-  auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(&functionMinDistToCircle<double>, &gradientMinDistToCircle<double>, constraints4, lowerbound4, upperbound4, minDistToCirlceSolution);
+  
+  auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(&MinDistToCircle::objective<double>, &MinDistToCircle::gradient<double> , constraints4, lowerbound4, upperbound4, minDistToCirlceSolution);
 
   ProjectedNewton projnewt;
   projnewt.set_maxit(100);

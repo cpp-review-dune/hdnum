@@ -161,33 +161,44 @@ Vector<N> gradientConstraiend3(const Vector<N>& x)
   return result;
 }
 
-template<typename N> 
-Vector<N> functionMinDistToCircle(const Vector<N>& x){
-  if(x.size() != 3){
-    HDNUM_ERROR("Size of vector not equal 2");
+class MinDistToCircle{
+  public:
+  template<typename N> 
+  Vector<N> objective(const Vector<N>& x){
+    if(x.size() != 3){
+      HDNUM_ERROR("Size of vector not equal 2");
+    }
+    Vector<N> result(1);
+    double epsilon = 1e-10;
+    result[0] = (x[0]*x[0]+x[1]*x[1])*(1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon))*(1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) + (x[2]-10)* (x[2]-10);
+    return result;
   }
-  Vector<N> result(1);
-  double epsilon = 1e-10;
-  result[0] = (x[0]*x[0]+x[1]*x[1])*(1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon))*(1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) + (x[2]-10)* (x[2]-10);
-  return result;
-}
 
-template<typename N> 
-Vector<N> gradientMinDistToCircle(const Vector<N>& x)
-{
-  if(x.size() != 3){
-    HDNUM_ERROR("Size of vector not equal 2");
+  template<typename N>
+  auto operator() (const Vector<N>& x)
+  {
+    return objective(x);
   }
-  double epsilon = 1e-10;
-  Vector<N> result(3);
-  result[0] = 2.0 * x[0] * (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) * (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon))
-            + (x[0]*x[0]+x[1]*x[1]) * (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) * (x[0]/(sqrt(x[0]*x[0]+x[1]*x[1]+epsilon) * (x[0]*x[0]+x[1]*x[1]+epsilon)));
-  result[1] = 2.0 * x[1] * (1.0-1/(sqrt(x[0]*x[0]+x[1]+x[1]+epsilon))) * (1-1/(sqrt(x[0]*x[0]+x[1]+x[1]+epsilon))) 
-            + (x[0]*x[0]+x[1]*x[1]) * (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) * (x[1]/(sqrt(x[0]*x[0]+x[1]*x[1]+epsilon) * (x[0]*x[0]+x[1]*x[1]+epsilon)));
-  result[2] = 2.0 * (x[2]-10.0);
 
-  return result;
-}
+  template<typename N> 
+  Vector<N> gradient(const Vector<N>& x)
+  {
+    if(x.size() != 3){
+      HDNUM_ERROR("Size of vector not equal 2");
+    }
+    double epsilon = 1e-10;
+    double sum_squared = (x[0]*x[0]+x[1]*x[1]);
+    double t = (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon));
+    double z = 1/(sqrt(x[0]*x[0]+x[1]*x[1]+epsilon) * (x[0]*x[0]+x[1]*x[1]+epsilon));
+    Vector<N> result(3);
+    result[0] = 2.0 * x[0] * t * t + sum_squared * t * z * x[0];
+    result[1] = 2.0 * x[1] * t * t + sum_squared * t * z * x[1];
+    result[2] = 2.0 * (x[2]-10.0);
+
+    return result;
+  }
+};
+
 
 
 
