@@ -141,9 +141,10 @@ namespace hdnum {
    * 
    * @tparam Objective F(x) 
    * @tparam Gradient gradient of F
+   * @tparam Hessian hessian of F
    * @tparam Vec the type of the Vector
    */
-  template<typename Objective, typename Gradient, typename Vec>
+  template<typename Objective, typename Gradient, typename Hessian, typename Vec>
   class GenericNonlinearMinimizationProblem_Constrained
   {
   public:
@@ -153,9 +154,17 @@ namespace hdnum {
     /** \brief export number_type */
     typedef typename Vec::value_type number_type;
 
-    GenericNonlinearMinimizationProblem_Constrained (const Objective& o, const Gradient& g, const DenseMatrix<double> constraints, const Vector<double> lb, const Vector<double> up, const  Vec& x_, number_type eps_ = 1e-7)
-      : objective(o), gradient(g), s(x_.size()), eps(eps_), upperBounds(up), lowerBounds(lb), A(constraints)
-    {}
+    GenericNonlinearMinimizationProblem_Constrained (const Objective& o, const Gradient& g, const Hessian& h, const DenseMatrix<double> constraints, const Vector<double> lb, const Vector<double> up, const  Vec& x_, number_type eps_ = 1e-7)
+      : objective(o), gradient(g), hessian(h), s(x_.size()), eps(eps_), upperBounds(up), lowerBounds(lb), A(constraints)
+    {
+        // check if own hessian was provided or not(If not then the hessian weill be a zero matrix and you can check the first row)
+        for(int i = 0; i< x_.size() ; ++i){
+          if(hessian(x_)[0][i] != 0.0){
+            usingOwnHessian = true;
+            break;
+          }
+        }
+    }
 
     Vector<number_type>& getLowerBounds(){
       return lowerBounds;
@@ -190,21 +199,26 @@ namespace hdnum {
     // Hessian
     void H(const Vec& x, DenseMatrix<number_type>& result) const
     {
-      Vec Fx(x.size());
-      g(x,Fx);
-      Vec z(x);
-      Vec Fz(x.size());
-    
-      for (int j=0; j<result.colsize(); ++j)
-        {
-          auto zj = z[j];
-          auto dz = (1.0+abs(zj))*eps;
-          z[j] += dz;
-          g(z,Fz);
-          for (int i=0; i<result.rowsize(); i++)
-            result[i][j] = (Fz[i]-Fx[i])/dz;
-          z[j] = zj;
-        }
+      if(usingOwnHessian){
+        result = hessian(x);
+      }
+      else{
+        Vec Fx(x.size());
+        g(x,Fx);
+        Vec z(x);
+        Vec Fz(x.size());
+      
+        for (int j=0; j<result.colsize(); ++j)
+          {
+            auto zj = z[j];
+            auto dz = (1.0+abs(zj))*eps;
+            z[j] += dz;
+            g(z,Fz);
+            for (int i=0; i<result.rowsize(); i++)
+              result[i][j] = (Fz[i]-Fx[i])/dz;
+            z[j] = zj;
+          }
+      }
     }
     
     /* the active set A* is a sub set of the transformation matrix A and will be determined by the following rules: 
@@ -213,6 +227,15 @@ namespace hdnum {
     */
     void determineActiveSet(Vec& x, DenseMatrix<number_type>& activeSet, Vector<number_type>& activelowerbounds, Vector<number_type>& activeupperbounds) const{
       auto y = A * x;
+      // project to feasible space
+      for(int k = 0; k<y.size(); ++k){
+        if(y[k] < lowerBounds[k]){
+          y[k] = lowerBounds[k];
+        }
+        else if(y[k] > upperBounds[k]){
+          y[k] = upperBounds[k];
+        }
+      }
 
       Vector<int> activeIndices; // save indices of active constraints
       Vector<int> inActiveIndices; // " "                  constraints
@@ -243,7 +266,8 @@ namespace hdnum {
 
       // build the active set by using the active indices
       for(int i = 0; i< x.size();++i){
-        if(i >= activeIndices.size()){ // add trivial constraints if necessary
+        // add trivial constraints if necessary
+        if(i >= activeIndices.size()){ 
           activelowerbounds[i] = std::numeric_limits<int>::min();
           activeupperbounds[i] = std::numeric_limits<int>::max();
           activeSet[i][i - activeIndices.size()] = 1.0;
@@ -258,12 +282,12 @@ namespace hdnum {
           }
         }
       }
-
     }
     
     private:
     Objective objective; 
     Gradient gradient;
+    Hessian hessian;
 
     size_t s;
     typename Vec::value_type eps;
@@ -271,6 +295,9 @@ namespace hdnum {
     DenseMatrix<number_type> A;
     Vector<number_type> upperBounds;
     Vector<number_type> lowerBounds;
+
+    // checks if hessian is provided
+    bool usingOwnHessian= false;
   
   };
 
@@ -279,16 +306,17 @@ namespace hdnum {
    * 
    * @tparam Objective F(x) 
    * @tparam Gradient gradient of F
+   * @tparam Hessian hessian of F
    * @tparam X the type of the Vector
    * @param constraints transformation matrix A
    * @param lb lower bound
    * @param up upper bound
    * @return GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> 
    */
-  template<typename Objective,typename Gradient, typename X>
-  GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> getNonlinearMinimizationProblem_Constrained(const Objective& o, const Gradient& g, const DenseMatrix<double>& constraints, const Vector<double>& lb, const Vector<double>& up, const  X& x, typename X::value_type eps = 1e-7)
+  template<typename Objective,typename Gradient,typename Hessian, typename X>
+  GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient, Hessian, X> getNonlinearMinimizationProblem_Constrained(const Objective& o, const Gradient& g, const Hessian& h, const DenseMatrix<double>& constraints, const Vector<double>& lb, const Vector<double>& up, const  X& x, typename X::value_type eps = 1e-7)
   {
-    return GenericNonlinearMinimizationProblem_Constrained<Objective, Gradient,X>(o,g,constraints, lb, up, x,eps);
+    return GenericNonlinearMinimizationProblem_Constrained<Objective, Gradient, Hessian, X>(o,g,h,constraints, lb, up, x,eps);
   }
 
   /** @brief Solve nonlinear problem using a damped Newton method
@@ -417,6 +445,7 @@ namespace hdnum {
           // solve Jacobian system for update
           model.F_x(x,A);                               // compute Jacobian matrix
 
+          matrixtype temp = A;
           row_equilibrate(A,s);                         // equilibrate rows
           lr_fullpivot(A,p,q);                          // LR decomposition of A
           z = vectortype(model.size());                                      // clear solution
@@ -425,7 +454,6 @@ namespace hdnum {
           solveL(A,r,r);                                // forward substitution
           solveR(A,z,r);                                // backward substitution
           permute_backward(q,z);                        // backward permutation
-
           z *= -1.0;
           directions.push_back(z);
 
@@ -897,11 +925,10 @@ namespace hdnum {
     typedef std::size_t size_type;
 
     public:
-      
     ProjectedNewton ()
     {
       maxit = 250;
-      linesearchsteps = 50;
+      linesearchsteps = 500;
       converged = false;
     }
 
@@ -934,7 +961,6 @@ namespace hdnum {
             y[k] = activeupperbounds[k];
           }
         }
-
         DenseMatrix<N> A = activeSet;
 
         //compute A^T
@@ -976,13 +1002,14 @@ namespace hdnum {
         //solve A*^T * d = g(x)
         Vector<N> gradient(model.size());         
         model.g(x, gradient);
+
         d = N(0.0);                                   // clear solution
         apply_equilibrate(s,gradient);                       // equilibration of right hand side
         permute_forward(p,gradient);                         // permutation of right hand side
         solveL(A_T,gradient,gradient);                                // forward substitution
         solveR(A_T,d,gradient);                                // backward substitution
         permute_backward(q,d);                        // backward permutation
-
+        
         //solve H * z = d 
         Vector<N> z(model.size());
 
@@ -994,11 +1021,11 @@ namespace hdnum {
         lr_fullpivot(H,p_H,q_H);                          // LR decomposition of A
         apply_equilibrate(s_H,d);                       // equilibration of right hand side
         permute_forward(p_H,d);                         // permutation of right hand side
-        solveL(H,z,d);                                // forward substitution
+        solveL(H,d,d);                                // forward substitution
         solveR(H,z,d);                                // backward substitution
         permute_backward(q_H,z);                        // backward permutation
 
-        double alpha = 1.0; // step size
+        double alpha = 1e10; // step size
         int k = 0;
         Real difference = 0.0; // save difference between y and new updated y
         bool reduced = false; // check if line search was successfull
@@ -1010,7 +1037,7 @@ namespace hdnum {
           Vector<N> yNew = y;
           yNew.update(-alpha, z); // perform update y = y - alpha + z,  z = H^-1 * (A*^T)^-1 * g(x)
 
-          // project to fesible space
+          // project to feasible space
           for(int k = 0; k<yNew.size(); ++k){
             if(yNew[k] < activelowerbounds[k]){
               yNew[k] = activelowerbounds[k];
@@ -1040,11 +1067,11 @@ namespace hdnum {
             break;
           }
 
-          alpha = alpha * 0.5;
+          alpha = alpha * 0.5; // decrease step size
           k = k+1;
         }
         // check for convergence
-        if(difference < 1e-20 && reduced){
+        if(difference < 1e-14 && reduced){
           converged = true;
           iterations_taken = i;
           if(filename.size()!=0)
@@ -1053,6 +1080,7 @@ namespace hdnum {
         }
 
         if(i == maxit){
+          std::cout<<"ee"<<std::endl;
           iterations_taken = i;
           if(filename.size()!=0)
             saveDatainFile(filename, iteration_points);
@@ -1062,7 +1090,6 @@ namespace hdnum {
     }
 
     private:
-
     // save results in a file 
     template<typename N>
     void saveDatainFile(const std::string& filename,const Vector<Vector<N>>& iteration_points) const {

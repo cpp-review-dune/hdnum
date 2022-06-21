@@ -95,10 +95,10 @@ int main ()
   Vector<double> domain = {-5.0,15.0};
   Vector<double> range = {0, 10};
 
-  //testNewtonAgainstDogLeg(problemRosenbrock, sol, domain, 10,10);
-  //testDoglegConvergenceFixedRadius(problemBranin, 1.0,1.0, domain);
-  //testDoglegConvergenceFixedInitialSolution(problemRosenbrock,sol, range);
-  //testNewtonConvergence(problemBranin, domain);
+  // testNewtonAgainstDogLeg(problemRosenbrock, sol, domain, 10,10);
+  // testDoglegConvergenceFixedRadius(problemBranin, 1.0,1.0, domain);
+  // testDoglegConvergenceFixedInitialSolution(problemRosenbrock,sol, range);
+  // testNewtonConvergence(problemBranin, domain);
 
   Vector<std::complex<double>> complexsol(1);
   complexsol[0].real(8.0);
@@ -107,77 +107,27 @@ int main ()
 
   // Examples of solving constrained nonlinear minimization problem with the projected Newton method
   Vector<double> projectedNewtonSolution(2);
-
-  DenseMatrix<double> constraints1(2,2);
-  constraints1[0][0] = -1;
-  constraints1[0][1] = 2;
-  constraints1[1][0] = 1;
-  constraints1[1][1] = 2;
-  Vector<double> upperbound1 = {2,6};
-  Vector<double> lowerbound1 = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
   projectedNewtonSolution[0] = 0;
   projectedNewtonSolution[1] = 1;
-  auto constraintProblem1= getNonlinearMinimizationProblem_Constrained(&functionConstrained1<double>, &gradientConstrained1<double>, constraints1, lowerbound1, upperbound1, projectedNewtonSolution);
 
-  DenseMatrix<double> constraints2(2,2);
-  constraints2[0][0] = -2;
-  constraints2[0][1] = -1;
-  constraints2[1][0] = 1;
-  constraints2[1][1] = 0;
-  Vector<double> upperbound2 = {std::numeric_limits<int>::max(),std::numeric_limits<int>::max()};
-  Vector<double> lowerbound2 = {-2, 0};
-  projectedNewtonSolution[0] = 0;
-  projectedNewtonSolution[1] = 1;
-  auto constraintProblem2= getNonlinearMinimizationProblem_Constrained(&functionConstrained2<double>, &gradientConstraiend2<double>, constraints2, lowerbound2, upperbound2, projectedNewtonSolution);
-
-  DenseMatrix<double> constraints3(4,2);
-  constraints3[0][0] = -1;
-  constraints3[0][1] = 0;
-  constraints3[1][0] = 0;
-  constraints3[1][1] = -1;
-  constraints3[2][0] = 1;
-  constraints3[2][1] = 1;
-  constraints3[3][0] = -1;
-  constraints3[3][1] = 2;
-  Vector<double> upperbound3 = {0,0,8,10};
-  Vector<double> lowerbound3 = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
-  projectedNewtonSolution[0] = 0;
-  projectedNewtonSolution[1] = 0;
-  auto constraintProblem3= hdnum::getNonlinearMinimizationProblem_Constrained(&functionConstrained3<double>, &gradientConstraiend3<double>, constraints3, lowerbound3, upperbound3, projectedNewtonSolution);
+  auto constraintProblem1= getNonlinearMinimizationProblem_Constrained(&ConstrainedProblem1<double>::objective, &ConstrainedProblem1<double>::gradient, &ConstrainedProblem1<double>::hessian, ConstrainedProblem1<double>::constraints(), ConstrainedProblem1<double>::lowerbounds(), ConstrainedProblem1<double>::upperbounds(), projectedNewtonSolution);
+  auto constraintProblem2= getNonlinearMinimizationProblem_Constrained(&ConstrainedProblem2<double>::objective, &ConstrainedProblem2<double>::gradient, &ConstrainedProblem2<double>::hessian, ConstrainedProblem2<double>::constraints(), ConstrainedProblem2<double>::lowerbounds(), ConstrainedProblem2<double>::upperbounds(), projectedNewtonSolution);
+  auto constraintProblem3= getNonlinearMinimizationProblem_Constrained(&ConstrainedProblem3<double>::objective, &ConstrainedProblem3<double>::gradient, &ConstrainedProblem3<double>::hessian, ConstrainedProblem3<double>::constraints(), ConstrainedProblem3<double>::lowerbounds(), ConstrainedProblem3<double>::upperbounds(), projectedNewtonSolution);
 
   Vector<double> projectedNewtonDomain = {-5,10};
-  //Vector<double> projectedNewtonInitialSolution = {-2,6};
-  //testProjectedNewton(constraintProblem1, projectedNewtonInitialSolution, constraints1, lowerbound1, upperbound1, projectedNewtonDomain);
-  //testProjectedNewton(constraintProblem2, projectedNewtonInitialSolution, constraints2, lowerbound2, upperbound2, projectedNewtonDomain);
-  //testProjectedNewton(constraintProblem3, projectedNewtonInitialSolution, constraints3, lowerbound3, upperbound3, projectedNewtonDomain);
+  Vector<double> projectedNewtonInitialSolution = {-2,6};
+ 
+  // testProjectedNewton(constraintProblem1, projectedNewtonInitialSolution, constraints1, lowerbound1, upperbound1, projectedNewtonDomain);
+  // testProjectedNewton(constraintProblem2, projectedNewtonInitialSolution, constraints2, lowerbound2, upperbound2, projectedNewtonDomain);
+  // testProjectedNewton(constraintProblem3, projectedNewtonInitialSolution, constraints3, lowerbound3, upperbound3, projectedNewtonDomain);
 
   std::cout <<"\nMinimize distance to circle on the domain in a shape of an infinite pyramid" << std::endl;
 
-  DenseMatrix<double> constraints4(4,3);
-  constraints4[0][0] = 1;
-  constraints4[0][1] = 1;
-  constraints4[0][2] = 1;
-  
-  constraints4[1][0] = 1;
-  constraints4[1][1] = -1;
-  constraints4[1][2] = 1;
-  
-  constraints4[2][0] = -1;
-  constraints4[2][1] = 1;
-  constraints4[2][2] = 1;
-  
-  constraints4[3][0] = -1;
-  constraints4[3][1] = -1;
-  constraints4[3][2] = 1;
-
-  Vector<double> minDistToCirlceSolution = {2, 1, 14};
-  Vector<double> upperbound4 = {std::numeric_limits<int>::max(),std::numeric_limits<int>::max(),std::numeric_limits<int>::max(),std::numeric_limits<int>::max()};
-  Vector<double> lowerbound4 = {10, 10, 10, 10};
-  
-  auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(&MinDistToCircle::objective<double>, &MinDistToCircle::gradient<double> , constraints4, lowerbound4, upperbound4, minDistToCirlceSolution);
+  Vector<double> minDistToCirlceSolution = {12, 12, 20};
+  auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(&MinDistToCircle<double>::objective, &MinDistToCircle<double>::gradient , &MinDistToCircle<double>::hessian , MinDistToCircle<double>::constraints(), MinDistToCircle<double>::lowerbounds(), MinDistToCircle<double>::upperbounds(), minDistToCirlceSolution);
 
   ProjectedNewton projnewt;
-  projnewt.set_maxit(100);
+  projnewt.set_maxit(20);
   projnewt.solve(minDistToCirlceProblem, minDistToCirlceSolution);
   std::cout<< "Solution: "<< minDistToCirlceSolution<< std::endl;
 }

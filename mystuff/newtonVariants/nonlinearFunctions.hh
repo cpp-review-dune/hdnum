@@ -86,107 +86,201 @@ CVector<N> complexFunction(const CVector<N>& x){
   return result;
 }
 
-//Functions F(x) which describe the problem min F(x) (min 0.5*||F(x)||^2 for higher dimensional features)
-template<typename N> 
-Vector<N> functionConstrained1(const Vector<N>& x)
-{
-  if(x.size() != 2){
-    HDNUM_ERROR("Size of vector not equal 2");
-  }
-  Vector<N> result(1);
-  result[0] = (x[0] - 1.0 ) * (x[0] - 1.0 ) + (x[1] - 2.5 ) *  (x[1] - 2.5 );
-
-  return result;
-}
-
-template<typename N> 
-Vector<N> gradientConstrained1(const Vector<N>& x)
-{
-  if(x.size() != 2){
-    HDNUM_ERROR("Size of vector not equal 2");
-  }
-  Vector<N> result(2);
-  result[0] = 2.0 * (x[0] - 1.0 );
-  result[1] = 2.0 * (x[1] - 2.5 );
-
-  return result;
-}
-
-template<typename N> 
-Vector<N> functionConstrained2(const Vector<N>& x)
-{
-  if(x.size() != 2){
-    HDNUM_ERROR("Size of vector not equal 2");
-  }
-  Vector<N> result(1);
-  result[0] = x[0]*x[0] + x[1]*x[1] - 4.0 * x[0] - 5.0 * x[1] + 2.0;
-
-  return result;
-}
-
-template<typename N> 
-Vector<N> gradientConstraiend2(const Vector<N>& x)
-{
-  if(x.size() != 2){
-    HDNUM_ERROR("Size of vector not equal 2");
-  }
-  Vector<N> result(2);
-  result[0] = 2.0 * x[0] - 4.0;
-  result[1] = 2.0 * x[1] - 5.0;
-
-  return result;
-}
-
-template<typename N> 
-Vector<N> functionConstrained3(const Vector<N>& x){
-  if(x.size() != 2){
-    HDNUM_ERROR("Size of vector not equal 2");
-  }
-  Vector<N> result(1);
-  result[0] = 2.0 * x[0]*x[0] + x[1]*x[1] - 2.0 * x[0] * x[1] - 4.0 * x[0] - 6.0 * x[1];
-
-  return result;
-}
-
-template<typename N> 
-Vector<N> gradientConstraiend3(const Vector<N>& x)
-{
-  if(x.size() != 2){
-    HDNUM_ERROR("Size of vector not equal 2");
-  }
-  Vector<N> result(2);
-  result[0] = 4.0 * x[0] - 2.0 * x[1] - 4.0;
-  result[1] = 2.0 * x[1] - 2.0 * x[0] - 6.0;
-
-  return result;
-}
-
-class MinDistToCircle{
+//Problems which describe the problem min F(x) (min 0.5*||F(x)||^2 for higher dimensional features)
+template<typename N>
+class Problem{
   public:
-  template<typename N> 
-  Vector<N> objective(const Vector<N>& x){
-    if(x.size() != 3){
+  static Vector<N> objective(const Vector<N>& x){
+    HDNUM_ERROR("You need to define an objective");
+  }
+  static Vector<N> gradient(const Vector<N>& x){
+    HDNUM_ERROR("You need to define a gradient");
+  }
+  // if hessian a zero matrix then aproximation will be used
+  static DenseMatrix<N> hessian(const Vector<N>& x){
+    return DenseMatrix<N>(x.size(), x.size());
+  }
+
+  // trivial transformation matrix (identity matrix)
+  static DenseMatrix<N> constraints(){
+    HDNUM_ERROR("You need to define constraints. If the problem does not contains any constraints, use newton method instead");
+  }
+
+  // trivial lower bounds
+  static Vector<N> lowerbounds(){
+    HDNUM_ERROR("You need to define lower bounds for the constraints. If the problem does not contains any constraints, use newton method instead");
+  }
+
+  // trivial upper bounds
+  static Vector<N> upperbounds(){
+    HDNUM_ERROR("You need to define upper bounds for the constraints. If the problem does not contains any constraints, use newton method instead");
+  }
+};
+
+template<typename N>
+class ConstrainedProblem1:public Problem<N>{
+  public:
+  static Vector<N> objective(const Vector<N>& x)
+  {
+    if(x.size() != 2){
       HDNUM_ERROR("Size of vector not equal 2");
     }
     Vector<N> result(1);
-    double epsilon = 1e-10;
+    result[0] = (x[0] - 1.0 ) * (x[0] - 1.0 ) + (x[1] - 2.5 ) *  (x[1] - 2.5 );
+
+    return result;
+  }
+
+  static Vector<N> gradient(const Vector<N>& x)
+  {
+    if(x.size() != 2){
+      HDNUM_ERROR("Size of vector not equal 2");
+    }
+    Vector<N> result(2);
+    result[0] = 2.0 * (x[0] - 1.0 );
+    result[1] = 2.0 * (x[1] - 2.5 );
+
+    return result;
+  }
+
+  static DenseMatrix<N> constraints(){
+    DenseMatrix<double> constraints(2,2);
+    constraints[0][0] = -1;
+    constraints[0][1] = 2;
+    constraints[1][0] = 1;
+    constraints[1][1] = 2;
+
+    return constraints;
+  }
+
+  static Vector<N> lowerbounds(){
+    Vector<double> lowerbound = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+    return lowerbound;
+  }
+
+  static Vector<N> upperbounds(){
+    Vector<double> upperbound = {2,6};
+    return upperbound;
+  }
+};
+
+template<typename N>
+class ConstrainedProblem2:public Problem<N>{
+  public:
+  static Vector<N> objective(const Vector<N>& x)
+  {
+    if(x.size() != 2){
+      HDNUM_ERROR("Size of vector not equal 2");
+    }
+    Vector<N> result(1);
+    result[0] = x[0]*x[0] + x[1]*x[1] - 4.0 * x[0] - 5.0 * x[1] + 2.0;
+
+    return result;
+  }
+
+  static Vector<N> gradient(const Vector<N>& x)
+  {
+    if(x.size() != 2){
+      HDNUM_ERROR("Size of vector not equal 2");
+    }
+    Vector<N> result(2);
+    result[0] = 2.0 * x[0] - 4.0;
+    result[1] = 2.0 * x[1] - 5.0;
+
+    return result;
+  }
+
+  static DenseMatrix<N> constraints(){
+    DenseMatrix<double> constraints(2,2);
+    constraints[0][0] = -2;
+    constraints[0][1] = -1;
+    constraints[1][0] = 1;
+    constraints[1][1] = 0;
+
+    return constraints;
+  }
+
+  static Vector<N> lowerbounds(){
+    Vector<double> lowerbound = {-2, 0};
+    return lowerbound;
+  }
+
+  static Vector<N> upperbounds(){
+    Vector<double> upperbound = {std::numeric_limits<int>::max(),std::numeric_limits<int>::max()};
+    return upperbound;
+  }
+};
+
+template<typename N> 
+class ConstrainedProblem3:public Problem<N>{
+  public:
+  static Vector<N> objective(const Vector<N>& x){
+    if(x.size() != 2){
+      HDNUM_ERROR("Size of vector not equal 2");
+    }
+    Vector<N> result(1);
+    result[0] = 2.0 * x[0]*x[0] + x[1]*x[1] - 2.0 * x[0] * x[1] - 4.0 * x[0] - 6.0 * x[1];
+
+    return result;
+  }
+
+  static Vector<N> gradient(const Vector<N>& x)
+  {
+    if(x.size() != 2){
+      HDNUM_ERROR("Size of vector not equal 2");
+    }
+    Vector<N> result(2);
+    result[0] = 4.0 * x[0] - 2.0 * x[1] - 4.0;
+    result[1] = 2.0 * x[1] - 2.0 * x[0] - 6.0;
+
+    return result;
+  }
+
+  static DenseMatrix<N> constraints(){
+    DenseMatrix<double> constraints(4,2);
+
+    constraints[0][0] = -1;
+    constraints[0][1] = 0;
+    constraints[1][0] = 0;
+    constraints[1][1] = -1;
+    constraints[2][0] = 1;
+    constraints[2][1] = 1;
+    constraints[3][0] = -1;
+    constraints[3][1] = 2;
+
+    return constraints;
+   }
+
+  static Vector<N> lowerbounds(){
+    Vector<double> lowerbound = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+    return lowerbound;
+  }
+
+  static Vector<N> upperbounds(){
+    Vector<double> upperbound = {0,0,8,10};
+    return upperbound;
+  }
+};
+
+template<typename N>
+class MinDistToCircle:public Problem<N>{
+  public:
+  static Vector<N> objective(const Vector<N>& x){
+    if(x.size() != 3){
+      HDNUM_ERROR("Size of vector not equal 3");
+    }
+    Vector<N> result(1);
+    double epsilon = 1e-5;
     result[0] = (x[0]*x[0]+x[1]*x[1])*(1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon))*(1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon)) + (x[2]-10)* (x[2]-10);
     return result;
   }
 
-  template<typename N>
-  auto operator() (const Vector<N>& x)
-  {
-    return objective(x);
-  }
-
-  template<typename N> 
-  Vector<N> gradient(const Vector<N>& x)
+  static Vector<N> gradient(const Vector<N>& x)
   {
     if(x.size() != 3){
-      HDNUM_ERROR("Size of vector not equal 2");
+      HDNUM_ERROR("Size of vector not equal 3");
     }
-    double epsilon = 1e-10;
+    double epsilon = 1e-5;
     double sum_squared = (x[0]*x[0]+x[1]*x[1]);
     double t = (1-1/sqrt(x[0]*x[0]+x[1]*x[1]+epsilon));
     double z = 1/(sqrt(x[0]*x[0]+x[1]*x[1]+epsilon) * (x[0]*x[0]+x[1]*x[1]+epsilon));
@@ -197,9 +291,36 @@ class MinDistToCircle{
 
     return result;
   }
+
+  static DenseMatrix<N> constraints(){
+    DenseMatrix<double> constraints(4,3);
+    constraints[0][0] = 1;
+    constraints[0][1] = 1;
+    constraints[0][2] = 1;
+  
+    constraints[1][0] = -1;
+    constraints[1][1] = 1;
+    constraints[1][2] = 1;
+  
+    constraints[2][0] = 1;
+    constraints[2][1] = -1;
+    constraints[2][2] = 1;
+    constraints[3][0] = -1;
+    constraints[3][1] = -1;
+    constraints[3][2] = 1;
+
+    return constraints;
+   }
+
+  static Vector<N> lowerbounds(){
+    Vector<double> lowerbound = {10, 10, 10,10};
+    return lowerbound;
+  }
+
+  static Vector<N> upperbounds(){
+    Vector<double> upperbound = {std::numeric_limits<int>::max(),std::numeric_limits<int>::max(), std::numeric_limits<int>::max(),std::numeric_limits<int>::max()};
+    return upperbound;
+  }
 };
-
-
-
 
 #endif
