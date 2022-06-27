@@ -144,7 +144,7 @@ namespace hdnum {
    * @tparam Hessian hessian of F
    * @tparam Vec the type of the Vector
    */
-  template<typename Objective, typename Gradient, typename Hessian, typename Vec>
+  template<typename Problem, typename Vec>
   class GenericNonlinearMinimizationProblem_Constrained
   {
   public:
@@ -154,12 +154,12 @@ namespace hdnum {
     /** \brief export number_type */
     typedef typename Vec::value_type number_type;
 
-    GenericNonlinearMinimizationProblem_Constrained (const Objective& o, const Gradient& g, const Hessian& h, const DenseMatrix<double> constraints, const Vector<double> lb, const Vector<double> up, const  Vec& x_, number_type eps_ = 1e-7)
-      : objective(o), gradient(g), hessian(h), s(x_.size()), eps(eps_), upperBounds(up), lowerBounds(lb), A(constraints)
+    GenericNonlinearMinimizationProblem_Constrained (const Problem& p, const DenseMatrix<double> constraints, const Vector<double> lb, const Vector<double> up, const  Vec& x_, number_type eps_ = 1e-7)
+      : problem(p), s(x_.size()), eps(eps_), upperBounds(up), lowerBounds(lb), A(constraints)
     {
         // check if own hessian was provided or not(If not then the hessian weill be a zero matrix and you can check the first row)
         for(int i = 0; i< x_.size() ; ++i){
-          if(hessian(x_)[0][i] != 0.0){
+          if(problem.hessian(x_)[0][i] != 0.0){
             usingOwnHessian = true;
             break;
           }
@@ -187,20 +187,20 @@ namespace hdnum {
     // objective
     void f(const Vec& x, Vec& result) const
     {
-      result = objective(x);
+      result = problem.objective(x);
     }
 
     // gradient
     void g(const Vec& x, Vec& result) const
     {
-      result = gradient(x);
+      result = problem.gradient(x);
     }
 
     // Hessian
     void H(const Vec& x, DenseMatrix<number_type>& result) const
     {
       if(usingOwnHessian){
-        result = hessian(x);
+        result = problem.hessian(x);
       }
       else{
         Vec Fx(x.size());
@@ -285,9 +285,7 @@ namespace hdnum {
     }
     
     private:
-    Objective objective; 
-    Gradient gradient;
-    Hessian hessian;
+    Problem problem;
 
     size_t s;
     typename Vec::value_type eps;
@@ -313,10 +311,10 @@ namespace hdnum {
    * @param up upper bound
    * @return GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> 
    */
-  template<typename Objective,typename Gradient,typename Hessian, typename X>
-  GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient, Hessian, X> getNonlinearMinimizationProblem_Constrained(const Objective& o, const Gradient& g, const Hessian& h, const DenseMatrix<double>& constraints, const Vector<double>& lb, const Vector<double>& up, const  X& x, typename X::value_type eps = 1e-7)
+  template<typename Problem, typename X>
+  GenericNonlinearMinimizationProblem_Constrained<Problem, X> getNonlinearMinimizationProblem_Constrained(const Problem& p, const DenseMatrix<double>& constraints, const Vector<double>& lb, const Vector<double>& up, const  X& x, typename X::value_type eps = 1e-7)
   {
-    return GenericNonlinearMinimizationProblem_Constrained<Objective, Gradient, Hessian, X>(o,g,h,constraints, lb, up, x,eps);
+    return GenericNonlinearMinimizationProblem_Constrained<Problem, X>(p,constraints, lb, up, x,eps);
   }
 
   /** @brief Solve nonlinear problem using a damped Newton method
@@ -859,9 +857,9 @@ namespace hdnum {
             iterations_taken = i;
             if (verbosity>=1){
               std::cout << "Newton Dogleg Cauchy not converged within " << maxit << " iterations" << std::endl;
-              if(filename.size()!=0){}
-                saveDatainFile(filename,iterationPoints, newtonDirections, steepestDescentDirections, doglegDirections, trustRadiusList, norms, reductions, losses);
             }
+            if(filename.size()!=0){}
+                saveDatainFile(filename,iterationPoints, newtonDirections, steepestDescentDirections, doglegDirections, trustRadiusList, norms, reductions, losses);
           }
 
         }
@@ -940,13 +938,16 @@ namespace hdnum {
       typedef typename M::number_type N;
       using Real = typename std::conditional<std::is_same<std::complex<double>, N>::value, double, N>::type;
 
+      Real R0;        // save initial residual    
+      Real R;         // current residual
+
       Vector<Vector<N>> iteration_points; // for saving the results
 
       DenseMatrix<N> activeSet(model.size(), model.size()); // active set A*
       Vector<N> activelowerbounds(model.size());
       Vector<N> activeupperbounds(model.size());
 
-      for(int i=0; i<=maxit; ++i){
+      for(int i=1; i<=maxit; ++i){
         iteration_points.push_back(x);
         model.determineActiveSet(x, activeSet, activelowerbounds, activeupperbounds);
 
@@ -997,6 +998,12 @@ namespace hdnum {
         Vector<N> loss(1); // loss(x) = f(x)
         model.f(x,loss);
 
+        // save initial residiual
+        if(i == 1){
+          R0 = loss[0];
+          R = loss[0];
+        }
+
         // solve z = H^-1 * (A*^T)^-1 * g(x) by (1) A*^T * d = g(x) and (2) H * z = d 
 
         //solve A*^T * d = g(x)
@@ -1025,15 +1032,10 @@ namespace hdnum {
         solveR(H,z,d);                                // backward substitution
         permute_backward(q_H,z);                        // backward permutation
 
-        double alpha = 1e10; // step size
-        int k = 0;
-        Real difference = 0.0; // save difference between y and new updated y
+        double alpha = 1e15; // step size
         bool reduced = false; // check if line search was successfull
 
-        while(true){
-          if(k==linesearchsteps){
-            break;
-          }
+        for(int j = 0; j < linesearchsteps; ++j){
           Vector<N> yNew = y;
           yNew.update(-alpha, z); // perform update y = y - alpha + z,  z = H^-1 * (A*^T)^-1 * g(x)
 
@@ -1060,30 +1062,37 @@ namespace hdnum {
 
           // check if there was a reduction
           if(newLoss[0] < loss[0]){
-            difference = norm(y-yNew);
             y = yNew;
             x = xNew;
             reduced = true;
+            R = newLoss[0];
             break;
           }
 
           alpha = alpha * 0.5; // decrease step size
-          k = k+1;
         }
         // check for convergence
-        if(difference < 1e-14 && reduced){
+        if(norm(z) < 1e-15  || R<=reduction*R0){
+          std::cout << R << " " << R0 << std::endl;
           converged = true;
           iterations_taken = i;
           if(filename.size()!=0)
             saveDatainFile(filename, iteration_points);
+          if(verbosity >= 1){
+            std::cout << "Projected Newton converged in "  << i << " steps"
+            << " reduction=" << std::scientific << std::showpoint 
+            << std::setprecision(4) << R/R0
+            << std::endl;
+          }
           return;
         }
-
         if(i == maxit){
-          std::cout<<"ee"<<std::endl;
           iterations_taken = i;
           if(filename.size()!=0)
             saveDatainFile(filename, iteration_points);
+          if(verbosity>=1){
+            std::cout << "Projected newton not converged within " << maxit << " iterations" << std::endl;
+          }
           return;
         }
       }

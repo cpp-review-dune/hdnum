@@ -35,11 +35,17 @@ int main ()
   Vector<double> solution(2); // Solution of the nonlinear problem will be saved here.
 
   // General nonlinear problems(For the loss function, you need to define a lambda function)
-  auto problemRosenbrock = getNonlinearProblem(&functionRosenbrock<double>,solution);
-  auto problemBohachesky = getNonlinearProblem(&functionBohachesky<double>, solution);
-  auto problemBooth = getNonlinearProblem(&functionBooth<double>, solution);
-  auto problemBranin = getNonlinearProblem(&functionBranin<double>, solution);
-  auto problemMatyas = getNonlinearProblem(&functionMatyas<double>, solution);
+  RosenbrockProblem<Vector<double>, DenseMatrix<double>> rosenbrock;
+  BohacheskyProblem<Vector<double>, DenseMatrix<double>> bohachesky;
+  BoothProblem<Vector<double>, DenseMatrix<double>> booth;
+  BraninProblem<Vector<double>, DenseMatrix<double>> branin;
+  MatyasProblem<Vector<double>, DenseMatrix<double>> matyas;
+
+  auto problemRosenbrock = getNonlinearProblem(rosenbrock,solution);
+  auto problemBohachesky = getNonlinearProblem(bohachesky, solution);
+  auto problemBooth = getNonlinearProblem(booth, solution);
+  auto problemBranin = getNonlinearProblem(branin, solution);
+  auto problemMatyas = getNonlinearProblem(matyas, solution);
 
   // change settings of the solver
   newtonRapshon.set_linesearchsteps(50);
@@ -73,11 +79,10 @@ int main ()
   complexSolution[0].real(8.0);
   complexSolution[0].imag(4.0);
 
-  auto complexproblem = getNonlinearProblem(&complexFunction<double>, complexSolution);
+  ComplexProblem<CVector<double>, CDenseMatrix<double>> complexProblem;
+  auto complexproblem = getNonlinearProblem(complexProblem, complexSolution);
   newtonRapshon.solve(complexproblem, complexSolution);
-  std::cout<<"Solution: " << complexSolution[0] <<std::endl;
-
-  std::cout<<"-----------------------------------------------------------"<<std::endl;
+  std::cout<<"Solution: " << complexSolution[0] <<std::endl;std::cout<<"-----------------------------------------------------------"<<std::endl;
 
   complexSolution[0].real(8);
   complexSolution[0].imag(4);
@@ -110,26 +115,34 @@ int main ()
   projectedNewtonSolution[0] = 0;
   projectedNewtonSolution[1] = 1;
 
-  auto constraintProblem1= getNonlinearMinimizationProblem_Constrained(&ConstrainedProblem1<double>::objective, &ConstrainedProblem1<double>::gradient, &ConstrainedProblem1<double>::hessian, ConstrainedProblem1<double>::constraints(), ConstrainedProblem1<double>::lowerbounds(), ConstrainedProblem1<double>::upperbounds(), projectedNewtonSolution);
-  auto constraintProblem2= getNonlinearMinimizationProblem_Constrained(&ConstrainedProblem2<double>::objective, &ConstrainedProblem2<double>::gradient, &ConstrainedProblem2<double>::hessian, ConstrainedProblem2<double>::constraints(), ConstrainedProblem2<double>::lowerbounds(), ConstrainedProblem2<double>::upperbounds(), projectedNewtonSolution);
-  auto constraintProblem3= getNonlinearMinimizationProblem_Constrained(&ConstrainedProblem3<double>::objective, &ConstrainedProblem3<double>::gradient, &ConstrainedProblem3<double>::hessian, ConstrainedProblem3<double>::constraints(), ConstrainedProblem3<double>::lowerbounds(), ConstrainedProblem3<double>::upperbounds(), projectedNewtonSolution);
+  ConstrainedProblem1<double> constraint_1;
+  ConstrainedProblem2<double> constraint_2;
+  ConstrainedProblem3<double> constraint_3;
+  auto constraintProblem1= getNonlinearMinimizationProblem_Constrained(constraint_1, constraint_1.constraints(), constraint_1.lowerbounds(), constraint_1.upperbounds(), projectedNewtonSolution);
+  auto constraintProblem2= getNonlinearMinimizationProblem_Constrained(constraint_2, constraint_2.constraints(), constraint_2.lowerbounds(), constraint_2.upperbounds(), projectedNewtonSolution);
+  auto constraintProblem3= getNonlinearMinimizationProblem_Constrained(constraint_3, constraint_3.constraints(), constraint_3.lowerbounds(), constraint_3.upperbounds(), projectedNewtonSolution);
 
   Vector<double> projectedNewtonDomain = {-5,10};
   Vector<double> projectedNewtonInitialSolution = {-2,6};
  
-  // testProjectedNewton(constraintProblem1, projectedNewtonInitialSolution, constraints1, lowerbound1, upperbound1, projectedNewtonDomain);
-  // testProjectedNewton(constraintProblem2, projectedNewtonInitialSolution, constraints2, lowerbound2, upperbound2, projectedNewtonDomain);
-  // testProjectedNewton(constraintProblem3, projectedNewtonInitialSolution, constraints3, lowerbound3, upperbound3, projectedNewtonDomain);
+  // testProjectedNewton(constraintProblem1, projectedNewtonInitialSolution, constraint_1.constraints(), constraint_1.lowerbounds(), constraint_1.upperbounds(), projectedNewtonDomain);
+  // testProjectedNewton(constraintProblem2, projectedNewtonInitialSolution, constraint_2.constraints(), constraint_2.lowerbounds(), constraint_2.upperbounds(), projectedNewtonDomain);
+  // testProjectedNewton(constraintProblem3, projectedNewtonInitialSolution, constraint_3.constraints(), constraint_3.lowerbounds(), constraint_3.upperbounds(), projectedNewtonDomain);
 
-  std::cout <<"\nMinimize distance to circle on the domain in a shape of an infinite pyramid" << std::endl;
+  std::cout <<"\nMinimize distance to circle on the domain in a shape of an infinite pyramid\n" << std::endl;
 
-  Vector<double> minDistToCirlceSolution = {12, 12, 20};
-  auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(&MinDistToCircle<double>::objective, &MinDistToCircle<double>::gradient , &MinDistToCircle<double>::hessian , MinDistToCircle<double>::constraints(), MinDistToCircle<double>::lowerbounds(), MinDistToCircle<double>::upperbounds(), minDistToCirlceSolution);
+  Vector<double> minDistToCirlceSolution = {2, 8, 25};
+  MinDistToCircle<double> min;
+  auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(min, min.constraints(), min.lowerbounds(), min.upperbounds(), minDistToCirlceSolution);
 
-  ProjectedNewton projnewt;
-  projnewt.set_maxit(20);
-  projnewt.solve(minDistToCirlceProblem, minDistToCirlceSolution);
+  ProjectedNewton projectedNewton;
+  projectedNewton.set_maxit(20);
+  projectedNewton.set_verbosity(1);
+  projectedNewton.set_reduction(1e-10);
+  projectedNewton.solve(minDistToCirlceProblem, minDistToCirlceSolution);
   std::cout<< "Solution: "<< minDistToCirlceSolution<< std::endl;
+  std::cout <<min.objective(minDistToCirlceSolution) << std::endl;
+
 }
 #endif
 
