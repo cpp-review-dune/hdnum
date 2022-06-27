@@ -7,6 +7,7 @@ using namespace hdnum;
 
 /**
  * @brief Problem describing F(x) = 0 with optional jacobian.
+ * Pass it to the GenericNonlinearProblem class.
  * 
  * @tparam Vec Vector(for real values) or CVector(for complex values)
  * @tparam Matrix Densematrix(for real values) or CDensematrix(for complex values)
@@ -128,7 +129,7 @@ CVector<N> complexFunction(const CVector<N>& x){
 
 /**
  * @brief Problem describing min F(x) (min 0.5*||F(x)||^2 for higher dimensional features) with gradient and an optional hessian.
- *  Pass it to the GenericNonlinearMinimizationProblem_Constrained problem.
+ *  Pass it to GenericNonlinearMinimizationProblem_Constrained class.
  * 
  * @tparam N 
  */
