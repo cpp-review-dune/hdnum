@@ -5,28 +5,6 @@
 
 using namespace hdnum;
 
-/**
- * @brief Problem describing F(x) = 0 with optional jacobian.
- * Pass it to the GenericNonlinearProblem class.
- * 
- * @tparam Vec Vector(for real values) or CVector(for complex values)
- * @tparam Matrix Densematrix(for real values) or CDensematrix(for complex values)
- */
-template<typename Vec, typename Matrix>
-class UnconstrainedProblem{
-  public:
-  virtual Vec objective(const Vec& x) const = 0;
-
-  // if jacobian a zero matrix then aproximation will be used
-  virtual Matrix jacobian(const Vec& x) const{
-    return Matrix(x.size(), x.size());
-  }
-
-  Vec operator()(const Vec& x) const{
-    return objective(x);
-  }
-};
-
 template<typename Vec, typename Matrix>
 class MatyasProblem: public UnconstrainedProblem<Vec, Matrix>{
   public:
@@ -127,33 +105,6 @@ CVector<N> complexFunction(const CVector<N>& x){
   return result;
 }
 
-/**
- * @brief Problem describing min F(x) (min 0.5*||F(x)||^2 for higher dimensional features) with gradient and an optional hessian.
- *  Pass it to GenericNonlinearMinimizationProblem_Constrained class.
- * 
- * @tparam N 
- */
-template<typename N>
-class ConstrainedMinimizationProblem{
-  public:
-  virtual Vector<N> objective(const Vector<N>& x) const = 0;
-
-  virtual Vector<N> gradient(const Vector<N>& x) const = 0;
-  
-  // if hessian a zero matrix then aproximation will be used
-  virtual DenseMatrix<N> hessian(const Vector<N>& x) const{
-    return DenseMatrix<N>(x.size(), x.size());
-  }
-
-  // trivial transformation matrix (identity matrix)
-  virtual DenseMatrix<N> constraints() const= 0;
-
-  // trivial lower bounds
-  virtual Vector<N> lowerbounds()  const= 0;
-
-  // trivial upper bounds
-  virtual Vector<N> upperbounds() const = 0;
-};
 
 template<typename N>
 class ConstrainedProblem1:public ConstrainedMinimizationProblem<N>{
@@ -181,7 +132,7 @@ class ConstrainedProblem1:public ConstrainedMinimizationProblem<N>{
     return result;
   }
 
-  DenseMatrix<N> constraints() const{
+  DenseMatrix<N> A() const{
     DenseMatrix<double> constraints(2,2);
     constraints[0][0] = -1;
     constraints[0][1] = 2;
@@ -228,7 +179,7 @@ class ConstrainedProblem2:public ConstrainedMinimizationProblem<N>{
     return result;
   }
 
-  DenseMatrix<N> constraints() const{
+  DenseMatrix<N> A() const{
     DenseMatrix<double> constraints(2,2);
     constraints[0][0] = -2;
     constraints[0][1] = -1;
@@ -274,7 +225,7 @@ class ConstrainedProblem3:public ConstrainedMinimizationProblem<N>{
     return result;
   }
 
-  DenseMatrix<N> constraints() const{
+  DenseMatrix<N> A() const{
     DenseMatrix<double> constraints(4,2);
 
     constraints[0][0] = -1;
@@ -330,7 +281,7 @@ class MinDistToCircle: public ConstrainedMinimizationProblem<N>{
     return result;
   }
 
-  DenseMatrix<N> constraints() const{
+  DenseMatrix<N> A() const{
     DenseMatrix<double> constraints(4,3);
     constraints[0][0] = 1;
     constraints[0][1] = 1;

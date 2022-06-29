@@ -6,7 +6,7 @@
 #include <cmath> 
 
 #include "hdnum.hh"    // hdnum header* rightPart 
-#include "nonlinearFunctions.hh" 
+#include "nonlinearProblems.hh" 
 #include "newtonVisualization.hh" //contains test functions to visualize newton methods
 #include <any>
 #include <algorithm>
@@ -118,9 +118,9 @@ int main ()
   ConstrainedProblem1<double> constraint_1;
   ConstrainedProblem2<double> constraint_2;
   ConstrainedProblem3<double> constraint_3;
-  auto constraintProblem1= getNonlinearMinimizationProblem_Constrained(constraint_1, constraint_1.constraints(), constraint_1.lowerbounds(), constraint_1.upperbounds(), projectedNewtonSolution);
-  auto constraintProblem2= getNonlinearMinimizationProblem_Constrained(constraint_2, constraint_2.constraints(), constraint_2.lowerbounds(), constraint_2.upperbounds(), projectedNewtonSolution);
-  auto constraintProblem3= getNonlinearMinimizationProblem_Constrained(constraint_3, constraint_3.constraints(), constraint_3.lowerbounds(), constraint_3.upperbounds(), projectedNewtonSolution);
+  auto constraintProblem1= getNonlinearMinimizationProblem_Constrained(constraint_1, projectedNewtonSolution);
+  auto constraintProblem2= getNonlinearMinimizationProblem_Constrained(constraint_2, projectedNewtonSolution);
+  auto constraintProblem3= getNonlinearMinimizationProblem_Constrained(constraint_3, projectedNewtonSolution);
 
   Vector<double> projectedNewtonDomain = {-5,10};
   Vector<double> projectedNewtonInitialSolution = {-2,6};
@@ -133,7 +133,7 @@ int main ()
 
   Vector<double> minDistToCirlceSolution = {2, 8, 25};
   MinDistToCircle<double> min;
-  auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(min, min.constraints(), min.lowerbounds(), min.upperbounds(), minDistToCirlceSolution);
+  auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(min, minDistToCirlceSolution);
 
   ProjectedNewton projectedNewton;
   projectedNewton.set_maxit(20);

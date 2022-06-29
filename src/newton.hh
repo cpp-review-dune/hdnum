@@ -134,14 +134,82 @@ namespace hdnum {
     return GenericNonlinearProblem<F,X>(f,x,eps);
   }
 
+
+  /**
+   * @brief Problem describing F(x) = 0 with optional jacobian.
+   * Instead of a lambda, this can be passed to the GenericNonlinearProblem class.
+   * 
+   * @tparam Vec Vector(for real values) or CVector(for complex values)
+   * @tparam Matrix Densematrix(for real values) or CDensematrix(for complex values)
+   */
+  template<typename Vec, typename Matrix>
+  class UnconstrainedProblem{
+    public:
+    virtual Vec objective(const Vec& x) const = 0;
+
+    Vec operator()(const Vec& x) const{
+      return objective(x);
+    }
+  };
+
+  /**
+   * @brief Problem describing min F(x) (min 0.5*||F(x)||^2 for higher dimensional features) with gradient, an optional hessian and constraints.
+   *  Pass it to GenericNonlinearMinimizationProblem_Constrained class.
+   * 
+   * @tparam N 
+   */
+  template<typename N>
+  class ConstrainedMinimizationProblem{
+    private:
+    N eps = 1e-7;
+
+    public:
+    void setEps(N eps){
+      this->eps = eps;
+    }
+
+    virtual Vector<N> objective(const Vector<N>& x) const = 0;
+
+    virtual Vector<N> gradient(const Vector<N>& x) const = 0;
+    
+    // if hessian a zero matrix then aproximation will be used
+    virtual DenseMatrix<N> hessian(const Vector<N>& x) const{
+      Vector<N> Fx(x.size());
+      Fx = gradient(x);
+      Vector<N> z(x);
+      Vector<N> Fz(x.size());
+
+      DenseMatrix<N> result(x.size(), x.size());
+
+      for (int j=0; j<result.colsize(); ++j)
+        {
+          auto zj = z[j];
+          auto dz = (1.0+abs(zj))*eps;
+          z[j] += dz;
+          Fz = gradient(z);
+          for (int i=0; i<result.rowsize(); i++)
+            result[i][j] = (Fz[i]-Fx[i])/dz;
+          z[j] = zj;
+        }
+      return result;
+    }
+
+    // transformation matrix describing
+    virtual DenseMatrix<N> A() const = 0;
+
+    // trivial lower bounds
+    virtual Vector<N> lowerbounds()  const= 0;
+
+    // trivial upper bounds
+    virtual Vector<N> upperbounds() const = 0;
+  };
+  
   /**
    * @brief A generic nonlinear minimization problem class that can be set up with a lambda(Objective) definining min F(x),
    *        a lambda(gradient) defining the gradient of F and constraints defined by lower/upper bounds and a transformation matrix A defining 
    *        lower bound <= Ax <= upper bound.
    * 
-   * @tparam Objective F(x) 
-   * @tparam Gradient gradient of F
-   * @tparam Hessian hessian of F
+   * @tparam Problem of type ConstrainedMinimizationProblem
    * @tparam Vec the type of the Vector
    */
   template<typename Problem, typename Vec>
@@ -154,157 +222,129 @@ namespace hdnum {
     /** \brief export number_type */
     typedef typename Vec::value_type number_type;
 
-    GenericNonlinearMinimizationProblem_Constrained (const Problem& p, const DenseMatrix<double> constraints, const Vector<double> lb, const Vector<double> up, const  Vec& x_, number_type eps_ = 1e-7)
-      : problem(p), s(x_.size()), eps(eps_), upperBounds(up), lowerBounds(lb), A(constraints)
-    {
-        // check if own hessian was provided or not(If not then the hessian weill be a zero matrix and you can check the first row)
-        for(int i = 0; i< x_.size() ; ++i){
-          if(problem.hessian(x_)[0][i] != 0.0){
-            usingOwnHessian = true;
-            break;
-          }
-        }
-    }
+  GenericNonlinearMinimizationProblem_Constrained (const Problem& p, const  Vec& x_, number_type eps_ = 1e-7)
+    : problem(p), s(x_.size()), eps(eps_), upperBounds(problem.upperbounds()), lowerBounds(problem.lowerbounds()), A(problem.A())
+  {
+  }
 
-    Vector<number_type>& getLowerBounds(){
-      return lowerBounds;
-    }
+  Vector<number_type>& getLowerBounds(){
+    return lowerBounds;
+  }
 
-    Vector<number_type>& getUpperBounds(){
-      return upperBounds;
-    }
+  Vector<number_type>& getUpperBounds(){
+    return upperBounds;
+  }
 
-    DenseMatrix<number_type>& getTransformationMatrix(){
-      return A;
-    }
+  DenseMatrix<number_type>& getTransformationMatrix(){
+    return A;
+  }
 
-    //! return number of componentes for the model
-    std::size_t size () const
-    {
-      return s;
-    }
+  //! return number of componentes for the model
+  std::size_t size () const
+  {
+    return s;
+  }
 
-    // objective
-    void f(const Vec& x, Vec& result) const
-    {
-      result = problem.objective(x);
-    }
+  // objective
+  void f(const Vec& x, Vec& result) const
+  {
+    result = problem.objective(x);
+  }
 
-    // gradient
-    void g(const Vec& x, Vec& result) const
-    {
-      result = problem.gradient(x);
-    }
+  // gradient
+  void g(const Vec& x, Vec& result) const
+  {
+    result = problem.gradient(x);
+  }
 
-    // Hessian
-    void H(const Vec& x, DenseMatrix<number_type>& result) const
-    {
-      if(usingOwnHessian){
-        result = problem.hessian(x);
+  // Hessian
+  void H(const Vec& x, DenseMatrix<number_type>& result) const
+  {
+    result = problem.hessian(x);
+  }
+  
+  /* the active set A* is a sub set of the transformation matrix A and will be determined by the following rules: 
+    (1) All active constraints (lower bound = Ax or Ax = upper bound) are contained in A*
+    (2) Rang(A*) = size of x
+  */
+  void determineActiveSet(Vec& x, DenseMatrix<number_type>& activeSet, Vector<number_type>& activelowerbounds, Vector<number_type>& activeupperbounds) const{
+    auto y = A * x;
+    // project to feasible space
+    for(int k = 0; k<y.size(); ++k){
+      if(y[k] < lowerBounds[k]){
+        y[k] = lowerBounds[k];
       }
-      else{
-        Vec Fx(x.size());
-        g(x,Fx);
-        Vec z(x);
-        Vec Fz(x.size());
-      
-        for (int j=0; j<result.colsize(); ++j)
-          {
-            auto zj = z[j];
-            auto dz = (1.0+abs(zj))*eps;
-            z[j] += dz;
-            g(z,Fz);
-            for (int i=0; i<result.rowsize(); i++)
-              result[i][j] = (Fz[i]-Fx[i])/dz;
-            z[j] = zj;
-          }
+      else if(y[k] > upperBounds[k]){
+        y[k] = upperBounds[k];
       }
+    }
+
+    Vector<int> activeIndices; // save indices of active constraints
+    Vector<int> inActiveIndices; // " "                  constraints
+
+    for(int i = 0; i<y.size(); ++i){
+      if(y[i] == lowerBounds[i] || y[i] == upperBounds[i]) 
+        activeIndices.push_back(i);
+      else
+        inActiveIndices.push_back(i);
     }
     
-    /* the active set A* is a sub set of the transformation matrix A and will be determined by the following rules: 
-      (1) All active constraints (lower bound = Ax or Ax = upper bound) are contained in A*
-      (2) Rang(A*) = size of x
-    */
-    void determineActiveSet(Vec& x, DenseMatrix<number_type>& activeSet, Vector<number_type>& activelowerbounds, Vector<number_type>& activeupperbounds) const{
-      auto y = A * x;
-      // project to feasible space
-      for(int k = 0; k<y.size(); ++k){
-        if(y[k] < lowerBounds[k]){
-          y[k] = lowerBounds[k];
-        }
-        else if(y[k] > upperBounds[k]){
-          y[k] = upperBounds[k];
-        }
-      }
+    // check if Rang(A*) = s otherwise and add some random elements of the inactive constraints to the active set
+    if(activeIndices.size() < s){ 
+      std::random_device rd;
+      std::mt19937 randomGenerator(rd());
 
-      Vector<int> activeIndices; // save indices of active constraints
-      Vector<int> inActiveIndices; // " "                  constraints
+      std::shuffle(inActiveIndices.begin(), inActiveIndices.end(), randomGenerator); // shuffle the inactive set
 
-      for(int i = 0; i<y.size(); ++i){
-        if(y[i] == lowerBounds[i] || y[i] == upperBounds[i]) 
-          activeIndices.push_back(i);
-        else
-          inActiveIndices.push_back(i);
-      }
-      
-      // check if Rang(A*) = s otherwise and add some random elements of the inactive constraints to the active set
-      if(activeIndices.size() < s){ 
-        std::random_device rd;
-        std::mt19937 randomGenerator(rd());
-
-        std::shuffle(inActiveIndices.begin(), inActiveIndices.end(), randomGenerator); // shuffle the inactive set
-
-        for(int i = 0; i<inActiveIndices.size(); ++i){
-          if(activeIndices.size() == s){ // stop if Rang(A*) = s
-            break;
-          }
-          else{
-            activeIndices.push_back(inActiveIndices[i]);
-          }
-        }
-      }
-
-      // build the active set by using the active indices
-      for(int i = 0; i< x.size();++i){
-        // add trivial constraints if necessary
-        if(i >= activeIndices.size()){ 
-          activelowerbounds[i] = std::numeric_limits<int>::min();
-          activeupperbounds[i] = std::numeric_limits<int>::max();
-          activeSet[i][i - activeIndices.size()] = 1.0;
+      for(int i = 0; i<inActiveIndices.size(); ++i){
+        if(activeIndices.size() == s){ // stop if Rang(A*) = s
+          break;
         }
         else{
-          int index = activeIndices[i];
-          activelowerbounds[i] = lowerBounds[index];
-          activeupperbounds[i] = upperBounds[index];
-
-          for(int j = 0; j < x.size(); ++j){
-            activeSet[i][j] = A[index][j];
-          }
+          activeIndices.push_back(inActiveIndices[i]);
         }
       }
     }
-    
-    private:
-    Problem problem;
 
-    size_t s;
-    typename Vec::value_type eps;
+    // build the active set by using the active indices
+    for(int i = 0; i< x.size();++i){
+      // add trivial constraints if necessary
+      if(i >= activeIndices.size()){ 
+        activelowerbounds[i] = std::numeric_limits<int>::min();
+        activeupperbounds[i] = std::numeric_limits<int>::max();
+        activeSet[i][i - activeIndices.size()] = 1.0;
+      }
+      else{
+        int index = activeIndices[i];
+        activelowerbounds[i] = lowerBounds[index];
+        activeupperbounds[i] = upperBounds[index];
 
-    DenseMatrix<number_type> A;
-    Vector<number_type> upperBounds;
-    Vector<number_type> lowerBounds;
-
-    // checks if hessian is provided
-    bool usingOwnHessian= false;
+        for(int j = 0; j < x.size(); ++j){
+          activeSet[i][j] = A[index][j];
+        }
+      }
+    }
+  }
   
-  };
+  private:
+  Problem problem;
+
+  size_t s;
+  typename Vec::value_type eps;
+
+  DenseMatrix<number_type> A;
+  Vector<number_type> upperBounds;
+  Vector<number_type> lowerBounds;
+
+  // checks if hessian is provided
+  bool usingOwnHessian= false;
+
+};
 
   /**
    * @brief A function returning a minimization problem class with constraints
    * 
-   * @tparam Objective F(x) 
-   * @tparam Gradient gradient of F
-   * @tparam Hessian hessian of F
+   * @tparam Problem of type ConstrainedMinimizationProblem
    * @tparam X the type of the Vector
    * @param constraints transformation matrix A
    * @param lb lower bound
@@ -312,9 +352,9 @@ namespace hdnum {
    * @return GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> 
    */
   template<typename Problem, typename X>
-  GenericNonlinearMinimizationProblem_Constrained<Problem, X> getNonlinearMinimizationProblem_Constrained(const Problem& p, const DenseMatrix<double>& constraints, const Vector<double>& lb, const Vector<double>& up, const  X& x, typename X::value_type eps = 1e-7)
+  GenericNonlinearMinimizationProblem_Constrained<Problem, X> getNonlinearMinimizationProblem_Constrained(const Problem& p, const  X& x, typename X::value_type eps = 1e-7)
   {
-    return GenericNonlinearMinimizationProblem_Constrained<Problem, X>(p,constraints, lb, up, x,eps);
+    return GenericNonlinearMinimizationProblem_Constrained<Problem, X>(p, x,eps);
   }
 
   /** @brief Solve nonlinear problem using a damped Newton method
@@ -1073,7 +1113,6 @@ namespace hdnum {
         }
         // check for convergence
         if(norm(z) < 1e-15  || R<=reduction*R0){
-          std::cout << R << " " << R0 << std::endl;
           converged = true;
           iterations_taken = i;
           if(filename.size()!=0)
