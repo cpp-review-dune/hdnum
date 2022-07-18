@@ -6,10 +6,10 @@
 
 using namespace hdnum;
 
-std::string pythonScriptProjectedNewton = "testProjectedNewton.py";
-std::string pythonScriptNewtonAgainstDogleg = "testNewtonAgainstDogLeg.py";
-std::string pythonScriptConvergence = "testConvergence.py";
-std::string pythonScriptLossAndReduction = "showLossAndReduction.py";
+std::string pythonScriptProjectedNewton{"testProjectedNewton.py"};
+std::string pythonScriptNewtonAgainstDogleg{"testNewtonAgainstDogLeg.py"};
+std::string pythonScriptConvergence{"testConvergence.py"};
+std::string pythonScriptLossAndReduction{"showLossAndReduction.py"};
 
 /**
  * @brief Test Newton method against Newton dogleg cauchy method(with a fixed maximum trust radius and initial trust radius).
@@ -42,7 +42,7 @@ void testNewtonAgainstDogLeg(const NonlinearProblem& nonlinearProblem, const Vec
     std::fstream file_loss("loss.dat",std::ios::out); // create file to save loss(x) = 0.5 * F(x)^T * F(x)
     file_loss << domain[0]<<" " << domain[1] << "\n";
 
-    N stepSize = 0.2;
+    N stepSize{0.2};
 
     // compute losses over the domain
     for(N i = domain[0]; i<= domain[1] ; i = i+stepSize){
@@ -50,7 +50,7 @@ void testNewtonAgainstDogLeg(const NonlinearProblem& nonlinearProblem, const Vec
         Vector<N> point = {i,j};
         Vector<N> result(2);
         nonlinearProblem.F(point, result);
-        N value = 0.5 * (result * result); 
+        N value{0.5 * (result * result)}; 
         file_loss<< value << "\n";
       }
     }
@@ -104,7 +104,7 @@ void testNewtonAgainstDogLegLossAndReduction(const NonlinearProblem& nonlinearPr
   std::cout<<"\nTest Newton method against Newton Dogleg Cauchy \n"<< std::endl;
   std::cout<<"Initial solution: " << initialSolution[0] << " " << initialSolution[1]<< std::endl;
   std::cout<<"Initial trust radius: " << initialTrustRadius << " , Maxmimum trust radius: " << maxTrustRadius << "\n" <<std::endl;
-  Vector<N> solution = initialSolution;
+  Vector<N> solution{initialSolution};
 
   Newton newtonSolver;
   newtonSolver.set_verbosity(1);
@@ -170,7 +170,8 @@ void testDoglegConvergenceFixedRadius(const NonlinearProblem& nonlinearProblem, 
   std::vector<std::vector<N>> solutions; // set of solutions
   Vector<N> solution(nonlinearProblem.size());
 
-  N step_size = 0.2;  // change the step size to quick up process
+  double epsilon{1e-10}; // small value to check if two starting points converge to the same solution
+  N step_size{0.2};  // change the step size to quick up process
 
   // check convergence over the domain
   for(N i=domain[0]; i<=domain[1]; i=i+step_size){
@@ -185,7 +186,8 @@ void testDoglegConvergenceFixedRadius(const NonlinearProblem& nonlinearProblem, 
 
         bool found = false;
         for(int k = 0; k< solutions.size(); ++k){
-          if(solutions[k][0] == solution_temp[0] && solutions[k][1] == solution_temp[1]){ // checks if solution is already in the set
+          if(solutions[k][0] < solution_temp[0] + epsilon && solutions[k][0] > solution_temp[0] - epsilon &&
+            solutions[k][1] < solution_temp[1] + epsilon && solutions[k][1] > solution_temp[1] - epsilon){ // checks if solution is already in the set
             fileConvergence2<<k<<"\n"; // save the set index
             found = true;
             break;
@@ -250,12 +252,13 @@ void testDoglegConvergenceFixedInitialSolution(const NonlinearProblem& nonlinear
   std::vector<std::vector<N>> solutions; // set of solutions
   Vector<N> solution(nonlinearProblem.size());
 
-  double stepSize = 0.2;  // change the step size to quick up process
+  double epsilon{1e-10}; // small value to check if two starting points converge to the same solution
+  N stepSize{0.2};  // change the step size to quick up process
 
   // check convergence over the domain
-  for(double i=range[0]; i<=range[1]; i=i+stepSize){
-    for(double j=range[0]; j<=range[1]; j=j+stepSize){
-      if(j > i){
+  for(double i=range[0]; i<=range[1]; i=i+stepSize){ // loop over maximum trust radius 
+    for(double j=range[0]; j<=range[1]; j=j+stepSize){ // loop over initial trust radius
+      if(j > i){ // initial radius can not be bigger than maximal trust radius. Will be interpreted as non convergence.
         fileConvergence << -1 << "\n";
         fileConvergence2 << -1 << "\n";
         continue;
@@ -268,12 +271,13 @@ void testDoglegConvergenceFixedInitialSolution(const NonlinearProblem& nonlinear
       doglegSolver.setInitialTrustRadius(j);
 
       doglegSolver.solve(nonlinearProblem, solution);
-      std::vector<N> solution_temp = {round(solution[0]), round(solution[1])};
+      std::vector<N> solution_temp = {solution[0], solution[1]};
       if(doglegSolver.has_converged()){
         fileConvergence << doglegSolver.iterations()<< "\n";
         bool found = false;
         for(int k = 0; k< solutions.size(); ++k){
-          if(solutions[k][0] == solution_temp[0] && solutions[k][1] == solution_temp[1]){ // checks if solution is already in the set
+          if(solutions[k][0] < solution_temp[0] + epsilon && solutions[k][0] > solution_temp[0] - epsilon &&
+            solutions[k][1] < solution_temp[1] + epsilon && solutions[k][1] > solution_temp[1] - epsilon){// checks if solution is already in the set
             fileConvergence2<<k<<"\n"; // save the set index
             found = true;
             break;
@@ -333,7 +337,8 @@ void testNewtonConvergence(const NonlinearProblem& nonlinearProblem, Vector<type
 
   std::fstream fileConvergence2("convergence2.dat",std::ios::out); // saves results of type: to which optimum did the method converge
 
-  N step_size = 0.2; // change the step size to quick up process
+  N step_size{0.2}; // change the step size to quick up process
+  double epsilon{1e-10}; // small value to check if two starting points converge to the same solution
 
   std::vector<std::vector<N>> solutions; // set of solutions
   Vector<N> solution(nonlinearProblem.size());
@@ -345,12 +350,14 @@ void testNewtonConvergence(const NonlinearProblem& nonlinearProblem, Vector<type
       solution[1] = j;
 
       newton_solver.solve(nonlinearProblem, solution);
-      std::vector<N> solution_temp = {round(solution[0]), round(solution[1])};
+      std::vector<N> solution_temp = {solution[0], solution[1]};
       if(newton_solver.has_converged()){
         fileConvergence << newton_solver.iterations()<< "\n";
         bool found = false;
         for(int k = 0; k< solutions.size(); ++k){
-          if(solutions[k][0] == solution_temp[0] && solutions[k][1] == solution_temp[1]){ // checks if solution is already in the set
+          if(solutions[k][0] < solution_temp[0] + epsilon && solutions[k][0] > solution_temp[0] - epsilon &&
+            solutions[k][1] < solution_temp[1] + epsilon && solutions[k][1] > solution_temp[1] - epsilon){ // checks if solution is already in the set
+            
             fileConvergence2<<k<<"\n"; // save the set index
             found = true;
             break;
@@ -409,7 +416,7 @@ void testProjectedNewton(const MinimizationProblem& minimizationProblem, Vector<
   std::fstream fileLoss("loss.dat",std::ios::out); // create file to save loss(x) = f(x)
   fileLoss << domain[0] << "   " << domain[1]<<"\n";
 
-  N stepSize = 0.2;
+  N stepSize{0.2};
 
   // compute losses over the domain
   for(N i = domain[0]; i<= domain[1] ; i = i+stepSize){
@@ -434,9 +441,10 @@ void testProjectedNewton(const MinimizationProblem& minimizationProblem, Vector<
   }
   fileConstraints.close();
 
-  Vector<N> solution = initialSolution;
+  Vector<N> solution{initialSolution};
 
   ProjectedNewton projectedNewton;
+  projectedNewton.set_verbosity(1);
   projectedNewton.solve(minimizationProblem, solution, "projectedNewtonSolver.dat");
   std::cout<<"Solution: " << solution << std::endl;
 

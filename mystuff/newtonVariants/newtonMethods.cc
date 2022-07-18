@@ -97,8 +97,8 @@ int main ()
   sol[0] = -5.0;
   sol[1] = -2.0;
   
-  Vector<double> domain = {-5.0,15.0};
-  Vector<double> range = {0, 10};
+  Vector<double> domain{-5.0,15.0};
+  Vector<double> range{0, 10};
 
   // testNewtonAgainstDogLeg(problemRosenbrock, sol, domain, 10,10);
   // testDoglegConvergenceFixedRadius(problemBranin, 1.0,1.0, domain);
@@ -122,16 +122,16 @@ int main ()
   auto constraintProblem2= getNonlinearMinimizationProblem_Constrained(constraint_2, projectedNewtonSolution);
   auto constraintProblem3= getNonlinearMinimizationProblem_Constrained(constraint_3, projectedNewtonSolution);
 
-  Vector<double> projectedNewtonDomain = {-5,10};
-  Vector<double> projectedNewtonInitialSolution = {-2,6};
+  Vector<double> projectedNewtonDomain{-5,10};
+  Vector<double> projectedNewtonInitialSolution{-2,6};
  
-  // testProjectedNewton(constraintProblem1, projectedNewtonInitialSolution, constraint_1.constraints(), constraint_1.lowerbounds(), constraint_1.upperbounds(), projectedNewtonDomain);
-  // testProjectedNewton(constraintProblem2, projectedNewtonInitialSolution, constraint_2.constraints(), constraint_2.lowerbounds(), constraint_2.upperbounds(), projectedNewtonDomain);
-  // testProjectedNewton(constraintProblem3, projectedNewtonInitialSolution, constraint_3.constraints(), constraint_3.lowerbounds(), constraint_3.upperbounds(), projectedNewtonDomain);
+  // testProjectedNewton(constraintProblem1, projectedNewtonInitialSolution, constraint_1.A(), constraint_1.lowerbounds(), constraint_1.upperbounds(), projectedNewtonDomain);
+  // testProjectedNewton(constraintProblem2, projectedNewtonInitialSolution, constraint_2.A(), constraint_2.lowerbounds(), constraint_2.upperbounds(), projectedNewtonDomain);
+  // testProjectedNewton(constraintProblem3, projectedNewtonInitialSolution, constraint_3.A(), constraint_3.lowerbounds(), constraint_3.upperbounds(), projectedNewtonDomain);
 
   std::cout <<"\nMinimize distance to circle on the domain in a shape of an infinite pyramid\n" << std::endl;
 
-  Vector<double> minDistToCirlceSolution = {2, 8, 25};
+  Vector<double> minDistToCirlceSolution{2, 8, 25};
   MinDistToCircle<double> min;
   auto minDistToCirlceProblem = getNonlinearMinimizationProblem_Constrained(min, minDistToCirlceSolution);
 
@@ -142,7 +142,6 @@ int main ()
   projectedNewton.solve(minDistToCirlceProblem, minDistToCirlceSolution);
   std::cout<< "Solution: "<< minDistToCirlceSolution<< std::endl;
   std::cout <<min.objective(minDistToCirlceSolution) << std::endl;
-
 }
 #endif
 

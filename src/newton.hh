@@ -174,8 +174,7 @@ namespace hdnum {
     
     // if hessian a zero matrix then aproximation will be used
     virtual DenseMatrix<N> hessian(const Vector<N>& x) const{
-      Vector<N> Fx(x.size());
-      Fx = gradient(x);
+      Vector<N> Fx(gradient(x));
       Vector<N> z(x);
       Vector<N> Fz(x.size());
 
@@ -283,6 +282,9 @@ namespace hdnum {
     Vector<int> inActiveIndices; // " "                  constraints
 
     for(int i = 0; i<y.size(); ++i){
+      if(activeIndices.size() == s){ // stop if Rang(A*) = s
+        break;
+      }
       if(y[i] == lowerBounds[i] || y[i] == upperBounds[i]) 
         activeIndices.push_back(i);
       else
@@ -310,8 +312,8 @@ namespace hdnum {
     for(int i = 0; i< x.size();++i){
       // add trivial constraints if necessary
       if(i >= activeIndices.size()){ 
-        activelowerbounds[i] = std::numeric_limits<int>::min();
-        activeupperbounds[i] = std::numeric_limits<int>::max();
+        activelowerbounds[i] = std::numeric_limits<number_type>::min();
+        activeupperbounds[i] = std::numeric_limits<number_type>::max();
         activeSet[i][i - activeIndices.size()] = 1.0;
       }
       else{
@@ -492,7 +494,6 @@ namespace hdnum {
           solveL(A,r,r);                                // forward substitution
           solveR(A,z,r);                                // backward substitution
           permute_backward(q,z);                        // backward permutation
-          z *= -1.0;
           directions.push_back(z);
 
           // line search
@@ -500,7 +501,7 @@ namespace hdnum {
           for (size_type k=0; k<linesearchsteps; k++)
             {
               y = x;                              
-              y.update(lambda,z);                       // y = x+lambda*z
+              y.update(-lambda,z);                       // y = x-lambda*z
               model.F(y,r);                             // r = F(y)
               Real newR(norm(r));                // compute norm
               if (verbosity>=3)
@@ -910,13 +911,13 @@ namespace hdnum {
       double maxTrustRadius;
 
       // approximation values
-      double n1 = 0.001;
-      double n2 = 0.25;
-      double n3 = 0.75;
+      double n1{0.001};
+      double n2{0.25};
+      double n3{0.75};
 
       // scale factors for trust radius
-      double t1 = 0.25;
-      double t2 = 2.0;
+      double t1{0.25};
+      double t2{2.0};
 
       // save results in a file 
       template<typename vectortype, typename Real>
@@ -1072,11 +1073,11 @@ namespace hdnum {
         solveR(H,z,d);                                // backward substitution
         permute_backward(q_H,z);                        // backward permutation
 
-        double alpha = 1e15; // step size
-        bool reduced = false; // check if line search was successfull
+        double alpha{1.0}; // step size
+        bool reduced{false}; // check if line search was successfull
 
         for(int j = 0; j < linesearchsteps; ++j){
-          Vector<N> yNew = y;
+          Vector<N> yNew{y};
           yNew.update(-alpha, z); // perform update y = y - alpha + z,  z = H^-1 * (A*^T)^-1 * g(x)
 
           // project to feasible space
@@ -1112,7 +1113,7 @@ namespace hdnum {
           alpha = alpha * 0.5; // decrease step size
         }
         // check for convergence
-        if(norm(z) < 1e-15  || R<=reduction*R0){
+        if(norm(z) < abslimit || norm(gradient) < abslimit){
           converged = true;
           iterations_taken = i;
           if(filename.size()!=0)
@@ -1130,7 +1131,7 @@ namespace hdnum {
           if(filename.size()!=0)
             saveDatainFile(filename, iteration_points);
           if(verbosity>=1){
-            std::cout << "Projected newton not converged within " << maxit << " iterations" << std::endl;
+            std::cout << "Maximum number of iterations reached. Number of iterations: " << maxit << " " << std::endl;
           }
           return;
         }
