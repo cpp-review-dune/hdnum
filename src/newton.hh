@@ -14,6 +14,7 @@
  */
 
 namespace hdnum {
+
   /** @brief Example class for a nonlinear model F(x) = 0;
 
       This example solves F(x) = x*x - a = 0
@@ -69,7 +70,7 @@ namespace hdnum {
     Lambda lambda; // lambda defining the problem "lambda(x)=0"
     size_t s;
     typename Vec::value_type eps;
-  
+
   public:
     /** \brief export size_type */
     typedef std::size_t size_type;
@@ -80,8 +81,7 @@ namespace hdnum {
     //! constructor stores parameter lambda
     GenericNonlinearProblem (const Lambda& l_, const Vec& x_, number_type eps_ = 1e-7)
       : lambda(l_), s(x_.size()), eps(eps_)
-    {
-    }
+    {}
 
     //! return number of componentes for the model
     std::size_t size () const
@@ -103,7 +103,7 @@ namespace hdnum {
       F(x,Fx);
       Vec z(x);
       Vec Fz(x.size());
-    
+
       // numerische Jacobimatrix
       for (int j=0; j<result.colsize(); ++j)
         {
@@ -111,11 +111,8 @@ namespace hdnum {
           auto dz = (1.0+abs(zj))*eps;
           z[j] += dz;
           F(z,Fz);
-          for (int i=0; i<result.rowsize(); i++){
-            auto g = (Fz[i]-Fx[i])/dz;
-            //std::cout << typeid(g).name() << std::endl;
+          for (int i=0; i<result.rowsize(); i++)
             result[i][j] = (Fz[i]-Fx[i])/dz;
-          }
           z[j] = zj;
         }
     }
@@ -138,7 +135,7 @@ namespace hdnum {
   /**
    * @brief Problem describing F(x) = 0 with optional jacobian.
    * Instead of a lambda, this can be passed to the GenericNonlinearProblem class.
-   * 
+   *
    * @tparam Vec Vector(for real values) or CVector(for complex values)
    * @tparam Matrix Densematrix(for real values) or CDensematrix(for complex values)
    */
@@ -155,8 +152,8 @@ namespace hdnum {
   /**
    * @brief Problem describing min F(x) (min 0.5*||F(x)||^2 for higher dimensional features) with gradient, an optional hessian and constraints.
    *  Pass it to GenericNonlinearMinimizationProblem_Constrained class.
-   * 
-   * @tparam N 
+   *
+   * @tparam N
    */
   template<typename N>
   class ConstrainedMinimizationProblem{
@@ -171,7 +168,7 @@ namespace hdnum {
     virtual Vector<N> objective(const Vector<N>& x) const = 0;
 
     virtual Vector<N> gradient(const Vector<N>& x) const = 0;
-    
+
     // if hessian a zero matrix then aproximation will be used
     virtual DenseMatrix<N> hessian(const Vector<N>& x) const{
       Vector<N> Fx(gradient(x));
@@ -202,12 +199,12 @@ namespace hdnum {
     // trivial upper bounds
     virtual Vector<N> upperbounds() const = 0;
   };
-  
+
   /**
    * @brief A generic nonlinear minimization problem class that can be set up with a lambda(Objective) definining min F(x),
-   *        a lambda(gradient) defining the gradient of F and constraints defined by lower/upper bounds and a transformation matrix A defining 
+   *        a lambda(gradient) defining the gradient of F and constraints defined by lower/upper bounds and a transformation matrix A defining
    *        lower bound <= Ax <= upper bound.
-   * 
+   *
    * @tparam Problem of type ConstrainedMinimizationProblem
    * @tparam Vec the type of the Vector
    */
@@ -261,8 +258,8 @@ namespace hdnum {
   {
     result = problem.hessian(x);
   }
-  
-  /* the active set A* is a sub set of the transformation matrix A and will be determined by the following rules: 
+
+  /* the active set A* is a sub set of the transformation matrix A and will be determined by the following rules:
     (1) All active constraints (lower bound = Ax or Ax = upper bound) are contained in A*
     (2) Rang(A*) = size of x
   */
@@ -285,14 +282,14 @@ namespace hdnum {
       if(activeIndices.size() == s){ // stop if Rang(A*) = s
         break;
       }
-      if(y[i] == lowerBounds[i] || y[i] == upperBounds[i]) 
+      if(y[i] == lowerBounds[i] || y[i] == upperBounds[i])
         activeIndices.push_back(i);
       else
         inActiveIndices.push_back(i);
     }
-    
+
     // check if Rang(A*) = s otherwise and add some random elements of the inactive constraints to the active set
-    if(activeIndices.size() < s){ 
+    if(activeIndices.size() < s){
       std::random_device rd;
       std::mt19937 randomGenerator(rd());
 
@@ -311,7 +308,7 @@ namespace hdnum {
     // build the active set by using the active indices
     for(int i = 0; i< x.size();++i){
       // add trivial constraints if necessary
-      if(i >= activeIndices.size()){ 
+      if(i >= activeIndices.size()){
         activelowerbounds[i] = std::numeric_limits<number_type>::min();
         activeupperbounds[i] = std::numeric_limits<number_type>::max();
         activeSet[i][i - activeIndices.size()] = 1.0;
@@ -327,7 +324,7 @@ namespace hdnum {
       }
     }
   }
-  
+
   private:
   Problem problem;
 
@@ -345,13 +342,13 @@ namespace hdnum {
 
   /**
    * @brief A function returning a minimization problem class with constraints
-   * 
+   *
    * @tparam Problem of type ConstrainedMinimizationProblem
    * @tparam X the type of the Vector
    * @param constraints transformation matrix A
    * @param lb lower bound
    * @param up upper bound
-   * @return GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X> 
+   * @return GenericNonlinearMinimizationProblem_Constrained<Objective,Gradient,X>
    */
   template<typename Problem, typename X>
   GenericNonlinearMinimizationProblem_Constrained<Problem, X> getNonlinearMinimizationProblem_Constrained(const Problem& p, const  X& x, typename X::value_type eps = 1e-7)
@@ -363,18 +360,16 @@ namespace hdnum {
 
       The Newton solver is parametrized by a model. The model also
       exports all relevant types for types.
- 
+
   */
   class Newton
   {
-  //protected:
-  protected:
     typedef std::size_t size_type;
 
   public:
     //! constructor stores reference to the model
     Newton ()
-      : maxit(25), linesearchsteps(10), verbosity(0), 
+      : maxit(25), linesearchsteps(10), verbosity(0),
         reduction(1e-14), abslimit(1e-30), converged(false)
     {}
 
@@ -385,9 +380,7 @@ namespace hdnum {
     }
 
     void set_sigma (double sigma_)
-    {
-    
-    }
+    {}
 
     //! maximum number of steps in linesearch before giving up
     void set_linesearchsteps (size_type n)
@@ -413,12 +406,11 @@ namespace hdnum {
       reduction = l;
     }
 
-
     /**
-     * @brief Solver method. 
-     * 
-     * @tparam M 
-     * @tparam Vec 
+     * @brief Solver method.
+     *
+     * @tparam M
+     * @tparam Vec
      * @param model problem class
      * @param x initial solution. For real/complex values x is of type Vector/CVector
      * @param filename save results in a file when needed
@@ -429,8 +421,8 @@ namespace hdnum {
       // check if we have a complex problem
       const auto xTemp = x;
       ComplexChecker complexChecker;
-      constexpr bool isComplex = complexChecker.isComplexVector(xTemp);  
-      
+      constexpr bool isComplex = complexChecker.isComplexVector(xTemp);
+
       // in complex case, we still need to use real valued numbers for residual norms etc.
       using Real = typename M::number_type;
 
@@ -451,17 +443,17 @@ namespace hdnum {
       vectortype y(model.size());              // temporary solution in line search
       vectortype z(model.size());              // solution of linear system
       vectortype s(model.size());              // scaling factors
-      Vector<size_type> p(model.size());                 // row permutations
-      Vector<size_type> q(model.size());                 // column permutations
+      Vector<size_type> p(model.size());       // row permutations
+      Vector<size_type> q(model.size());       // column permutations
 
-      model.F(x,r);                                     // compute nonlinear residualz
+      model.F(x,r);                            // compute nonlinear residualz
 
-      Real R0(norm(r));                          // norm of initial residual
-      Real R(R0);                                // current residual norm
+      Real R0(norm(r));                        // norm of initial residual
+      Real R(R0);                              // current residual norm
       if (verbosity>=1)
         {
-          std::cout << "Newton " 
-                    << "   norm=" << std::scientific << std::showpoint 
+          std::cout << "Newton "
+                    << "   norm=" << std::scientific << std::showpoint
                     << std::setprecision(4) << R0
                     << std::endl;
         }
@@ -480,7 +472,7 @@ namespace hdnum {
               if(filename.size()>0)
                 saveDataInFile(filename,iteration_points,directions, stepSizes, norms, reductions, losses);
               return;
-            } 
+            }
 
           // solve Jacobian system for update
           model.F_x(x,A);                               // compute Jacobian matrix
@@ -488,7 +480,7 @@ namespace hdnum {
           matrixtype temp = A;
           row_equilibrate(A,s);                         // equilibrate rows
           lr_fullpivot(A,p,q);                          // LR decomposition of A
-          z = vectortype(model.size());                                      // clear solution
+          z = vectortype(model.size());                 // clear solution
           apply_equilibrate(s,r);                       // equilibration of right hand side
           permute_forward(p,r);                         // permutation of right hand side
           solveL(A,r,r);                                // forward substitution
@@ -500,18 +492,18 @@ namespace hdnum {
           Real lambda(1.0);                      // start with lambda=1
           for (size_type k=0; k<linesearchsteps; k++)
             {
-              y = x;                              
+              y = x;
               y.update(-lambda,z);                       // y = x-lambda*z
               model.F(y,r);                             // r = F(y)
               Real newR(norm(r));                // compute norm
               if (verbosity>=3)
                 {
-                  std::cout << "    line search "  << std::setw(2) << k 
-                            << " lambda=" << std::scientific << std::showpoint 
+                  std::cout << "    line search "  << std::setw(2) << k
+                            << " lambda=" << std::scientific << std::showpoint
                             << std::setprecision(4) << lambda
-                            << " norm=" << std::scientific << std::showpoint 
+                            << " norm=" << std::scientific << std::showpoint
                             << std::setprecision(4) << newR
-                            << " red=" << std::scientific << std::showpoint 
+                            << " red=" << std::scientific << std::showpoint
                             << std::setprecision(4) << newR/R
                             << std::endl;
                 }
@@ -521,10 +513,10 @@ namespace hdnum {
                   reductions.push_back(newR/R);
                   if (verbosity>=2)
                     {
-                      std::cout << "  step"  << std::setw(3) << i 
-                                << " norm=" << std::scientific << std::showpoint 
+                      std::cout << "  step"  << std::setw(3) << i
+                                << " norm=" << std::scientific << std::showpoint
                                 << std::setprecision(4) << newR
-                                << " red=" << std::scientific << std::showpoint 
+                                << " red=" << std::scientific << std::showpoint
                                 << std::setprecision(4) << newR/R
                                 << std::endl;
                     }
@@ -536,7 +528,7 @@ namespace hdnum {
               if (k==linesearchsteps-1)
                 {
                   if (verbosity>=3){
-                    std::cout << "    line search not converged within " << linesearchsteps << " steps" << std::endl; 
+                    std::cout << "    line search not converged within " << linesearchsteps << " steps" << std::endl;
                     if(filename.size()>0)
                       saveDataInFile(filename,iteration_points,directions, stepSizes, norms, reductions, losses);
               }
@@ -551,7 +543,7 @@ namespace hdnum {
               if (verbosity>=1)
                 {
                   std::cout << "Newton converged in "  << i << " steps"
-                            << " reduction=" << std::scientific << std::showpoint 
+                            << " reduction=" << std::scientific << std::showpoint
                             << std::setprecision(4) << R/R0
                             << std::endl;
                 }
@@ -590,9 +582,15 @@ namespace hdnum {
     double abslimit;
     mutable bool converged;
 
-    // save results in a file 
+    // save results in a file
     template<typename vectortype, typename Real>
-    void saveDataInFile(const std::string filename,const Vector<vectortype>& iterationPoints,const Vector<vectortype>& directions, const Vector<Real>& stepSizes,const Vector<Real>& norms, const Vector<Real>& reductions, const Vector<Real>& losses) const{
+    void saveDataInFile(const std::string filename,
+                        const Vector<vectortype>& iterationPoints,
+                        const Vector<vectortype>& directions,
+                        const Vector<Real>& stepSizes,
+                        const Vector<Real>& norms,
+                        const Vector<Real>& reductions,
+                        const Vector<Real>& losses) const{
         std::fstream file(filename.c_str(),std::ios::out);
         file<< "#This file contains the outputs from the newton-raphson method solver. The outputs are ordered in the following way: \n";
         file<< "#Iteration point | direction | step size | norm | reduction | loss\n";
@@ -604,12 +602,12 @@ namespace hdnum {
             for(auto d: directions[i])
               file << d << "   ";
 
-            file << stepSizes[i] << "   " << norms[i] << "   " << reductions[i]<< "   " << losses[i] << "\n"; 
+            file << stepSizes[i] << "   " << norms[i] << "   " << reductions[i]<< "   " << losses[i] << "\n";
         }
     }
   };
 
-/** @brief  Solve nonlinear problem F(x) = 0 by defining an eqivalent minimizing problem min_x f(x) = 0.5 * F(x)^T * F(x) 
+/** @brief  Solve nonlinear problem F(x) = 0 by defining an eqivalent minimizing problem min_x f(x) = 0.5 * F(x)^T * F(x)
  * (Uses Trust region method where a subproblem is solved by different direction choices:
  *  Newton direction
  *  Cauchy point
@@ -617,7 +615,7 @@ namespace hdnum {
  */
   class NewtonDogLegCauchy: public Newton{
     public:
-      
+
     NewtonDogLegCauchy ()
       :maxTrustRadius(1.0), initialTrustRadius(1.0)
     {
@@ -640,10 +638,10 @@ namespace hdnum {
     }
 
     /**
-     * @brief Solver method. 
-     * 
-     * @tparam M 
-     * @tparam Vec 
+     * @brief Solver method.
+     *
+     * @tparam M
+     * @tparam Vec
      * @param model problem class
      * @param x initial solution. For real/complex values x is of type Vector/CVector
      * @param filename save results in a file when needed
@@ -654,7 +652,7 @@ namespace hdnum {
       // check if we have a complex problem
       const auto xTemp = x;
       ComplexChecker complexChecker;
-      constexpr bool isComplex = complexChecker.isComplexVector(xTemp);  
+      constexpr bool isComplex = complexChecker.isComplexVector(xTemp);
 
       // in complex case, we still need to use real valued numbers for residual norms etc.
       using Real = typename M::number_type;
@@ -683,14 +681,14 @@ namespace hdnum {
       Vector<size_type> q(model.size());                 // column permutations
 
       model.F(x,F);                                     // compute nonlinear residual
-     
+
       Real R0(norm(F));                          // norm of initial residual
       Real R(R0);                                // current residual norm
-      
+
       if (verbosity>=1)
       {
-        std::cout << "Newton Dog Leg Cauchy " 
-                  << "   norm=" << std::scientific << std::showpoint 
+        std::cout << "Newton Dog Leg Cauchy "
+                  << "   norm=" << std::scientific << std::showpoint
                   << std::setprecision(4) << R0
                   << std::endl;
       }
@@ -700,7 +698,7 @@ namespace hdnum {
       double trustRadius = initialTrustRadius; // initial trust radius
 
       std::string direction_type; // save the type of the direction which was used in each iteration
-      
+
       for (size_type i=1; i<=maxit; i++)                // do iterations
         {
           iterationPoints.push_back(x);
@@ -714,7 +712,7 @@ namespace hdnum {
               if (verbosity>=1)
               {
                 std::cout << "Newton Dog Leg Cuchy converged in "  << i << " steps"
-                            << " reduction=" << std::scientific << std::showpoint 
+                            << " reduction=" << std::scientific << std::showpoint
                             << std::setprecision(4) << R/R0
                             << std::endl;
               }
@@ -723,14 +721,14 @@ namespace hdnum {
               if(filename.size()!=0)
                 saveDatainFile(filename,iterationPoints, newtonDirections, steepestDescentDirections, doglegDirections, trustRadiusList, norms, reductions, losses);
               return;
-            } 
-          
-          /* Each iterations solves the trust region subproblem 
-          *  min m(d) = f(x) + J^T * F * d + 0.5 * p^T * J^T * J * p s.t ||p|| <= trustRadius 
+            }
+
+          /* Each iterations solves the trust region subproblem
+          *  min m(d) = f(x) + J^T * F * d + 0.5 * p^T * J^T * J * p s.t ||p|| <= trustRadius
           *  by using different directions:
-          *  - Newton direction: solves J^T d = - F(x) 
+          *  - Newton direction: solves J^T d = - F(x)
           *    => will be applied if direction is inside trust region
-          *  - Cauchy point: takes the negative gradient with scaling factor alpha to minimize m(alpha *d) 
+          *  - Cauchy point: takes the negative gradient with scaling factor alpha to minimize m(alpha *d)
           *    => will be applied if direction is outside trust region
           *  - otherwise dogleg direction: interpolation of the endpoints from Newton and Cauchy direction
           */
@@ -771,7 +769,7 @@ namespace hdnum {
           else{
             newtonDirections.push_back(zeros);
 
-            /* the cauchy point is given as d = - alpha * J^T F (steepest descent direction) and 
+            /* the cauchy point is given as d = - alpha * J^T F (steepest descent direction) and
             * alpha = min( trustRadius / abs(norm(J^T F))) , abs(norm(J^T F)))**2 / ( (J^T F)^T * B * J^T F) )
             * For the implementation, instead of directly taking the min, first compute the second term and check if alpha * d
             * is outside the trust region or on the edge.
@@ -781,7 +779,7 @@ namespace hdnum {
             // (J^T*F)^T * B * J^T*F) = ||J^T*J^T*F||^2
             vectortype product_J_jF= JTranspose * jF;
             Real norm_B_jF = norm(product_J_jF);
-            
+
             Real alpha_1 = norm_jF * norm_jF / (norm_B_jF * norm_B_jF);
             Real alpha_2 = trustRadius / norm_jF;
             Real alpha = std::min(alpha_1, alpha_2);
@@ -797,11 +795,11 @@ namespace hdnum {
               steepestDescentDirections.push_back(d_cauchy);
               doglegDirections.push_back(zeros);
             }
-            else{ 
+            else{
               steepestDescentDirections.push_back(zeros);
               // apply dog leg direction by solving the quadratic equation ||d_cauchy + tau * (d_newton-d_cauchy)|| = trust_region
               vectortype dn_minus_dc = d_newton - d_cauchy;
-  
+
               Real a = norm(dn_minus_dc);
               a*= a;
               N  product_dc_dn_minus_dc = d_cauchy * dn_minus_dc;
@@ -821,32 +819,32 @@ namespace hdnum {
               direction_type = "Dog leg direction";
 
               doglegDirections.push_back(d);
-            } 
+            }
           }
 
           /*compute ratio of actual reduction and predicted reduction(How good is the approximated model?):
-          * actualReduction/predicted Reduction = (f(x) - f(x+d)) / (m(0) - m(d)), 
-          * with m(d) = f(x) + (J^T * F(x))^T * d + d^T * B * d,  B = J^T * J and f(x) = 0.5 * F(x)^T * F(x) 
+          * actualReduction/predicted Reduction = (f(x) - f(x+d)) / (m(0) - m(d)),
+          * with m(d) = f(x) + (J^T * F(x))^T * d + d^T * B * d,  B = J^T * J and f(x) = 0.5 * F(x)^T * F(x)
           */
           vectortype new_x = x + d; // perform update
-          
+
           vectortype res_old(model.size());
           model.F(x,res_old); // F(x)
           vectortype res_new(model.size());
           model.F(new_x, res_new); // F(x+d)
-          
+
           Real newR(norm(res_new)); // norm of new residual
           Real red(1.0); // reduction for the output
 
           Real actual_reduction = 0.5 * R * R - 0.5 *  newR * newR; //  (f(x) - f(x+d))
 
-          Real product_jF_d = std::real(jF * d); // (J^T * F(x))^T * d 
+          Real product_jF_d = std::real(jF * d); // (J^T * F(x))^T * d
           vectortype product_B_d = B * d;
-          
+
           Real product_d_B_d= std::real(d * product_B_d);
           product_d_B_d *= 0.5; // 0.5 * d^T * B * d
 
-          Real predicted_reduction = - (product_jF_d + product_d_B_d); 
+          Real predicted_reduction = - (product_jF_d + product_d_B_d);
           Real ro = actual_reduction / predicted_reduction;
           Real absro = std::abs(ro);
 
@@ -868,22 +866,21 @@ namespace hdnum {
 
           if (verbosity>=2)
           {
-            std::cout << "  step"  << std::setw(3) << i 
-                      << " norm=" << std::scientific << std::showpoint 
+            std::cout << "  step"  << std::setw(3) << i
+                      << " norm=" << std::scientific << std::showpoint
                       << std::setprecision(4) << R
-                      << " red=" << std::scientific << std::showpoint 
+                      << " red=" << std::scientific << std::showpoint
                       << std::setprecision(4) << red
                       << "  " << direction_type
                       << std::endl;
           }
-         
 
           if (R<=reduction*R0)
             {
               if (verbosity>=1)
               {
                 std::cout << "Newton Dog Leg Cauchy converged in "  << i << " steps"
-                            << " reduction=" << std::scientific << std::showpoint 
+                            << " reduction=" << std::scientific << std::showpoint
                             << std::setprecision(4) << R/R0
                             << std::endl;
               }
@@ -919,13 +916,21 @@ namespace hdnum {
       double t1{0.25};
       double t2{2.0};
 
-      // save results in a file 
+      // save results in a file
       template<typename vectortype, typename Real>
-      void saveDatainFile(const std::string& filename, const Vector<vectortype>& iterationPoints, const Vector<vectortype>& newtonDirections, const Vector<vectortype>& steepestDescentDirections,const Vector<vectortype>& doglegDirections,const Vector<double>& trustRadiusList,const Vector<Real>& norms,const Vector<Real>& reductions,const Vector<Real>& losses) const{
+      void saveDatainFile(const std::string& filename,
+                          const Vector<vectortype>& iterationPoints,
+                          const Vector<vectortype>& newtonDirections,
+                          const Vector<vectortype>& steepestDescentDirections,
+                          const Vector<vectortype>& doglegDirections,
+                          const Vector<double>& trustRadiusList,
+                          const Vector<Real>& norms,
+                          const Vector<Real>& reductions,
+                          const Vector<Real>& losses) const{
         std::fstream file(filename.c_str(),std::ios::out);
         file<< "#This file contains the outputs from the newton-dog-leg-cauchy method solver. The outputs are ordered in the following way: \n";
         file<< "#Iteration point | directions(Newton-Steepest-Dog leg) | trust radius | norm | reduction | loss \n";
-        
+
         // go through iterations
         for(int i = 0; i< iterations_taken;++i){
           for(auto x: iterationPoints[i])
@@ -958,7 +963,7 @@ namespace hdnum {
 /**
  * @brief Solve nonliner minimization problem min f(x) s.t. b1 <= Ax <= b2 with the projected newton method by performing the updates
  *        on the transformed variable y = Ax. A must have Rang(A) = size of x.
- * 
+ *
  */
   class ProjectedNewton : public Newton{
     typedef std::size_t size_type;
@@ -971,7 +976,6 @@ namespace hdnum {
       converged = false;
     }
 
-    
     // Solver method. The last parameter is optional to save the results in a file
     template<class M>
     void solve (const M& model, Vector<typename M::number_type> & x, std::string filename="") const
@@ -979,7 +983,7 @@ namespace hdnum {
       typedef typename M::number_type N;
       using Real = typename std::conditional<std::is_same<std::complex<double>, N>::value, double, N>::type;
 
-      Real R0;        // save initial residual    
+      Real R0;        // save initial residual
       Real R;         // current residual
 
       Vector<Vector<N>> iteration_points; // for saving the results
@@ -1007,33 +1011,33 @@ namespace hdnum {
 
         //compute A^T
         DenseMatrix<N> A_T = activeSet;
-        A_T = A_T.transpose(); 
-        
-        // LR decomposition of A 
+        A_T = A_T.transpose();
+
+        // LR decomposition of A
         Vector<size_t> p_(model.size());
-        Vector<size_t> q_(model.size());         
-        Vector<N> s_(model.size()); 
+        Vector<size_t> q_(model.size());
+        Vector<N> s_(model.size());
         row_equilibrate(A,s_);                         // equilibrate rows
-        lr_fullpivot(A,p_,q_);                          // LR decomposition of A
+        lr_fullpivot(A,p_,q_);                         // LR decomposition of A
 
         // LR decompisition of A^T
         Vector<size_t> p(model.size());
         Vector<size_t> q(model.size());
-        Vector<N> d(model.size());              
-        Vector<N> s(model.size());            
-        row_equilibrate(A_T,s);                         // equilibrate rows
-        lr_fullpivot(A_T,p,q);                          // LR decomposition of A
-        
+        Vector<N> d(model.size());
+        Vector<N> s(model.size());
+        row_equilibrate(A_T,s);                        // equilibrate rows
+        lr_fullpivot(A_T,p,q);                         // LR decomposition of A
+
         // get x again to compute loss and Hessian
         Vector<N> y_temp = y;
         x = N(0.0);
-        apply_equilibrate(s_,y_temp);                       // equilibration of right hand side
-        permute_forward(p_,y_temp);                         // permutation of right hand side
-        solveL(A,y_temp,y_temp);                                // forward substitution
-        solveR(A,x,y_temp);                                // backward substitution
+        apply_equilibrate(s_,y_temp);                  // equilibration of right hand side
+        permute_forward(p_,y_temp);                    // permutation of right hand side
+        solveL(A,y_temp,y_temp);                       // forward substitution
+        solveR(A,x,y_temp);                            // backward substitution
         permute_backward(q_,x);                        // backward permutation
 
-        DenseMatrix<N> H(model.size(),model.size()); // Hessian
+        DenseMatrix<N> H(model.size(),model.size());   // Hessian
         model.H(x,H);
 
         Vector<N> loss(1); // loss(x) = f(x)
@@ -1045,33 +1049,33 @@ namespace hdnum {
           R = loss[0];
         }
 
-        // solve z = H^-1 * (A*^T)^-1 * g(x) by (1) A*^T * d = g(x) and (2) H * z = d 
+        // solve z = H^-1 * (A*^T)^-1 * g(x) by (1) A*^T * d = g(x) and (2) H * z = d
 
         //solve A*^T * d = g(x)
-        Vector<N> gradient(model.size());         
+        Vector<N> gradient(model.size());
         model.g(x, gradient);
 
-        d = N(0.0);                                   // clear solution
-        apply_equilibrate(s,gradient);                       // equilibration of right hand side
-        permute_forward(p,gradient);                         // permutation of right hand side
-        solveL(A_T,gradient,gradient);                                // forward substitution
-        solveR(A_T,d,gradient);                                // backward substitution
-        permute_backward(q,d);                        // backward permutation
-        
-        //solve H * z = d 
+        d = N(0.0);                                    // clear solution
+        apply_equilibrate(s,gradient);                 // equilibration of right hand side
+        permute_forward(p,gradient);                   // permutation of right hand side
+        solveL(A_T,gradient,gradient);                 // forward substitution
+        solveR(A_T,d,gradient);                        // backward substitution
+        permute_backward(q,d);                         // backward permutation
+
+        //solve H * z = d
         Vector<N> z(model.size());
 
-        // LR decomposition of H 
+        // LR decomposition of H
         Vector<size_t> p_H(model.size());
-        Vector<size_t> q_H(model.size());         
-        Vector<N> s_H(model.size()); 
-        row_equilibrate(H,s_H);                         // equilibrate rows
-        lr_fullpivot(H,p_H,q_H);                          // LR decomposition of A
-        apply_equilibrate(s_H,d);                       // equilibration of right hand side
-        permute_forward(p_H,d);                         // permutation of right hand side
-        solveL(H,d,d);                                // forward substitution
-        solveR(H,z,d);                                // backward substitution
-        permute_backward(q_H,z);                        // backward permutation
+        Vector<size_t> q_H(model.size());
+        Vector<N> s_H(model.size());
+        row_equilibrate(H,s_H);                        // equilibrate rows
+        lr_fullpivot(H,p_H,q_H);                       // LR decomposition of A
+        apply_equilibrate(s_H,d);                      // equilibration of right hand side
+        permute_forward(p_H,d);                        // permutation of right hand side
+        solveL(H,d,d);                                 // forward substitution
+        solveR(H,z,d);                                 // backward substitution
+        permute_backward(q_H,z);                       // backward permutation
 
         double alpha{1.0}; // step size
         bool reduced{false}; // check if line search was successfull
@@ -1092,11 +1096,11 @@ namespace hdnum {
           // compute x
           Vector<N> yNewTemp = yNew;
           Vector<N> xNew(model.size());
-          apply_equilibrate(s_,yNewTemp);                       // equilibration of right hand side
-          permute_forward(p_,yNewTemp);                         // permutation of right hand side
-          solveL(A,yNewTemp,yNewTemp);                                // forward substitution
-          solveR(A,xNew,yNewTemp);                                // backward substitution
-          permute_backward(q_,xNew);                        // backward permutation
+          apply_equilibrate(s_,yNewTemp);              // equilibration of right hand side
+          permute_forward(p_,yNewTemp);                // permutation of right hand side
+          solveL(A,yNewTemp,yNewTemp);                 // forward substitution
+          solveR(A,xNew,yNewTemp);                     // backward substitution
+          permute_backward(q_,xNew);                   // backward permutation
 
           Vector<N> newLoss(1);
           model.f(xNew, newLoss);
@@ -1120,7 +1124,7 @@ namespace hdnum {
             saveDatainFile(filename, iteration_points);
           if(verbosity >= 1){
             std::cout << "Projected Newton converged in "  << i << " steps"
-            << " reduction=" << std::scientific << std::showpoint 
+            << " reduction=" << std::scientific << std::showpoint
             << std::setprecision(4) << R/R0
             << std::endl;
           }
@@ -1139,7 +1143,7 @@ namespace hdnum {
     }
 
     private:
-    // save results in a file 
+    // save results in a file
     template<typename N>
     void saveDatainFile(const std::string& filename,const Vector<Vector<N>>& iteration_points) const {
       std::fstream file(filename.c_str(),std::ios::out);
@@ -1170,7 +1174,7 @@ namespace hdnum {
   public:
     //! constructor stores reference to the model
     Banach ()
-      : maxit(25), linesearchsteps(10), verbosity(0), 
+      : maxit(25), linesearchsteps(10), verbosity(0),
         reduction(1e-14), abslimit(1e-30),  sigma(1.0), converged(false)
     {}
 
@@ -1223,8 +1227,8 @@ namespace hdnum {
       N R(R0);                                // current residual norm
       if (verbosity>=1)
         {
-          std::cout << "Banach " 
-                    << " norm=" << std::scientific << std::showpoint 
+          std::cout << "Banach "
+                    << " norm=" << std::scientific << std::showpoint
                     << std::setprecision(4) << R0
                     << std::endl;
         }
@@ -1237,19 +1241,19 @@ namespace hdnum {
             {
               converged = true;
               return;
-            } 
+            }
 
           // next iterate
-          y = x;                                    
+          y = x;
           y.update(-sigma,r);                       // y = x+lambda*z
           model.F(y,r);                             // r = F(y)
           N newR(norm(r));                // compute norm
           if (verbosity>=2)
             {
-              std::cout << "    "  << std::setw(3) << i 
-                        << " norm=" << std::scientific << std::showpoint 
+              std::cout << "    "  << std::setw(3) << i
+                        << " norm=" << std::scientific << std::showpoint
                         << std::setprecision(4) << newR
-                        << " red=" << std::scientific << std::showpoint 
+                        << " red=" << std::scientific << std::showpoint
                         << std::setprecision(4) << newR/R
                         << std::endl;
             }
@@ -1262,7 +1266,7 @@ namespace hdnum {
               if (verbosity>=1)
                 {
                   std::cout << "Banach converged in "  << i << " steps"
-                            << " reduction=" << std::scientific << std::showpoint 
+                            << " reduction=" << std::scientific << std::showpoint
                             << std::setprecision(4) << R/R0
                             << std::endl;
                 }
@@ -1271,7 +1275,7 @@ namespace hdnum {
             }
         }
     }
-    
+
     bool has_converged () const
     {
       return converged;

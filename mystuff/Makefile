@@ -2,7 +2,7 @@ include ../make.def
 HDNUMPATH  = ..
 
 # rule to build all programs without GMP support. That is the default
-nogmp: example 
+nogmp: example
 
 # rule to build programs with GMP support
 gmp: wurzel

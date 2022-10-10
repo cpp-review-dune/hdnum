@@ -3,10 +3,10 @@
 
 #include <iostream>    // notwendig zur Ausgabe
 #include <vector>
-#include <cmath> 
+#include <cmath>
 
-#include "hdnum.hh"    // hdnum header* rightPart 
-#include "nonlinearProblems.hh" 
+#include "hdnum.hh"    // hdnum header* rightPart
+#include "nonlinearProblems.hh"
 #include "newtonVisualization.hh" //contains test functions to visualize newton methods
 #include <any>
 #include <algorithm>
@@ -21,14 +21,14 @@ int main ()
   std::cout<<"Example of solving squared root problem with newton method: \n "<<std::endl;
   SquareRootProblem<double> sqp(16); // Squared root problem: min_x x^2 - a. (Here, a=16)
 
-  // Declare a Newton-Raphson solver and use default valued for the maximum nuber of iterations, 
+  // Declare a Newton-Raphson solver and use default valued for the maximum nuber of iterations,
   // the number of line search steps, the absolute limit for defect and the reduction factor.
   Newton newtonRapshon;
 
   newtonRapshon.set_verbosity(1); // output the summary
 
   Vector<double> x{25};  // solution of the nonlinear problem will be saved here.
-  
+
   newtonRapshon.solve(sqp,  x);
 
   std::cout<<"\nExample of solving general nonlinear problems with newton and newton dog leg cauchy method: \n" << std::endl;
@@ -60,7 +60,7 @@ int main ()
   std::cout<< "Solution Newton: " << solution[0] << " " << solution[1] << std::endl;
 
   std::cout<<"-----------------------------------------------------------"<<std::endl;
-  
+
   NewtonDogLegCauchy ndlc;
   solution[0] = -5;
   solution[1] = -2;
@@ -88,15 +88,15 @@ int main ()
   complexSolution[0].imag(4);
   ndlc.solve(complexproblem, complexSolution);
   std::cout<<"complexSolution: " << complexSolution[0] <<std::endl;
-  
+
   // Viszualize newton and newton dogleg cauchy method
   newtonRapshon.set_verbosity(0);
   ndlc.set_verbosity(0);
-  
+
   Vector<double> sol(2); // solutions of the solvers will be saved here
   sol[0] = -5.0;
   sol[1] = -2.0;
-  
+
   Vector<double> domain{-5.0,15.0};
   Vector<double> range{0, 10};
 
@@ -124,7 +124,7 @@ int main ()
 
   Vector<double> projectedNewtonDomain{-5,10};
   Vector<double> projectedNewtonInitialSolution{-2,6};
- 
+
   // testProjectedNewton(constraintProblem1, projectedNewtonInitialSolution, constraint_1.A(), constraint_1.lowerbounds(), constraint_1.upperbounds(), projectedNewtonDomain);
   // testProjectedNewton(constraintProblem2, projectedNewtonInitialSolution, constraint_2.A(), constraint_2.lowerbounds(), constraint_2.upperbounds(), projectedNewtonDomain);
   // testProjectedNewton(constraintProblem3, projectedNewtonInitialSolution, constraint_3.A(), constraint_3.lowerbounds(), constraint_3.upperbounds(), projectedNewtonDomain);
@@ -143,6 +143,5 @@ int main ()
   std::cout<< "Solution: "<< minDistToCirlceSolution<< std::endl;
   std::cout <<min.objective(minDistToCirlceSolution) << std::endl;
 }
-#endif
 
-
+#endif // NEWTONMETHODS_CC

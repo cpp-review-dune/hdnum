@@ -71,7 +71,7 @@ namespace hdnum {
     return sqrt(sum);
   }
 
-  // Check if a vector is complex or not 
+  // Check if a vector is complex or not
   struct ComplexChecker{
     template< typename N>
       constexpr bool isComplexVector(const Vector<N>& n) {
@@ -85,4 +85,4 @@ namespace hdnum {
 
 } // end of namespace hdnum
 
-#endif	/* _CVector_HH */
+#endif	// _CVector_HH

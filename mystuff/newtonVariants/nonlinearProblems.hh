@@ -15,7 +15,6 @@ class MatyasProblem: public UnconstrainedProblem<Vec, Matrix>{
     Vec result(2);
     result[0] = 2.0 * 0.26 * x[0] - 0.48 * x[1];
     result[1] = 2.0 * 0.26 * x[1] - 0.48 * x[0];
-
     return result;
   }
 };
@@ -30,7 +29,6 @@ class RosenbrockProblem: public UnconstrainedProblem<Vec, Matrix>{
       Vec result(2);
       result[0] = -2.0 * (1.0 -x[0]) - 400.0 * (x[1] - x[0] * x[0]) * x[0];
       result[1] = 200.0 * (x[1] -x[0] * x[0]);
-
       return result;
   }
 };
@@ -45,7 +43,6 @@ class BohacheskyProblem: public UnconstrainedProblem<Vec, Matrix>{
       Vec result(2);
       result[0] = 2.0 * x[0] + 0.3 * 3.0 * M_PI * sin(3.0 * M_PI * x[0]);
       result[1] = 4.0 * x[1] + 0.4 * 4.0 * M_PI * sin(4.0 * M_PI * x[1]);
-      
       return result;
   }
 };
@@ -60,7 +57,7 @@ class BoothProblem: public UnconstrainedProblem<Vec, Matrix>{
       Vec result(2);
       result[0] = 2.0 * (x[0] + 2.0 * x[1] - 7.0) + 4.0 * (2.0 * x[0] +x[1]- 5.0);
       result[1] = 4.0 * (x[0] + 2.0 * x[1] - 7.0) + 2.0 * (2.0 * x[0] +x[1]- 5.0);
-      return result;  
+      return result;
   }
 };
 
@@ -98,7 +95,7 @@ class ComplexProblem: public UnconstrainedProblem<Vec, Matrix>{
     }
 };
 
-template<typename N> 
+template<typename N>
 CVector<N> complexFunction(const CVector<N>& x){
   CVector<N> result(1);
   result[0] = x[0]*x[0] + 2.0*x[0] + 3.0;
@@ -116,7 +113,6 @@ class ConstrainedProblem1:public ConstrainedMinimizationProblem<N>{
     }
     Vector<N> result(1);
     result[0] = (x[0] - 1.0 ) * (x[0] - 1.0 ) + (x[1] - 2.5 ) *  (x[1] - 2.5 );
-
     return result;
   }
 
@@ -128,7 +124,6 @@ class ConstrainedProblem1:public ConstrainedMinimizationProblem<N>{
     Vector<N> result(2);
     result[0] = 2.0 * (x[0] - 1.0 );
     result[1] = 2.0 * (x[1] - 2.5 );
-
     return result;
   }
 
@@ -163,7 +158,6 @@ class ConstrainedProblem2:public ConstrainedMinimizationProblem<N>{
     }
     Vector<N> result(1);
     result[0] = x[0]*x[0] + x[1]*x[1] - 4.0 * x[0] - 5.0 * x[1] + 2.0;
-
     return result;
   }
 
@@ -175,7 +169,6 @@ class ConstrainedProblem2:public ConstrainedMinimizationProblem<N>{
     Vector<N> result(2);
     result[0] = 2.0 * x[0] - 4.0;
     result[1] = 2.0 * x[1] - 5.0;
-
     return result;
   }
 
@@ -200,7 +193,7 @@ class ConstrainedProblem2:public ConstrainedMinimizationProblem<N>{
   }
 };
 
-template<typename N> 
+template<typename N>
 class ConstrainedProblem3:public ConstrainedMinimizationProblem<N>{
   public:
   Vector<N> objective(const Vector<N>& x) const{
@@ -209,7 +202,6 @@ class ConstrainedProblem3:public ConstrainedMinimizationProblem<N>{
     }
     Vector<N> result(1);
     result[0] = 2.0 * x[0]*x[0] + x[1]*x[1] - 2.0 * x[0] * x[1] - 4.0 * x[0] - 6.0 * x[1];
-
     return result;
   }
 
@@ -221,13 +213,11 @@ class ConstrainedProblem3:public ConstrainedMinimizationProblem<N>{
     Vector<N> result(2);
     result[0] = 4.0 * x[0] - 2.0 * x[1] - 4.0;
     result[1] = 2.0 * x[1] - 2.0 * x[0] - 6.0;
-
     return result;
   }
 
   DenseMatrix<N> A() const{
     DenseMatrix<N> constraints(4,2);
-
     constraints[0][0] = -1;
     constraints[0][1] = 0;
     constraints[1][0] = 0;
@@ -278,7 +268,6 @@ class MinDistToCircle: public ConstrainedMinimizationProblem<N>{
     result[0] = 2.0 * x[0] * t * t + sum_squared * t * z * x[0];
     result[1] = 2.0 * x[1] * t * t + sum_squared * t * z * x[1];
     result[2] = 2.0 * (x[2]+height);
-
     return result;
   }
 
@@ -287,14 +276,15 @@ class MinDistToCircle: public ConstrainedMinimizationProblem<N>{
     constraints[0][0] = 1;
     constraints[0][1] = 1;
     constraints[0][2] = 1;
-  
+
     constraints[1][0] = -1;
     constraints[1][1] = 1;
     constraints[1][2] = 1;
-  
+
     constraints[2][0] = 1;
     constraints[2][1] = -1;
     constraints[2][2] = 1;
+
     constraints[3][0] = -1;
     constraints[3][1] = -1;
     constraints[3][2] = 1;
@@ -314,4 +304,4 @@ class MinDistToCircle: public ConstrainedMinimizationProblem<N>{
 };
 
 
-#endif
+#endif // NONLINEARFUNCTIONS_HH

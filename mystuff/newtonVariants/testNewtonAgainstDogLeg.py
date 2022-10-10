@@ -24,7 +24,7 @@ for i,a in enumerate(f): # iterate over lines in file. The first two lines conta
         normsNewton.append(np.double(x[5]))
         reductionsNewton.append(np.double(x[6]))
         lossesNewton.append(np.double(x[7]))
-        
+
 iterationPointsNewton = np.array(iterationPointsNewton, dtype= np.double)
 directionsNewton = np.array(directionsNewton, dtype= np.double)
 
@@ -77,7 +77,7 @@ if len(domainData) != dimension: # fix bug issue
     domainData = np.arange(minRange, maxRange + 0.0001, 0.2)
 
 X,Y = np.meshgrid(domainData,domainData)
-Z = np.reshape(losses, (dimension, dimension)).T 
+Z = np.reshape(losses, (dimension, dimension)).T
 
 
 # 3D visualization

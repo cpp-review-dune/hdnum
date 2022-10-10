@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy as np
 
 iteration_points = []
@@ -13,7 +13,7 @@ f = open(Filename1,"r")
 for i,a in enumerate(f):
     x = a.split("   ")
     iteration_points.append(np.array([np.double(x[0]),np.double(x[1])]))
-        
+
 iteration_points = np.array(iteration_points, dtype= np.double)
 
 f = open(Filename2, "r")
@@ -56,7 +56,7 @@ for i,a in enumerate(f):
 constraints = np.array(constraints, dtype=np.double)
 
 # compute the feasible space
-feasibleSpace = Z == Z 
+feasibleSpace = Z == Z
 for i in range(constraints.shape[0]):
     constrainFulfilled = np.logical_and(constraints[i][0] * X + constraints[i][1] * Y >= lowerbounds[i], constraints[i][0] * X + constraints[i][1] * Y <= upperbounds[i])
     feasibleSpace = np.logical_and(feasibleSpace, constrainFulfilled)
