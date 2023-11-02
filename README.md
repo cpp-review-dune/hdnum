@@ -61,6 +61,7 @@ History
 -    Version 0.25 from October, 20 2013. (add exceptions in linear algebra)
 -    Version 0.26 from October, 24 2013. delete countingptr and arrays
 -    no version numbers .. reworked makefiles April, 30 2020
+-    Version 0.27 from Marc, 15 2021. add the result of a practical (QR Methods / SparseMatrix)
 
 Links
 -----

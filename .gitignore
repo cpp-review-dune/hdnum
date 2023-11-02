@@ -13,6 +13,11 @@ doc
 !*.*
 
 /doc
+/mystuff
+
+/**/build
+/**/release
+/**/debug
 
 /**/*.log
 /**/*.nav
@@ -26,3 +31,4 @@ doc
 /**/*.vrb
 /**/*.fdb_latexmk
 /**/*.fls
+/**/*Session.vim

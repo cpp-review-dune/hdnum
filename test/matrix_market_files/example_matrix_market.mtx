@@ -1,0 +1,19 @@
+%%MatrixMarket matrix coordinate real symmetric
+%-------------------------------------------------------------------------------
+% This is an example matrix market file based on:
+% http://www.cise.ufl.edu/research/sparse/matrices/HB/1138_bus
+% name: HB/1138_bus
+% [S ADMITTANCE MATRIX 1138 BUS POWER SYSTEM, D.J.TYLAVSKY, JULY 1985.]
+% id: 1
+% date: 1985
+% author: D. Tylavsky
+% ed: I. Duff, R. Grimes, J. Lewis
+% fields: title A name id date author ed kind
+% kind: power network problem
+%-------------------------------------------------------------------------------
+5 5 5
+1 1 1474.779
+5 1 -9.017133
+2 2 9.136654
+3 3 69.61468
+4 4 68.60106

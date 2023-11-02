@@ -1,4 +1,5 @@
 ﻿---
+# created with: https://zed0.co.uk/clang-format-configurator/
 BasedOnStyle: Google
 AlignAfterOpenBracket: Align
 AlignConsecutiveDeclarations: 'false'
@@ -22,7 +23,7 @@ SpaceBeforeAssignmentOperators: 'true'
 SpaceBeforeCpp11BracedList: 'true'
 SpaceBeforeCtorInitializerColon: 'true'
 SpaceBeforeInheritanceColon: 'true'
-SpaceBeforeParens: NonEmptyParentheses
+SpaceBeforeParens: ControlStatements
 SpaceBeforeRangeBasedForLoopColon: 'true'
 SpaceInEmptyParentheses: 'false'
 SpacesInAngles: 'false'
@@ -30,5 +31,6 @@ SpacesInParentheses: 'false'
 Standard: Cpp11
 TabWidth: '4'
 UseTab: Never
+AccessModifierOffset: -4
 
 ...

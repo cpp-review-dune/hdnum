@@ -17,6 +17,7 @@
 #include "src/exceptions.hh"
 #include "src/opcounter.hh"
 #include "src/precision.hh"
+#include "src/sparsematrix.hh"
 #include "src/timer.hh"
 #include "src/vector.hh"
 
@@ -30,5 +31,5 @@
 #include "src/pde.hh"
 #include "src/rungekutta.hh"
 #include "src/sgrid.hh"
-
+#include "src/qrhousholder.hh"
 #endif
