@@ -37,7 +37,7 @@ Using the Makefiles
 
 Edit the file make.def in the top level directory to define your compiler command,
 compilation flags, linker flags, and flags related to the GNU multiprecision library.
-Compiler should be C++11 at least.
+Compiler should be C++17 at least.
 Then e.g. in examples/num 0 type "make" to just make all programs that do not need GMP support.
 Write "make gmp" to build all programs needing GMP support and write "make all" to make them all.
 "make clean" removes all executables.
