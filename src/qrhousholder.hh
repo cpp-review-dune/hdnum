@@ -121,7 +121,7 @@ DenseMatrix<REAL> qrhousholderexplizitQ(DenseMatrix<REAL>& A,
             }
         }
         // normalize the vi vectors again
-        for (size_t i = m; i >= 0; i--) {
+        for (size_t i = m-1; i >= 0; i--) {
             A(i, j) = A(i, j) * fak;
             if (i == j) {
                 break;
