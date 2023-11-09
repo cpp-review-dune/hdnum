@@ -744,11 +744,11 @@ public:
                       "The types in the Matrix vector multiplication cant be "
                       "converted properly!");
 
-        if (result.size() != this->colsize()) {
+        if (result.size() != this->rowsize()) {
             HDNUM_ERROR(
                 (std::string("The result vector has the wrong dimension! ") +
                  "Vector dimension " + std::to_string(result.size()) +
-                 " != " + std::to_string(this->colsize()) + " colsize"));
+                 " != " + std::to_string(this->rowsize()) + " rowsize"));
         }
 
         if (x.size() != this->colsize()) {
@@ -795,11 +795,11 @@ public:
                       "The types in the Matrix vector multiplication cant be "
                       "converted properly!");
 
-        if (result.size() != this->colsize()) {
+        if (result.size() != this->rowsize()) {
             HDNUM_ERROR(
                 (std::string("The result vector has the wrong dimension! ") +
                  "Vector dimension " + std::to_string(result.size()) +
-                 " != " + std::to_string(this->colsize()) + " colsize"));
+                 " != " + std::to_string(this->rowsize()) + " rowsize"));
         }
 
         if (x.size() != this->colsize()) {

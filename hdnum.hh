@@ -31,5 +31,4 @@
 #include "src/pde.hh"
 #include "src/rungekutta.hh"
 #include "src/sgrid.hh"
-#include "src/qrhousholder.hh"
 #endif
