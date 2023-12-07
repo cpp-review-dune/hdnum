@@ -1,12 +1,42 @@
+// -*- tab-width: 4; indent-tabs-mode: nil -*-
 #include <iostream>
 #include "hdnum.hh"
+#include <random>
 
-//TODO: include sparseMatrix
-//TODO: randomize q_1 vector
 //TODO: termination condition
 
 /**
+ * @brief random q_1 vector construction
+ * 
+ * @param n size of matrix \f$ A \f$
+ * @return 2-norm unit vector \f$ \in \R^n \f$
+ */
+hdnum::Vector<double> q_1(const double n) {
+    //random double generated according to https://www.geeksforgeeks.org/generate-random-double-numbers-in-cpp/
+    double lower_bound = -1;
+    double upper_bound = 1;
+    std::uniform_real_distribution<double> unif(lower_bound, upper_bound);
+    std::default_random_engine re;
+    
+    //init random vector
+    hdnum::Vector<double> q_1 (n);
+    for (int i = 0; i < n; i++) {
+        q_1[i] = unif(re);
+    }
+    
+    std::cout << q_1 << std::endl;
+
+    //normalize to 2-norm
+    q_1 /= q_1.two_norm();
+
+    std::cout << q_1 << std::endl;
+
+    return q_1;
+}
+
+/**
  * UPDATE: storage optimization
+ * UPDATE: sparseMatrix included
  * 
  * input: sparse symmetric matrix A \in \R^(n \times n), unit 2-norm vector q_1 \in \R^n 
  * output: matrix T_k \in R^(k \times k)
@@ -19,14 +49,14 @@
  * - integer k, 1 \le k \le n
 */
 
-hdnum::DenseMatrix<double> lanzcos(const hdnum::DenseMatrix<double> &A, hdnum::Vector<double> &q1){
+hdnum::SparseMatrix<double> lanzcos(const hdnum::SparseMatrix<double> &A) {
     /**
      * new initialisation:
      * The first iteration of the algorithm is done in the initialisation.
      * w = q_1; v = A * w; \alpha_1 = w^T * v; v = v - \alpha_1 * w; \beta_1 = ||v||_2; k = 1
     */
     int const n = A.rowsize();
-    //k = 1 equals k = 0 because our numeration starts with 0
+    //k = 1 equals k = 0 because our numeration starts at 0
     int k = 0;
 
     //init
@@ -34,29 +64,28 @@ hdnum::DenseMatrix<double> lanzcos(const hdnum::DenseMatrix<double> &A, hdnum::V
     hdnum::Vector<double> v(n);
     std::vector<double> alpha;
     std::vector<double> beta;
-
+   
     //first iteration:
     //w = q_1; v = A * w; \alpha_1 = w^T * v; v = v - \alpha_1 * w; \beta_1 = ||v||_2
-    w = q1;
+    w = q_1(n);
     //
     A.mv(v, w);
     //
     alpha.push_back(w * v);
-    std::cout << "alpha: " << alpha[alpha.size() - 1] << std::endl;
     //
     hdnum::Vector<double> alphaw(n);
     alphaw = w;
     alphaw *= alpha[0];
-    std::cout << alphaw << std::endl;
+    //std::cout << alphaw << std::endl;
     v = v - alphaw;
-    std::cout << "r: " << v << std::endl;
+    //std::cout << "r: " << v << std::endl;
     //
     beta.push_back(v.two_norm());
-    std::cout << "beta: " << beta[beta.size() - 1] << std::endl;
+    //std::cout << "beta: " << beta[beta.size() - 1] << std::endl;
 
     // k <= 2*n for termination
     // && k < (n*n)
-    while (beta[k] != 0 ) {
+    while (beta[k] != 0  && k < n) {
         for (int i = 0; i < n; i++) {
             //t = w_i; w_i = v_i/\beta_k; v_i = - \beta_k * t
             double t = w[i];
@@ -87,14 +116,27 @@ hdnum::DenseMatrix<double> lanzcos(const hdnum::DenseMatrix<double> &A, hdnum::V
         //std::cout << "beta: " << beta[beta.size() - 1] << std::endl;
     }
 
-    hdnum::DenseMatrix<double> Tk(k, k, 0);
-    for(int i = 0; i < k; i++) {
-        Tk[i][i] = alpha[i];
+    // hdnum::DenseMatrix<double> Tk(k, k);
+    // for(int i = 0; i < k; i++) {
+    //     Tk[i][i] = alpha[i];
+    //     if (i != (k-1)) {
+    //         Tk[i][i+1] = beta[i];
+    //         Tk[i+1][i] = beta[i];
+    //     }
+    // }
+
+    hdnum::SparseMatrix<double> Tk(k,k);
+    auto builder = hdnum::SparseMatrix<double>::builder(k, k);
+    for (int i = 0; i < k; i++) {
+        builder.addEntry(i, i, alpha[i]);
         if (i != (k-1)) {
-            Tk[i][i+1] = beta[i];
-            Tk[i+1][i] = beta[i];
+            builder.addEntry(i, i+1, beta[i]);
+            builder.addEntry(i+1, i, beta[i]);
         }
     }
+    Tk = builder.build();
+
+    std::cout << Tk << std::endl;
 
     return Tk;
 }
@@ -143,12 +185,12 @@ int main(){
 
     //std::cout << Tk2 << std::endl;
 
-    hdnum::DenseMatrix<double> test {};
-    hdnum::readMatrixFromFileMatrixMarket("test/matrix_market_files/lanczos_example_bcsstm01.mtx", test);
+    hdnum::SparseMatrix<double> test {};
+    hdnum::readMatrixFromFile("test/matrix_market_files/lanczos_example_bcsstm01.mtx", test);
 
-    std::cout << test << std::endl;
+    //std::cout << test << std::endl;
 
-    hdnum::DenseMatrix<double> Tk2 = lanzcos(sampleMatrix2, sample2q1);
+    hdnum::SparseMatrix<double> Tk2 = lanzcos(test);
     std::cout << Tk2 << std::endl;
 
     return 0;
