@@ -2,10 +2,13 @@
 #define HDNUM_QR_EIGENVALUES_HH
 
 #include "densematrix.hh"
-
+//TODO Eigenvalues < tol set to zero
+//TODO value for tol
+//TODO description of functions
+//TODO use efficent algorithm for R*Q (remains Hessenberg) --> + Q=G1*G2+... inefficient 
 
 namespace hdnum{
-    template <class T>
+    template <class T> //TODO change insert_partial_matrix to fit parameters of sub
     void insert_partial_matrix(hdnum::DenseMatrix<T>& A,hdnum::DenseMatrix<T> Partial, int row_start, int row_end, int col_start, int col_end){
         assert(row_end<A.rowsize() && col_end<A.colsize());
         assert(row_end-row_start == Partial.rowsize()-1 && col_end-col_start == Partial.colsize()-1);
@@ -158,7 +161,7 @@ namespace hdnum{
         }
     }
 
-    template <class T>
+    template <class T> //TODO create real and imag as arrays with size n
     void eigenvalues_qr_algorithm_givens(hdnum::DenseMatrix<T> A, std::vector<T>& real, std::vector<T>& imag ){
         T tol = 0.0000000000000000000000000000000001;
         makeHessenberg(A, tol);
