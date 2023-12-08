@@ -5,7 +5,8 @@
 //TODO Eigenvalues < tol set to zero
 //TODO value for tol
 //TODO description of functions
-//TODO use efficent algorithm for R*Q (remains Hessenberg) --> + Q=G1*G2+... inefficient 
+//TODO use efficent algorithm for R*Q (R upper triangle, Q upper hessenberg) --> + Q=G1*G2*... inefficient ?
+//TODO tridiagonal matrices (symm matrices in upper hessenberg)
 
 namespace hdnum{
     template <class T> //TODO change insert_partial_matrix to fit parameters of sub
@@ -42,7 +43,7 @@ namespace hdnum{
 
     template <class T>
     void hessenberg_qr(hdnum::DenseMatrix<T>& A, T tol){
-        ///overwrites A with R, old_A=QR; A'=RQ =AQ; returns Q
+        ///overwrites A with R, old_A=QR; A'=RQ ="AQ"
         int n=A.rowsize();
         hdnum::DenseMatrix<T> Q(n, n);
         for(int i =0; i<n; i++) Q[i][i]=1;
@@ -60,11 +61,12 @@ namespace hdnum{
             hdnum::DenseMatrix<T> a_part=A.sub(j, j, 2, n-j);
             a_part=givens_part.transpose()*a_part;
             insert_partial_matrix(A, a_part, j, j+1, j, n-1);
+            A[j+1][j]=0; //TODO check this (roundoff correction)
 
-            hdnum::DenseMatrix<T> q_part=Q.sub(0, j, n, 2);
+            hdnum::DenseMatrix<T> q_part=Q.sub(0, j, j+2, 2);
             q_part=q_part*givens_part;
-            insert_partial_matrix(Q, q_part, 0, n-1, j, j+1);
-        }
+            insert_partial_matrix(Q, q_part, 0, j+1, j, j+1);
+        }      
         A=A*Q;
     }
 
@@ -74,7 +76,7 @@ namespace hdnum{
         int n=A.rowsize();
         for(int j=0; j<n-2; j++){
             for(int i=n-2; i>j; i--){
-                if (fabs(A[j+1][j])<=tol){
+                if (fabs(A[i+1][j])<=tol){
                     A[j+1][j]=0;
                     continue;
                 }
@@ -92,6 +94,8 @@ namespace hdnum{
                 a_part=A.sub(0, i, n, 2); //columns
                 a_part=a_part*givens_part;
                 insert_partial_matrix(A, a_part, 0, n-1, i, i+1);
+                //std::cout << "A" << i+1 << ", " << i << " = " << A[i+1][j] << std::endl; 
+                A[i+1][j]=0;//roundoff error //TODO check this
             }
         }
         return A;
@@ -163,7 +167,7 @@ namespace hdnum{
 
     template <class T> //TODO create real and imag as arrays with size n
     void eigenvalues_qr_algorithm_givens(hdnum::DenseMatrix<T> A, std::vector<T>& real, std::vector<T>& imag ){
-        T tol = 0.0000000000000000000000000000000001;
+        T tol = 0.000000000000001;
         makeHessenberg(A, tol);
         qr_iteration(A, tol, true, real, imag);
     }
