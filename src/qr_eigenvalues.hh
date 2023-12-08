@@ -38,13 +38,17 @@ namespace hdnum{
     }
 
     template <class T>
-    hdnum::DenseMatrix<T> hessenberg_qr(hdnum::DenseMatrix<T>& A){
+    hdnum::DenseMatrix<T> hessenberg_qr(hdnum::DenseMatrix<T>& A, T tol){
         ///overwrites A with R, old_A=QR; A'=RQ =AQ; returns Q
         int n=A.rowsize();
         hdnum::DenseMatrix<T> Q(n, n);
         for(int i =0; i<n; i++) Q[i][i]=1;
 
         for (int j=0; j<n-1; j++){
+            if (fabs(A[j+1][j])<=tol){
+                A[j+1][j]=0;
+                continue;
+            }
             std::pair<T, T> cs=givens(A[j][j], A[j+1][j]);
             T c=cs.first;
             T s=cs.second;
@@ -63,11 +67,14 @@ namespace hdnum{
 
 
     template <class T>
-    hdnum::DenseMatrix<T> makeHessenberg(hdnum::DenseMatrix<T>& A){ 
+    hdnum::DenseMatrix<T> makeHessenberg(hdnum::DenseMatrix<T>& A, T tol){ 
         int n=A.rowsize();
         for(int j=0; j<n-2; j++){
             for(int i=n-2; i>j; i--){
-                if (abs(A[i+1][j]) <= 0.00000000000001) continue; //TODO add tol
+                if (fabs(A[j+1][j])<=tol){
+                    A[j+1][j]=0;
+                    continue;
+                }
                 std::pair<T, T> cs=givens(A[i][j], A[i+1][j]);
                 T c=cs.first;
                 T s=cs.second;
@@ -144,7 +151,7 @@ namespace hdnum{
             }
             else{
                 for( int i=0; i<20; i++){ //TODO decouple after every iteration?
-                    A=A* hessenberg_qr(A); //= R*Q=A'
+                    A=A* hessenberg_qr(A, tol); //= R*Q=A'
                 }
                 qr_iteration(A, tol, true, real, imag);
             }
@@ -153,8 +160,8 @@ namespace hdnum{
 
     template <class T>
     void eigenvalues_qr_algorithm_givens(hdnum::DenseMatrix<T> A, std::vector<T>& real, std::vector<T>& imag ){
-        T tol = 0.0000000000000001;
-        makeHessenberg(A);
+        T tol = 0.0000000000000000000000000000000001;
+        makeHessenberg(A, tol);
         qr_iteration(A, tol, true, real, imag);
     }
 
