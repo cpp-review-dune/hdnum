@@ -41,7 +41,7 @@ namespace hdnum{
     }
 
     template <class T>
-    hdnum::DenseMatrix<T> hessenberg_qr(hdnum::DenseMatrix<T>& A, T tol){
+    void hessenberg_qr(hdnum::DenseMatrix<T>& A, T tol){
         ///overwrites A with R, old_A=QR; A'=RQ =AQ; returns Q
         int n=A.rowsize();
         hdnum::DenseMatrix<T> Q(n, n);
@@ -65,7 +65,7 @@ namespace hdnum{
             q_part=q_part*givens_part;
             insert_partial_matrix(Q, q_part, 0, n-1, j, j+1);
         }
-        return Q;
+        A=A*Q;
     }
 
 
@@ -154,7 +154,7 @@ namespace hdnum{
             }
             else{
                 for( int i=0; i<20; i++){ //TODO decouple after every iteration?
-                    A=A* hessenberg_qr(A, tol); //= R*Q=A'
+                    hessenberg_qr(A, tol); //= R*Q=A'
                 }
                 qr_iteration(A, tol, true, real, imag);
             }
