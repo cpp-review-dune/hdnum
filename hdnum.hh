@@ -25,6 +25,7 @@
 #include "src/lr.hh"
 #include "src/newton.hh"
 #include "src/qr.hh"
+#include "src/lanczos.hh"
 
 // Num1
 #include "src/ode.hh"
