@@ -31,8 +31,13 @@
 #include "src/pde.hh"
 #include "src/rungekutta.hh"
 #include "src/sgrid.hh"
-#endif
 
 //NEW
-#include "src/lanczos.hh"
+#include "src/lanczos_util.hh"
+#include "src/lanczos_basic.hh"
+#include "src/lanczos_optimized.hh"
+#include "src/lanczos_householder.hh"
+#include "src/lanczos_cro.hh"
 #include "src/qr_eigenvalues.hh"
+
+#endif

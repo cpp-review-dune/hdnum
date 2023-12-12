@@ -4,7 +4,30 @@
 
 using namespace hdnum;
 
-void sampleRun(SparseMatrix<double> sampleMatrix) {
+void eig(SparseMatrix<double> &Tk) {
+    std::vector<double> real;
+    std::vector<double> imag;
+    DenseMatrix<double> Tk_dense = Tk;
+    eigenvalues_qr_algorithm_givens(Tk_dense, real, imag);
+
+    std::cout << "Eigenvalues: " << std::endl;
+    for (int i = 0; i< real.size(); i++){
+        std::cout << "[" << i << "]: "<< real[i]  << " + i*" << imag[i] << std::endl;
+    } 
+}
+
+void matrix_output(SparseMatrix<double> &Tk) {
+    Tk.scientific(false);
+    Tk.width(8);
+    Tk.precision(3);
+    if (Tk.colsize() < 40) {
+        std::cout << Tk << std::endl;
+    }
+}
+
+void sample_run(SparseMatrix<double> sampleMatrix) {
+    SparseMatrix<double> Tk_cro = lanczos_cro(sampleMatrix);
+
     sampleMatrix.scientific(false);
     sampleMatrix.width(8);
     sampleMatrix.precision(3);
@@ -14,46 +37,28 @@ void sampleRun(SparseMatrix<double> sampleMatrix) {
     else {
         std::cout << "SampleMatrix with " << sampleMatrix.colsize() << "x" << sampleMatrix.rowsize() << std::endl;
     }
+    std::cout << "--------------------------------------------" << std::endl;
 
-    SparseMatrix<double> Tk = lanczos(sampleMatrix);
-    // Tk.scientific(false);
-    // Tk.width(8);
-    // Tk.precision(3);
-    //std::cout << "Optimized Lanczos: \n" << Tk << std::endl;
+    // //Optimized Lanczos method
+    SparseMatrix<double> Tk_opt = lanczos_optimized(sampleMatrix);
+    std::cout << "Optimized Lanczos: \n" << std::endl;
+    //matrix_output(Tk_opt);
+    eig(Tk_opt);
+    std::cout << "--------------------------------------------" << std::endl;
 
-    std::vector<double> real;
-    std::vector<double> imag;
-    DenseMatrix<double> Tk_dense = Tk;
-    eigenvalues_qr_algorithm_givens(Tk_dense, real, imag);
+    // //Basic Lanczos method
+    SparseMatrix<double> Tk_basic = lanczos_basic(sampleMatrix);
+    std::cout << "Basic Lanczos: \n" << std::endl;
+    //matrix_output(Tk_basic);
+    eig(Tk_basic);
+    std::cout << "--------------------------------------------" << std::endl;
 
-    std::cout << "Optimized Lanczos:" << std::endl;
-    for (int i = 0; i< real.size(); i++){
-        std::cout << real[i]  << " + i*" << imag[i] << std::endl;
-    }
-
-
-//     SparseMatrix<double> Tk_basic = lanczos_basic(sampleMatrix);
-//     Tk_basic.scientific(false);
-//     Tk_basic.width(8);
-//     Tk_basic.precision(4);
-//     std::cout << "Basic Lanczos: \n" << Tk_basic << std::endl;
-//     std::cout << "--------------------------------------------" << std::endl;
-
-    Tk = lanczos_complete(sampleMatrix);
-    Tk.scientific(false);
-    Tk.width(8);
-    Tk.precision(3);
-    std::cout << "Complete Reorthogonalization Lanczos: \n" << Tk << std::endl;
-
-    std::vector<double> real2;
-    std::vector<double> imag2;
-    DenseMatrix<double> Tk_dense2 = Tk;
-    eigenvalues_qr_algorithm_givens(Tk_dense2, real2, imag2);
-
-    std::cout << "Complete Reorthogonalization Lanczos: " << std::endl;
-    for (int i = 0; i< real2.size(); i++){
-        std::cout << real2[i]  << " + i*" << imag2[i] << std::endl;
-    }
+    // Lanczos complete reorthogonalization method
+    //SparseMatrix<double> Tk_cro = lanczos_cro(sampleMatrix);
+    std::cout << "CRO Lanczos: \n" << std::endl;
+    //matrix_output(Tk_cro);
+    eig(Tk_cro);
+    std::cout << "--------------------------------------------" << std::endl;
 }
 
 void sampleMatrix1(){
@@ -63,7 +68,7 @@ void sampleMatrix1(){
                                                                    {1, 1, 2}};
     // Its eigenvalues are {4, 1, 1}
     SparseMatrix<double> sampleMatrix = SparseMatrix<double>::builder(sample).build();
-    sampleRun(sampleMatrix);
+    sample_run(sampleMatrix);
 }
 
 void sampleMatrix2(){
@@ -72,13 +77,13 @@ void sampleMatrix2(){
                                                                    {1, -1, 0}};
     // Its eigenvalues are {1, 1, -2}
     SparseMatrix<double> sampleMatrix = SparseMatrix<double>::builder(sample).build();
-    sampleRun(sampleMatrix);
+    sample_run(sampleMatrix);
 }
 
 void sampleMatrixFromCollection(std::string &path){
     SparseMatrix<double> sampleMatrix {};
     readMatrixFromFile(path, sampleMatrix);
-    sampleRun(sampleMatrix);
+    sample_run(sampleMatrix);
 }
 
 int main(){
@@ -95,7 +100,7 @@ int main(){
     //sampleMatrix1 bcsstm01 (48x48):
     path = "matrix_files/ex_lanczos_bcsstm01.mtx";
     // Its eigenvalues are {200, 200, 200, 200, 200, 200, ..., 100, ..., 0}
-    sampleMatrixFromCollection(path);
+    //sampleMatrixFromCollection(path);
 
     //sampleMatrix2 bcsstm22 (138x138):
     path = "matrix_files/ex_lanczos_bcsstm22.mtx";

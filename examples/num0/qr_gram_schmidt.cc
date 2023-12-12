@@ -61,6 +61,6 @@ int main()
     // thats it, now you've created an orthogonal matrix Q and an upper triangular matrix R which applies: A = Q*R
     // but you still have to apply the permutations
     DenseMatrix<double> QR2(Q3*R3);
-    apply_permutation(QR2, p);
+    //apply_permutation(QR2, p);
     std::cout << "QR2 = " << QR2 << std::endl;
 }
