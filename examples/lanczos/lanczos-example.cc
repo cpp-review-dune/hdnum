@@ -38,6 +38,22 @@ void sampleRun(SparseMatrix<double> sampleMatrix) {
 //     Tk_basic.precision(4);
 //     std::cout << "Basic Lanczos: \n" << Tk_basic << std::endl;
 //     std::cout << "--------------------------------------------" << std::endl;
+
+    Tk = lanczos_complete(sampleMatrix);
+    Tk.scientific(false);
+    Tk.width(8);
+    Tk.precision(3);
+    std::cout << "Complete Reorthogonalization Lanczos: \n" << Tk << std::endl;
+
+    std::vector<double> real2;
+    std::vector<double> imag2;
+    DenseMatrix<double> Tk_dense2 = Tk;
+    eigenvalues_qr_algorithm_givens(Tk_dense2, real2, imag2);
+
+    std::cout << "Complete Reorthogonalization Lanczos: " << std::endl;
+    for (int i = 0; i< real2.size(); i++){
+        std::cout << real2[i]  << " + i*" << imag2[i] << std::endl;
+    }
 }
 
 void sampleMatrix1(){
@@ -79,7 +95,7 @@ int main(){
     //sampleMatrix1 bcsstm01 (48x48):
     path = "matrix_files/ex_lanczos_bcsstm01.mtx";
     // Its eigenvalues are {200, 200, 200, 200, 200, 200, ..., 100, ..., 0}
-    //sampleMatrixFromCollection(path);
+    sampleMatrixFromCollection(path);
 
     //sampleMatrix2 bcsstm22 (138x138):
     path = "matrix_files/ex_lanczos_bcsstm22.mtx";
@@ -89,7 +105,7 @@ int main(){
     //sampleMatrix3 Alemdar (6245x6245):
     path = "matrix_files/ex_lanczos_Alemdar.mtx";
     // Its eigenvalues are {69.5187762679672, 69.2682886007168, 68.9967100511161, 68.9689724618314, 68.7323042832841, 68.6419265794814, 68.5722507550780}
-    sampleMatrixFromCollection(path);
+    //sampleMatrixFromCollection(path);
 
     //sampleMatrix12 aug3d (24300x24300):
     path = "matrix_files/ex_lanczos_aug3d.mtx";

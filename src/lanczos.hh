@@ -247,11 +247,9 @@ SparseMatrix<T> lanczos_basic(const SparseMatrix<T> &A){
  * @param A 
  * @return SparseMatrix<T> 
  */
-// template<class T>
-// SparseMatrix<T> lanczos_complete(const SparseMatrix<T> &A) {
-//     /*
-     * Algorithm:
-     *
+template<class T>
+SparseMatrix<T> lanczos_complete(const SparseMatrix<T> &A) {
+    /* Algorithm:
      * q = x / ||x||
      * Q_1 = [q]
      * r = A * q
@@ -271,71 +269,83 @@ SparseMatrix<T> lanczos_basic(const SparseMatrix<T> &A){
      *      beta_j = ||r||
      *      j++
      * } 
-     *  
      */
-    // //init:
-//     int n = A.rowsize();
-//     int k = 0;
-//     //q = x / ||x||; Q = [q]
-//     Vector<T> q(n); 
-//     q = generate_q_1(n);
-//     DenseMatrix<T> Q;
-//     Q.
 
-    // std::vector<T> beta {1}; //beta_0 = 1
-    // 
-    // 
-    // Vector<T> r(n);
-    // r = generate_q_1(n); //r_0 = generate_q_1
-    // std::vector<T> alpha;
+    //init:
+    int n = A.rowsize();
+    //k = 2
+    int k = 1;
+
+    std::vector<T> alpha;
+    std::vector<T> beta;
+    Vector<T> q(n);
+    DenseMatrix<T> Q;
+    Vector<T> r(n);
+    Vector<T> v(n);
+
+    //q_1 = x / ||x||; Q = [q]
+    q = generate_q_1(n);
+    Q.transpose(); Q.addNewRow(q); Q.transpose();
+
+    //first iteration
+    //r = A * q
+    A.mv(r, q);
+    //alpha_1 = q * r
+    alpha.push_back(q * r);
+    //r = r - alpha_1 * q
+    r.update(-1 * alpha.back(), q);
+    //beta_1 = ||r||
+    beta.push_back(r.two_norm());
+    //std::cout << r << std::endl;
     
-    
+    while(beta[k] != 0.0 && k < n) {
+        //v = q_(k-1)
+        auto q_km1 = q;
 
+        //q = r/beta_(j-1)
+        q = r;
+        q /= beta[k-1];
 
-    // //TODO: additional termination condition
-    // while (beta[k] != 0.0 && k < n) {
-    //     k++;
-    //     // q_(k) = r_(k-1) / \beta_(k-1)
-    //     auto q_k = r;
-    //     q_k /= beta[k-1];
+        //Q_j = [Q_(j-1), q]
+        Q.transpose(); Q.addNewRow(q); Q.transpose();
 
-    //     // alpha_k = q_k^T * A * q_k
-    //     Vector<T> Aq_k(n);
-    //     A.mv(Aq_k, q_k);
-    //     auto alpha_k = q_k * Aq_k;
-    //     alpha.push_back(alpha_k);
+        //r = A * q - beta_(j-1) * v
+        A.mv(r, q);
+        r.update(-1 * beta.back(), q_km1);
 
-    //     // r = (A - alpha_k * I) * q[k] - beta[k-1] * q[k-1]
-    //     //(A - alpha_k * I) shortened to A(i,i) - alpha_k
-    //     auto Amalpha = A;
-    //     for (int i = 0; i < Amalpha.rowsize(); i++) {
-    //         Amalpha.get(i,i) = Amalpha(i,i) - alpha_k;
-    //     }
-    //     Amalpha.mv(r, q_k);
-    //     auto betaq = q_km1;
-    //     betaq *= beta[k-1];
-    //     r -= betaq; 
+        //alpha_j = q * r
+        alpha.push_back(q * r);
 
-    //     // beta[k] = 2-norm of r
-    //     beta.push_back(r.two_norm());
+        //r = r - alpha_j * q
+        r.update(-1 * alpha.back(), q);
 
-    //     q_km1 = q_k; 
-    // }
+        //reorthogonalization
+        //r = r - Q * (Q^T * r)
+        Vector<T> QQr(n);
+        (Q.transpose()).mv(QQr, r);
+        Q.mv(QQr, QQr);
+        r -= QQr;
+        //std::cout << r << std::endl;
 
-    // SparseMatrix<T> Tk (k,k);
-    // auto builder = typename SparseMatrix<T>::builder(k,k);
-    // for (int i = 0; i < k; i++) {
-    //     builder.addEntry(i, i, alpha[i]);
-    //     if (i != (k-1)) {
-    //         builder.addEntry(i, i+1, beta[i]);
-    //         builder.addEntry(i+1, i, beta[i]);
-    //     }
-    // }
-    // Tk = builder.build();
+        //beta_j = ||r||
+        beta.push_back(r.two_norm());
 
-    // SparseMatrix<T> Tk(k,k);
-    // return T_k;
-// }
+        k++;
+    }
+
+    SparseMatrix<T> Tk;
+    auto builder = typename SparseMatrix<T>::builder(k,k);
+    for (int i = 0; i < k; i++) {
+        builder.addEntry(i, i, alpha[i]);
+        if (i != (k-1)) {
+            builder.addEntry(i, i+1, beta[i]);
+            builder.addEntry(i+1, i, beta[i]);
+        }
+    }
+    Tk = builder.build();
+
+    return Tk;
+}
 
 /**
  * @brief 
@@ -347,7 +357,7 @@ SparseMatrix<T> lanczos_basic(const SparseMatrix<T> &A){
 // template<class T>
 // SparseMatrix<T> lanczos_selective(const SparseMatrix<T> &A){
 //     SparseMatrix<T> Tk(k,k);
-//     return T_k;
+//     return Tk;
 // }
 
 } //namespace hdnum
