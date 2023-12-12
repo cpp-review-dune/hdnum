@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../hdnum.hh"
+#include "../../hdnum.hh"
 #include <string>
 
 using namespace hdnum;
@@ -7,14 +7,30 @@ using namespace hdnum;
 void sampleRun(SparseMatrix<double> sampleMatrix) {
     sampleMatrix.scientific(false);
     sampleMatrix.width(8);
-    sampleMatrix.precision(4);
-    std::cout << "SampleMatrix: \n" << sampleMatrix << std::endl;
+    sampleMatrix.precision(3);
+    if (sampleMatrix.colsize() < 40){
+        std::cout << "SampleMatrix: \n" << sampleMatrix << std::endl;
+    }
+    else {
+        std::cout << "SampleMatrix with " << sampleMatrix.colsize() << "x" << sampleMatrix.rowsize() << std::endl;
+    }
 
     SparseMatrix<double> Tk = lanczos(sampleMatrix);
-    Tk.scientific(false);
-    Tk.width(8);
-    Tk.precision(4);
-    std::cout << "Optimized Lanczos: \n" << Tk << std::endl;
+    // Tk.scientific(false);
+    // Tk.width(8);
+    // Tk.precision(3);
+    //std::cout << "Optimized Lanczos: \n" << Tk << std::endl;
+
+    std::vector<double> real;
+    std::vector<double> imag;
+    DenseMatrix<double> Tk_dense = Tk;
+    eigenvalues_qr_algorithm_givens(Tk_dense, real, imag);
+
+    std::cout << "Optimized Lanczos:" << std::endl;
+    for (int i = 0; i< real.size(); i++){
+        std::cout << real[i]  << " + i*" << imag[i] << std::endl;
+    }
+
 
 //     SparseMatrix<double> Tk_basic = lanczos_basic(sampleMatrix);
 //     Tk_basic.scientific(false);
@@ -60,51 +76,25 @@ int main(){
     // Its eigenvalues are {1, 1, -2}
 
     //Suite Sparse Matrix Collection
-    //sampleMatrix3 bcsstm01 (48x48):
-    path = "../test/matrix_market_files/ex_lanczos_bcsstm01.mtx";
-    // Its eigenvalues are {100, 200, 0}
+    //sampleMatrix1 bcsstm01 (48x48):
+    path = "matrix_files/ex_lanczos_bcsstm01.mtx";
+    // Its eigenvalues are {200, 200, 200, 200, 200, 200, ..., 100, ..., 0}
     //sampleMatrixFromCollection(path);
 
-    //sampleMatrix11 mycielskian3 (5x5):
-    path = "../test/matrix_market_files/ex_lanczos_mycielskian3.mtx";
-    // Its eigenvalues are {}
+    //sampleMatrix2 bcsstm22 (138x138):
+    path = "matrix_files/ex_lanczos_bcsstm22.mtx";
+    // Its eigenvalues are {0.00973766582616700, 0.00973766582616699, 0.00973766582616601, 0.00973766582616600, 0.00973766582616599, 0.00973766582616598, 0.00835385206984501}
     //sampleMatrixFromCollection(path);
 
-    //sampleMatrix12 Trefethen_20b (19x19):
-    path = "../test/matrix_market_files/ex_lanczos_Trefethen_20b.mtx";
-    // Its eigenvalues are {}
+    //sampleMatrix3 Alemdar (6245x6245):
+    path = "matrix_files/ex_lanczos_Alemdar.mtx";
+    // Its eigenvalues are {69.5187762679672, 69.2682886007168, 68.9967100511161, 68.9689724618314, 68.7323042832841, 68.6419265794814, 68.5722507550780}
     sampleMatrixFromCollection(path);
 
-    //sampleMstrix6 bcsstk01 (48x48):
-    path = "../test/matrix_market_files/ex_lanczos_bcsstk01.mtx";
+    //sampleMatrix12 aug3d (24300x24300):
+    path = "matrix_files/ex_lanczos_aug3d.mtx";
+    // Its eigenvalues are {3.45226995184565, -3.45226995184564, 3.44050573273934, 3.44050573273934, 3.44050573273933, -3.44050573273933, -3.44050573273932}
     //sampleMatrixFromCollection(path);
 
-    //sampleMatrix5 bcspwr02 (49x49):
-    path = "../test/matrix_market_files/ex_lanczos_bcspwr02.mtx";
-    //sampleMatrixFromCollection(path);
-
-    //sampleMatrix4 bcsstm22 (138x138):
-    path = "../test/matrix_market_files/ex_lanczos_bcsstm22.mtx";
-    // Its eigenvalues are {}
-    //sampleMatrixFromCollection(path);
-
-    //sampleMatrix7 bcsstk07 (420x420):
-    path = "../test/matrix_market_files/ex_lanczos_bcsstk07.mtx";
-    //sampleMatrixFromCollection(path);
-
-    //sampleMatrix10 G11 (800x800):
-    path = "../test/matrix_market_files/ex_lanczos_G11.mtx";
-    // Its eigenvalues are {}
-    //sampleMatrixFromCollection(path);
-
-    //sampleMatrix8 bcsstk13 (2003x2003):
-    path = "../test/matrix_market_files/ex_lanczos_bcsstk13.mtx";
-    //sampleMatrixFromCollection(path);
-
-    //sampleMatrix9 ex10 (2410x2410):
-    path = "../test/matrix_market_files/ex_lanczos_ex10.mtx";
-    // Its eigenvalues are {}
-    //sampleMatrixFromCollection(path);
-   
     return 0;
 }

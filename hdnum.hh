@@ -25,7 +25,6 @@
 #include "src/lr.hh"
 #include "src/newton.hh"
 #include "src/qr.hh"
-#include "src/lanczos.hh"
 
 // Num1
 #include "src/ode.hh"
@@ -33,3 +32,7 @@
 #include "src/rungekutta.hh"
 #include "src/sgrid.hh"
 #endif
+
+//NEW
+#include "src/lanczos.hh"
+#include "src/qr_eigenvalues.hh"
