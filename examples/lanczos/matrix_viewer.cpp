@@ -21,8 +21,8 @@ int main(){
     readMatrixFromFile(path, sampleMatrix);
     bool is_symmetric = true;
 
-    for(long i; i < sampleMatrix.colsize(); i++) {
-        for(long j; j < sampleMatrix.colsize(); j++){
+    for(size_t i; i < sampleMatrix.colsize(); i++) {
+        for(size_t j; j < sampleMatrix.colsize(); j++){
             if(sampleMatrix(i,j) != sampleMatrix(j,i)) {
                 is_symmetric = false;
             }

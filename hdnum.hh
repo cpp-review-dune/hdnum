@@ -33,11 +33,7 @@
 #include "src/sgrid.hh"
 
 //NEW
-#include "src/lanczos_util.hh"
-#include "src/lanczos_basic.hh"
-#include "src/lanczos_optimized.hh"
-#include "src/lanczos_householder.hh"
-#include "src/lanczos_cro.hh"
+#include "src/lanczos.hh"
 #include "src/qr_eigenvalues.hh"
 
 #endif

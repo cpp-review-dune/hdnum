@@ -11,6 +11,8 @@ void eig(SparseMatrix<double> &Tk) {
     eigenvalues_qr_algorithm_givens(Tk_dense, real, imag);
 
     std::cout << "Eigenvalues: " << std::endl;
+    size_t n = 15;
+    if (n > real.size()) n = real.size();
     for (int i = 0; i< real.size(); i++){
         std::cout << "[" << i << "]: "<< real[i]  << " + i*" << imag[i] << std::endl;
     } 
@@ -26,7 +28,7 @@ void matrix_output(SparseMatrix<double> &Tk) {
 }
 
 void sample_run(SparseMatrix<double> sampleMatrix) {
-    SparseMatrix<double> Tk_cro = lanczos_cro(sampleMatrix);
+    std::cout << std::setprecision(8);
 
     sampleMatrix.scientific(false);
     sampleMatrix.width(8);
@@ -39,14 +41,14 @@ void sample_run(SparseMatrix<double> sampleMatrix) {
     }
     std::cout << "--------------------------------------------" << std::endl;
 
-    // //Optimized Lanczos method
+    //Optimized Lanczos method
     SparseMatrix<double> Tk_opt = lanczos_optimized(sampleMatrix);
     std::cout << "Optimized Lanczos: \n" << std::endl;
     //matrix_output(Tk_opt);
     eig(Tk_opt);
     std::cout << "--------------------------------------------" << std::endl;
 
-    // //Basic Lanczos method
+    //Basic Lanczos method
     SparseMatrix<double> Tk_basic = lanczos_basic(sampleMatrix);
     std::cout << "Basic Lanczos: \n" << std::endl;
     //matrix_output(Tk_basic);
@@ -54,7 +56,7 @@ void sample_run(SparseMatrix<double> sampleMatrix) {
     std::cout << "--------------------------------------------" << std::endl;
 
     // Lanczos complete reorthogonalization method
-    //SparseMatrix<double> Tk_cro = lanczos_cro(sampleMatrix);
+    SparseMatrix<double> Tk_cro = lanczos_cro(sampleMatrix);
     std::cout << "CRO Lanczos: \n" << std::endl;
     //matrix_output(Tk_cro);
     eig(Tk_cro);
@@ -100,7 +102,7 @@ int main(){
     //sampleMatrix1 bcsstm01 (48x48):
     path = "matrix_files/ex_lanczos_bcsstm01.mtx";
     // Its eigenvalues are {200, 200, 200, 200, 200, 200, ..., 100, ..., 0}
-    //sampleMatrixFromCollection(path);
+    sampleMatrixFromCollection(path);
 
     //sampleMatrix2 bcsstm22 (138x138):
     path = "matrix_files/ex_lanczos_bcsstm22.mtx";

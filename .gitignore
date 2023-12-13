@@ -14,6 +14,7 @@ doc
 
 /doc
 /mystuff
+/example/lanczos/matrix_files
 
 /**/build
 /**/release
