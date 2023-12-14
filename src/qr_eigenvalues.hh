@@ -178,7 +178,6 @@ namespace hdnum{
     }
 
 
-
 } //end namespace hdnum
 
 #endif
