@@ -16,6 +16,8 @@
 //TODO: generate_q_1 template -> class
 //TODO: sparse matrix builder in function
 
+
+
 ///UPDATE: storage optimization
 ///UPDATE: sparseMatrix included
 ///UPDATE: first CRO method implemented
@@ -152,6 +154,21 @@ namespace hdnum {
         return q_1;
     }
 
+    template<class T>
+    SparseMatrix<T> build_Tk(std::vector<T> &alpha, std::vector<T> &beta, int &k){
+        SparseMatrix<T> Tk (k,k);
+        auto builder = typename SparseMatrix<T>::builder(k,k);
+        for (size_t i = 0; i < k; i++) {
+            builder.addEntry(i, i, alpha[i]);
+            if (i != (k-1)) {
+                builder.addEntry(i, i+1, beta[i]);
+                builder.addEntry(i+1, i, beta[i]);
+            }
+        }
+        Tk = builder.build();
+        return Tk;
+    }
+
 /************************************************************************************************/
 /* LANCZOS BASIC */
 /************************************************************************************************/
@@ -203,17 +220,7 @@ namespace hdnum {
             q_km1 = q_k; 
         }
 
-        SparseMatrix<T> Tk (k,k);
-        auto builder = typename SparseMatrix<T>::builder(k,k);
-        for (size_t i = 0; i < k; i++) {
-            builder.addEntry(i, i, alpha[i]);
-            if (i != (k-1)) {
-                builder.addEntry(i, i+1, beta[i]);
-                builder.addEntry(i+1, i, beta[i]);
-            }
-        }
-        Tk = builder.build();
-        return Tk;
+        return build_Tk(alpha, beta, k);
     }
 
     template<class T>
@@ -358,7 +365,8 @@ namespace hdnum {
         //beta_1 = ||r||
         beta.push_back(r.two_norm());
         T beta_k = r.two_norm();
-        
+
+        //TODO: abbruchbedingunge
         while(fabs(beta[k]) > 1e-18 && k < n) {
             k++;
             //v = q_(k-1)
