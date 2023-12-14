@@ -8,11 +8,13 @@
 #include <random>
 #include <cfloat>
 
-//TODO: termination condition: 
-    //TODO: set precision to more than 3
-    //USE: std::abs(beta[k]) > 1e-9
-//TODO: eigenvalues von Tk -> ausnutzen Bandmatrix
+//TODO: class implementation
+//TODO: termination condition: use EPSILON -> class implementation
+//TODO: eigenvalues von Tk -> Bandmatrix
 //TODO: test application without randomized q_1
+//TODO: householder -> matrix multiplications; save v as matrix
+//TODO: generate_q_1 template -> class
+//TODO: sparse matrix builder in function
 
 ///UPDATE: storage optimization
 ///UPDATE: sparseMatrix included
@@ -379,7 +381,8 @@ namespace hdnum {
             //r = r - alpha_j * q
             r.update(-1 * alpha.back(), q);
 
-            //reorthogonalization: r = r - Q * (Q^T * r)
+            //reorthogonalization (using Gram-Schmidt): r = r - Q * (Q^T * r)
+
             Vector<T> QTr (Q.colsize());
             QT.mv(QTr, r);
             Vector<T> QQTr (n);
@@ -418,6 +421,19 @@ namespace hdnum {
 /* LANCZOS COMPLETE REORTHOGONALIZATION USING HOUSEHOLDER */
 /************************************************************************************************/
 
+    /*
+        * Algorithm:
+        * 
+        * r_0 = q_1 (given unit vector)
+        * Determine Householder H_0 s.t. H_0 * r_0 = e_1
+        * for (k = 1 .. n-1) {
+        *      a_k = q_k^T * A * q_k
+        *      r_k = (A-alpha_k * I) * q_k - beta_(k-1) * q_(k-1)
+        *      w = (H_(k-1) * ... * H_0) * r_k
+        *      Determine Householder H_k s.t. H_k * w = [w_1, ..., w_k, beta_k, 0,...,0]^T
+        *      q_(k+1) = H_0 * .... * H_k * e_(k+1)
+        * }
+        */
     /**
      * @brief Lanczos method with complete reorthogonalization using Householder matrices
      * 
@@ -427,19 +443,7 @@ namespace hdnum {
      */
     // template<class T>
     // SparseMatrix<T> lanczos_householder(const SparseMatrix<T> &A, const Vector<T> &q_1) {
-    //     /*
-    //      * Algorithm:
-    //      * 
-    //      * r_0 = q_1 (given unit vector)
-    //      * Determine Householder H_0 s.t. H_0 * r_0 = e_1
-    //      * for (k = 1 .. n-1) {
-    //      *      a_k = q_k^T * A * q_k
-    //      *      r_k = (A-alpha_k * I) * q_k - beta_(k-1) * q_(k-1)
-    //      *      w = (H_(k-1) * ... * H_0) * r_k
-    //      *      Determine Householder H_k s.t. H_k * w = [w_1, ..., w_k, beta_k, 0,...,0]^T
-    //      *      q_(k+1) = H_0 * .... * H_k * e_(k+1)
-    //      * }
-    //      */
+    
 
 
     //     SparseMatrix<T> Tk(k,k);
