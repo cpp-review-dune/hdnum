@@ -10,7 +10,7 @@
 
 namespace hdnum{
     template <class T> //TODO change insert_partial_matrix to fit parameters of sub
-    void insert_partial_matrix(hdnum::DenseMatrix<T>& A,hdnum::DenseMatrix<T> Partial, int row_start, int row_end, int col_start, int col_end){
+    void insert_partial_matrix(hdnum::DenseMatrix<T>& A,const hdnum::DenseMatrix<T>& Partial, int row_start, int row_end, int col_start, int col_end){
         assert(row_end<A.rowsize() && col_end<A.colsize());
         assert(row_end-row_start == Partial.rowsize()-1 && col_end-col_start == Partial.colsize()-1);
         for (int i=col_start; i<=col_end; i++){
@@ -56,8 +56,8 @@ namespace hdnum{
             std::pair<T, T> cs=givens(A[j][j], A[j+1][j]);
             T c=cs.first;
             T s=cs.second;
-            hdnum::DenseMatrix<T> givens_part={{c, s}, {-s, c}};
-
+            hdnum::DenseMatrix<T> givens_part={{c, s}, {-s, c}}; //TODO Segmentation faul for some values (e.g. 92)
+            //use multiplication facor instead of matrix
             hdnum::DenseMatrix<T> a_part=A.sub(j, j, 2, n-j);
             a_part=givens_part.transpose()*a_part;
             insert_partial_matrix(A, a_part, j, j+1, j, n-1);
@@ -66,7 +66,7 @@ namespace hdnum{
             hdnum::DenseMatrix<T> q_part=Q.sub(0, j, j+2, 2);
             q_part=q_part*givens_part;
             insert_partial_matrix(Q, q_part, 0, j+1, j, j+1);
-        }      
+        }
         A=A*Q;
     }
 
@@ -103,7 +103,7 @@ namespace hdnum{
 
     template <class T>
     std::vector<int> decouple_check(hdnum::DenseMatrix<T> A, T tol){  //TODO T tol??
-        std::vector<int> zeros({});
+        std::vector<int> zeros;
         for (int i=0; i<A.rowsize()-1; i++){
             if (fabs(A[i+1][i])<tol) {zeros.push_back(i);};
         }
@@ -130,44 +130,49 @@ namespace hdnum{
     }
 
     template <class T>
-    void qr_iteration(hdnum::DenseMatrix<T> A, T tol, bool decouple, std::vector<T>& real, std::vector<T>& imag){
-        bool qr_step=false;
-        if (decouple){    
-            std::vector<int> zeros = decouple_check(A, tol);
-            if (!zeros.empty()){ //decoubeling
-                int n= zeros.size();
-                for (int i=0; i<n; i++){
-                    if(i==0) qr_iteration(A.sub(0, 0, zeros[i]+1, zeros[i]+1), tol, false, real, imag);
-                    else{
-                        qr_iteration(A.sub(zeros[i-1]+1, zeros[i-1]+1, zeros[i]-zeros[i-1], zeros[i]-zeros[i-1]), tol, false, real, imag);
-                    }
-                }
-                qr_iteration(A.sub(zeros[n-1]+1, zeros[n-1]+1, A.rowsize()-1-zeros[n-1], A.rowsize()-1-zeros[n-1]), tol, false, real, imag);
+    void decouble(hdnum::DenseMatrix<T> A, T tol,  std::vector<T>& real, std::vector<T>& imag){
+        std::vector<int> zeros = decouple_check(A, tol);
+        if (!zeros.empty()){ //decoubeling
+            int n= zeros.size();
+            if(n>0){
+                qr_iteration(A.sub(0, 0, zeros[0]+1, zeros[0]+1), tol, false, real, imag);
+            }
+            for (int i=1; i<n; i++){ 
+                qr_iteration(A.sub(zeros[i-1]+1, zeros[i-1]+1, zeros[i]-zeros[i-1], zeros[i]-zeros[i-1]), tol, false, real, imag);
+            }
+            qr_iteration(A.sub(zeros[n-1]+1, zeros[n-1]+1, A.rowsize()-1-zeros[n-1], A.rowsize()-1-zeros[n-1]), tol, false, real, imag);
+        }
+        else qr_step(A, tol, real, imag);
+    }
 
-            }
-            else qr_step = true;
+    template <class T>
+    void qr_step(hdnum::DenseMatrix<T> A, T tol, std::vector<T>& real, std::vector<T>& imag){
+        if (A.rowsize()==1){
+            real.push_back(A[0][0]);
+            imag.push_back(0);
         }
-        else qr_step = true;
-        if (qr_step){
-            if (A.rowsize()==1){
-                real.push_back(A[0][0]);
-                imag.push_back(0);
-            }
-            else if (A.rowsize()==2){
-                eigenvalues_2x2(A, real, imag);
-            }
-            else{
-                for( int i=0; i<20; i++){ //TODO decouple after every iteration?
-                    hessenberg_qr(A, tol); //= R*Q=A'
-                }
-                qr_iteration(A, tol, true, real, imag);
-            }
+        else if (A.rowsize()==2){
+            eigenvalues_2x2(A, real, imag);
         }
+        else{
+            for( int i=0; i<20; i++){ //TODO decouple after every iteration?
+                hessenberg_qr(A, tol); //= R*Q=A'
+            }
+            qr_iteration(A, tol, true, real, imag);
+        }
+    }
+
+    template <class T>
+    void qr_iteration(hdnum::DenseMatrix<T> A, T tol, bool decouple_bool, std::vector<T>& real, std::vector<T>& imag){
+        if (decouple_bool){    
+            decouble(A, tol, real, imag);
+            }
+        else qr_step(A, tol, real, imag);
     }
 
     template <class T> //TODO create real and imag as arrays with size n
     void eigenvalues_qr_algorithm_givens(hdnum::DenseMatrix<T> A, std::vector<T>& real, std::vector<T>& imag ){
-        T tol = 0.000000000000001;
+        T tol = 1e-16;
         makeHessenberg(A, tol);
         qr_iteration(A, tol, true, real, imag);
     }
