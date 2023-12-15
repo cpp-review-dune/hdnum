@@ -73,6 +73,7 @@ namespace hdnum{
         std::vector<hdnum::DenseMatrix<T>> Q;
 
         for (int j=0; j<n-1; j++){
+
             if (fabs(A[j+1][j])<=tol){
                 A[j+1][j]=0;
                 hdnum::DenseMatrix<T> givens_part={{1, 0}, {0, 1}};
@@ -85,6 +86,7 @@ namespace hdnum{
             hdnum::DenseMatrix<T> givens_part={{c, s}, {-s, c}}; //TODO Segmentation fault for some values (e.g. 92)
             //TODO: use multiplication factor instead of matrix
             hdnum::DenseMatrix<T> a_part=A.sub(j, j, 2, n-j);
+            //hdnum::DenseMatrix<T> a_part= j<n-2 ? A.sub(j, j, 2, n-j) : A.sub(j-1, j, 2, n-j); //code runs but wrong result
             a_part=givens_part.transpose()*a_part;
             insert_partial_matrix(A, a_part, j, j+1, j, n-1);
             A[j+1][j]=0; //TODO check this (roundoff correction)
@@ -92,14 +94,11 @@ namespace hdnum{
             Q.push_back(givens_part);
         }
 
-        //save all givens rotations multiply one by one
-        hdnum::DenseMatrix<T> Gi(n, n);
-        for(int i =0; i<n; i++) Gi[i][i]=1;
-        for (int i = 0; i<n-1; i++){
-            //A=A*G_i
-            hdnum::DenseMatrix<T> a_part=A.sub(0, i, i+2, 2); //columns
+        //multiply with givensroations from the left
+        for (int i = 0; i<n-1; i++){ 
+            hdnum::DenseMatrix<T> a_part=A.sub(0, i, n, 2); //columns //TODO replace n with better index
             a_part=a_part*Q[i];
-            insert_partial_matrix(A, a_part, 0, i+1, i, i+1);
+            insert_partial_matrix(A, a_part, 0, n-1, i, i+1);
         }
 
     }
@@ -166,9 +165,10 @@ namespace hdnum{
     }
 
     template <class T>
-    void decouble(hdnum::DenseMatrix<T> A,  std::vector<T>& real, std::vector<T>& imag,  QR_Info<T>& qr_info){
+    void decouple(hdnum::DenseMatrix<T> A,  std::vector<T>& real, std::vector<T>& imag,  QR_Info<T>& qr_info){
+        if (A.colsize() < 1) return qr_step(A,  real, imag, qr_info);
         std::vector<int> zeros = decouple_check(A, qr_info);
-        if (!zeros.empty()){ //decoubeling
+        if (!zeros.empty()){ //decoupeling
             int n= zeros.size();
             if(n>0){
                 qr_iteration(A.sub(0, 0, zeros[0]+1, zeros[0]+1), false, real, imag, qr_info);
@@ -201,7 +201,7 @@ namespace hdnum{
     template <class T>
     void qr_iteration(hdnum::DenseMatrix<T> A,  bool decouple_bool, std::vector<T>& real, std::vector<T>& imag, QR_Info<T>& qr_info){
         if (decouple_bool){    
-            decouble(A,  real, imag, qr_info);
+            decouple(A,  real, imag, qr_info);
             }
         else qr_step(A, real, imag, qr_info);
     }
