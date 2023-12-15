@@ -70,37 +70,39 @@ namespace hdnum{
         ///overwrites A with R, old_A=QR; A'=RQ ="AQ"
         int n=A.rowsize();
         T tol=qr_info.get_tol();
-        std::vector<hdnum::DenseMatrix<T>> Q;
+        std::vector<std::pair<T, T>> Q;
 
         for (int j=0; j<n-1; j++){
 
             if (fabs(A[j+1][j])<=tol){
                 A[j+1][j]=0;
-                hdnum::DenseMatrix<T> givens_part={{1, 0}, {0, 1}};
-                Q.push_back(givens_part);
+                Q.push_back({1, 0});
                 continue;
             }
             std::pair<T, T> cs=givens(A[j][j], A[j+1][j]);
             T c=cs.first;
             T s=cs.second;
-            hdnum::DenseMatrix<T> givens_part={{c, s}, {-s, c}}; //TODO Segmentation fault for some values (e.g. 92)
-            //TODO: use multiplication factor instead of matrix
-            hdnum::DenseMatrix<T> a_part=A.sub(j, j, 2, n-j);
-            //hdnum::DenseMatrix<T> a_part= j<n-2 ? A.sub(j, j, 2, n-j) : A.sub(j-1, j, 2, n-j); //code runs but wrong result
-            a_part=givens_part.transpose()*a_part;
-            insert_partial_matrix(A, a_part, j, j+1, j, n-1);
-            A[j+1][j]=0; //TODO check this (roundoff correction)
+            Q.push_back({c, s});
 
-            Q.push_back(givens_part);
+            for(int k=j; k<n; k++){
+                T tempAjk=A[j][k];
+                A[j][k]=A[j][k]*c-A[j+1][k]*s;
+                A[j+1][k]=tempAjk*s+A[j+1][k]*c;
+            }
+            A[j+1][j]=0; //TODO check this (roundoff correction)
         }
 
         //multiply with givensroations from the left
         for (int i = 0; i<n-1; i++){ 
-            hdnum::DenseMatrix<T> a_part=A.sub(0, i, n, 2); //columns //TODO replace n with better index
-            a_part=a_part*Q[i];
-            insert_partial_matrix(A, a_part, 0, n-1, i, i+1);
-        }
+            for (int k=0; k<n; k++){
+                T c=Q[i].first;
+                T s=Q[i].second;
 
+                T tempAki=A[k][i];
+                A[k][i]=A[k][i]*c-A[k][i+1]*s;
+                A[k][i+1]=tempAki*s+A[k][i+1]*c;
+            }
+        }
     }
 
 
