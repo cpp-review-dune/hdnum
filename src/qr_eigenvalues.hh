@@ -31,19 +31,6 @@ namespace hdnum{
 
     };
 
-
-
-    template <class T> //TODO change insert_partial_matrix to fit parameters of sub
-    void insert_partial_matrix(hdnum::DenseMatrix<T>& A,const hdnum::DenseMatrix<T>& Partial, int row_start, int row_end, int col_start, int col_end){
-        assert(row_end<A.rowsize() && col_end<A.colsize());
-        assert(row_end-row_start == Partial.rowsize()-1 && col_end-col_start == Partial.colsize()-1);
-        for (int i=col_start; i<=col_end; i++){
-            for (int j=row_start; j<=row_end; j++){
-                A[j][i] = Partial[j-row_start][i-col_start];
-            }
-        }
-    }
-
     template <class T>
     std::pair<T, T> givens(T a, T b){
         if(b==0){
@@ -84,7 +71,7 @@ namespace hdnum{
             T s=cs.second;
             Q.push_back({c, s});
 
-            for(int k=j; k<n; k++){
+            for(int k=j; k<n; k++){ //givens^t*A
                 T tempAjk=A[j][k];
                 A[j][k]=A[j][k]*c-A[j+1][k]*s;
                 A[j+1][k]=tempAjk*s+A[j+1][k]*c;
@@ -93,8 +80,8 @@ namespace hdnum{
         }
 
         //multiply with givensroations from the left
-        for (int i = 0; i<n-1; i++){ 
-            for (int k=0; k<n; k++){
+        for (int i = 0; i<n-1; i++){  
+            for (int k=0; k<n; k++){ //A*givens
                 T c=Q[i].first;
                 T s=Q[i].second;
 
@@ -119,18 +106,20 @@ namespace hdnum{
                 std::pair<T, T> cs=givens(A[i][j], A[i+1][j]);
                 T c=cs.first;
                 T s=cs.second;
-                hdnum::DenseMatrix<T> givens_part={{c, s}, {-s, c}};
 
                 //A=Qt*A
-                hdnum::DenseMatrix<T> a_part=A.sub(i, j, 2, n-j); //rows
-                a_part=givens_part.transpose()*a_part;
-                insert_partial_matrix(A, a_part, i, i+1, j, n-1);
-
+                for(int k=j; k<n; k++){ //givens^t*A
+                    T tempAik=A[i][k];
+                    A[i][k]=A[i][k]*c-A[i+1][k]*s;
+                    A[i+1][k]=tempAik*s+A[i+1][k]*c;
+                }
                 //A=A*QT ( --> A=QT*A*Q)
-                a_part=A.sub(0, i, n, 2); //columns
-                a_part=a_part*givens_part;
-                insert_partial_matrix(A, a_part, 0, n-1, i, i+1);
-                //std::cout << "A" << i+1 << ", " << i << " = " << A[i+1][j] << std::endl; 
+                for (int k=0; k<n; k++){
+                    T tempAki=A[k][i];
+                    A[k][i]=A[k][i]*c-A[k][i+1]*s;
+                    A[k][i+1]=tempAki*s+A[k][i+1]*c;
+                }
+
                 A[i+1][j]=0;//roundoff error //TODO check this
             }
         }
