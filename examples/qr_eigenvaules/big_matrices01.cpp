@@ -24,18 +24,18 @@ Mat makeBigMatrix(int n){
 
 int main(){
 
-    Mat A= makeBigMatrix(10); //TODO Error at 62
+    Mat A= makeBigMatrix(58); //TODO Error at 92, 116
     A.scientific(false);
 
-
-    std::vector<Number> real;
-    std::vector<Number> imag;
     Timer t;
     t.reset();
-    eigenvalues_qr_algorithm_givens(A, real, imag);
+    QR_Info<Number> qr_info = eigenvalues_qr_algorithm_givens(A);
+    std::vector<Number> real = qr_info.get_real();
+    std::vector<Number> imag = qr_info.get_imag();
     std::cout << "time: " << t.elapsed() << "sec" << std::endl;
     for (int i = 0; i< real.size(); i++){
         std::cout << real[i]  << " + i*" << imag[i] << std::endl;
     }
+    //std::cout << A;
     return 0;
 }

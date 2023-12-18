@@ -22,27 +22,35 @@ Mat makeBigMatrix(int n){
 }
 
 int main(){
-    int n=62;
+    int n=125;
 
-    Mat x = Mat(1, 100);
-    Mat y = Mat(1, 100);
+    Mat x = Mat(1, n);
+    Mat y = Mat(1, n);
     x.scientific(false);
     y.scientific(false);
     //std::vector<double> x;
     //std::vector<double> y;
     Timer t;
     for( int i=1; i<n; i++){
+        if (i==59 || i==71 || i==72){
+            //continue;
+        }
+        if (i==92 || i==116 || i==125){
+            //continue;
+        }
         std::cout << i << std::endl;
         Mat A= makeBigMatrix(i);
         t.reset();
         std::vector<Number> real;
         std::vector<Number> imag;
-        eigenvalues_qr_algorithm_givens(A, real, imag);
-        //std::cout << i << ": " << t.elapsed() << "sec" << std::endl;
-        //y.push_back(t.elapsed());
-        //x.push_back(i);
-        y[0][i]=t.elapsed();
-        x[0][i]=i;
+        try{
+            eigenvalues_qr_algorithm_givens(A);
+            y[0][i]=t.elapsed();
+            x[0][i]=i;
+        }
+        catch(int i){
+            std::cout << "not working: " << i << std::endl;
+        }
     }
 
     for (int i=0; i<n; i++){

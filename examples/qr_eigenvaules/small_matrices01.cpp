@@ -16,10 +16,10 @@ int main(){
 
     std::cout <<C << std::endl;
 
-    std::vector<Number> real;
-    std::vector<Number> imag;
 
-    eigenvalues_qr_algorithm_givens(C, real, imag);
+    QR_Info<Number> qr_info = eigenvalues_qr_algorithm_givens(C);
+    std::vector<Number> real = qr_info.get_real();
+    std::vector<Number> imag = qr_info.get_imag();
 
     for (int i = 0; i< real.size(); i++){
         std::cout << real[i]  << " + i*" << imag[i] << std::endl;
